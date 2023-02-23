@@ -8,5 +8,5 @@ RUN mvn package
 
 # Run stage
 FROM gcr.io/distroless/java
-COPY --from=build /app/target/Saltmarsh.jar /Saltmarsh.jar
+COPY --from=build /app/target/saltmarsh.jar /saltmarsh.jar
 CMD ["java", "-jar", "/saltmarsh.jar"]
