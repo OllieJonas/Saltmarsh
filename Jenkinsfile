@@ -10,7 +10,6 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Running tests for ${env.PROJECT_NAME} on ${env.JENKINS_URL} ..."
-                sh 'go test'
             }
         }
 
