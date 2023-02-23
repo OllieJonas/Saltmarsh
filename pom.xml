@@ -80,7 +80,7 @@
                             <mainClass>me.olliejonas.saltmarsh.Main</mainClass> <!-- replace with your main class -->
                         </manifest>
                     </archive>
-                    <finalName>${project.artifactId}</finalName>
+                    <finalName>saltmarsh</finalName>
                 </configuration>
             </plugin>
         </plugins>
