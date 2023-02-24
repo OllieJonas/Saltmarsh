@@ -6,6 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         String token = args.length > 0 ? args[0] : System.getenv("SALTMARSH_DISCORD_TOKEN");
+        System.out.println(token);
         Saltmarsh saltmarsh = new Saltmarsh(token);
 
         try {
