@@ -7,8 +7,6 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class ShuffleCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Shuffles tracks in the queue! (NOT CURRENTLY IMPLEMENTED)");
     }
 
     @Override

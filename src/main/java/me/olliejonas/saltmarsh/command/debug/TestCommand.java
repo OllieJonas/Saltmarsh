@@ -1,14 +1,16 @@
 package me.olliejonas.saltmarsh.command.debug;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.*;
+import me.olliejonas.saltmarsh.command.meta.Command;
+import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import me.olliejonas.saltmarsh.util.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -38,7 +40,7 @@ public class TestCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.of("Testing stuff!");
+        return CommandInfo.of("Test commands for debugging purposes (ADMIN)");
     }
 
     @Override
@@ -51,6 +53,7 @@ public class TestCommand extends Command {
         addSubCommand(new TestPlayCommand(globalAudioManager));
         addSubCommand(new TestPaginatedEmbedCommand(paginatedEmbedManager));
         addSubCommand(new TestButtonEmbedCommand(buttonEmbedManager));
+        addSubCommand(new TestItemizedEmbedCommand(paginatedEmbedManager));
         addSubCommand(new TestPollCommand(pollEmbedManager));
         addSubCommand(new TestFailureCommand());
         addSubCommand(new TestEphemeralCommand());

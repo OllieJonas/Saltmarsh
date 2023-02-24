@@ -9,8 +9,6 @@ import me.olliejonas.saltmarsh.music.GuildAudioManager;
 import me.olliejonas.saltmarsh.music.exceptions.QueueException;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class SkipCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Skips the current track! (Specify a number to skip X tracks, e.g. -skip -5)");
     }
 
     @Override

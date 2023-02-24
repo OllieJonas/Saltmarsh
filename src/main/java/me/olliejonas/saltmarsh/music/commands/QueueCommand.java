@@ -6,7 +6,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.exceptions.QueueException;
-import me.olliejonas.saltmarsh.util.embed.PaginatedAudioQueueEmbed;
+import me.olliejonas.saltmarsh.util.embed.ItemizedAudioQueueEmbed;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbed;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Guild;
@@ -33,7 +33,7 @@ public class QueueCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Displays the music track queue");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class QueueCommand extends Command {
     }
 
     private InteractionResponses queue(Guild guild, TextChannel channel) {
-        PaginatedEmbed queueEmbed = PaginatedAudioQueueEmbed.build(embedManager,
+        PaginatedEmbed queueEmbed = ItemizedAudioQueueEmbed.build(embedManager,
                 audioManager.get(guild)
                         .orElseThrow(() ->
                                 CommandFailedException.other("The queue is currently empty! :(",

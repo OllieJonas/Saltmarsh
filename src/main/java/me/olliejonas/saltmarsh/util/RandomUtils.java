@@ -15,7 +15,7 @@ public class RandomUtils {
     // https://stackoverflow.com/questions/12026885/is-there-a-common-java-utility-to-break-a-list-into-batches
     public static <T> Stream<List<T>> batches(List<T> source, int length) {
         if (length <= 0)
-            throw new IllegalArgumentException("length = " + length);
+            throw new IllegalArgumentException("length (itemsPerPage) = " + length);
         int size = source.size();
         if (size <= 0)
             return Stream.empty();

@@ -8,8 +8,6 @@ import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.GuildAudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -24,7 +22,7 @@ public class PauseCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Pauses the music-bot, if it's playing! (Resume with -resume)");
     }
 
     @Override

@@ -6,9 +6,7 @@ import me.olliejonas.saltmarsh.InteractionResponses;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple3;
 
 import java.util.*;
@@ -53,7 +51,9 @@ public abstract class Command {
         this.subCommands = subCommands;
     }
 
-    public abstract CommandInfo commandInfo();
+    public CommandInfo commandInfo() {
+        return CommandInfo.empty();
+    }
 
     public abstract InteractionResponses execute(Member executor, TextChannel channel,
                                                  List<String> args, String aliasUsed) throws CommandFailedException;
@@ -91,6 +91,10 @@ public abstract class Command {
         return InteractionResponses.messageAsEmbed(helpStr());
     }
 
+    protected InteractionResponses empty() {
+        return InteractionResponses.empty();
+    }
+
     private String helpStr() {
         return "this is some help!";
     }
@@ -114,5 +118,13 @@ public abstract class Command {
         } while (true);
 
         return new Tuple3<>(curr, tokens, consumed);
+    }
+
+    public boolean hasPermission(Member executor) {
+        return permissions != null && permissions.hasPermission(executor);
+    }
+
+    public boolean isRoot() {
+        return parent == null;
     }
 }

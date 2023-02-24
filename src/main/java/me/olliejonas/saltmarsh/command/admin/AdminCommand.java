@@ -30,7 +30,7 @@ public class AdminCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Various misc admin commands (ADMIN)");
     }
 
     @Override

@@ -5,11 +5,8 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.GuildAudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,7 +20,7 @@ public class ResumeCommand extends Command {
     }
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Resumes playing of music! (-pause to pause the bot)");
     }
 
     @Override

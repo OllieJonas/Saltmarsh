@@ -2,8 +2,8 @@ package me.olliejonas.saltmarsh;
 
 import lombok.Getter;
 import me.olliejonas.saltmarsh.command.admin.AdminCommand;
+import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
 import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
-import me.olliejonas.saltmarsh.command.misc.FrequentlyAskedQuestionsCommand;
 import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
 import me.olliejonas.saltmarsh.command.meta.Command;
@@ -113,7 +113,6 @@ public class Saltmarsh {
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
         registerCommand(new WatchdogCommand(commandWatchdog));
-        registerCommand(new FrequentlyAskedQuestionsCommand(paginatedEmbedManager));
         registerCommand(new PollCommand(pollEmbedManager));
 
         // admin stuff
@@ -138,6 +137,9 @@ public class Saltmarsh {
         registerCommand(new SkipCommand(this.audioManager));
         registerCommand(new StopCommand(this.audioManager));
         registerCommand(new QueueCommand(this.audioManager, this.paginatedEmbedManager));
+
+        // help - register this last
+        registerCommand(new HelpCommand(paginatedEmbedManager, commandRegistry));
     }
 
     public void registerIntents() {

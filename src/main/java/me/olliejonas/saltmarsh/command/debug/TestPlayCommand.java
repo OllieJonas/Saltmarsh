@@ -23,7 +23,7 @@ public class TestPlayCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return null;
+        return CommandInfo.empty();
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @UtilityClass
-public class PaginatedAudioQueueEmbed {
+public class ItemizedAudioQueueEmbed {
 
     public PaginatedEmbed build(PaginatedEmbedManager manager, AudioQueue<Track> queue, int itemsPerPage) {
         List<EmbedBuilder> builders = toList(queue, itemsPerPage);
@@ -28,13 +28,10 @@ public class PaginatedAudioQueueEmbed {
 
     private List<EmbedBuilder> toList(AudioQueue<Track> queue, int itemsPerPage) {
         List<List<String>> tracks = RandomUtils.batches(rows(queue.tracks()), itemsPerPage).toList();
-        Integer noPages = tracks.size();
-        int totalTracks = queue.size();
-
-        return tracks.stream().map(page -> from(page, noPages)).collect(Collectors.toList());
+        return tracks.stream().map(ItemizedAudioQueueEmbed::from).collect(Collectors.toList());
     }
 
-    private EmbedBuilder from(List<String> page, Integer noPages) {
+    private EmbedBuilder from(List<String> page) {
         EmbedBuilder builder = EmbedUtils.colour(new EmbedBuilder());
 
         builder.setDescription(String.join("\n", page));

@@ -9,14 +9,13 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class ClearBotMessagesCommand extends Command {
+
+    static int RETRIEVE_PAST_COUNT = 50;
 
     public ClearBotMessagesCommand() {
         super(CommandPermissions.ADMIN, "clear-bot", "clear-bot-messages");
@@ -24,12 +23,12 @@ public class ClearBotMessagesCommand extends Command {
 
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Checks previous " + RETRIEVE_PAST_COUNT + " messages, and removes any sent by Saltmarsh.");
     }
 
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
-        channel.getHistory().retrievePast(50)
+        channel.getHistory().retrievePast(RETRIEVE_PAST_COUNT)
                 .queue(messages -> {
                     List<Message> saltmarsh = messages.stream()
                             .filter(message -> message.getAuthor().isBot()

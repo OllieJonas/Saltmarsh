@@ -1,11 +1,12 @@
 package me.olliejonas.saltmarsh.command.misc;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.*;
+import me.olliejonas.saltmarsh.command.meta.Command;
+import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class SayInAnEchoingVoiceCommand extends Command {
     }
     @Override
     public CommandInfo commandInfo() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Send messages as embed (ADMIN)");
     }
 
     @Override
