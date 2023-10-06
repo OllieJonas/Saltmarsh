@@ -2,7 +2,7 @@ name: build and deploy
 
 on:
   workflow_dispatch:
-    
+
   push:
     branches:
       - 'main'
@@ -34,6 +34,3 @@ jobs:
     steps:
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
-
-      - name: Copy Docker Image
-        run: scp -o StrictHostKeyChecking=no -o
