@@ -5,7 +5,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.exceptions.QueueException;
-import me.olliejonas.saltmarsh.util.embed.ItemizedAudioQueueEmbed;
+import me.olliejonas.saltmarsh.music.ItemizedAudioQueueEmbed;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbed;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Guild;

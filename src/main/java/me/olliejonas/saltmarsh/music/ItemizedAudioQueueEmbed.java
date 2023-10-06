@@ -1,9 +1,12 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.music;
 
 import lombok.experimental.UtilityClass;
 import me.olliejonas.saltmarsh.music.entities.AudioQueue;
 import me.olliejonas.saltmarsh.music.entities.LoadedTrack;
 import me.olliejonas.saltmarsh.util.RandomUtils;
+import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.util.embed.PaginatedEmbed;
+import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.List;

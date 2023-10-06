@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class PaginatedEmbed {
+public class PaginatedEmbed implements DecoratedEmbed {
 
     private String title;
 
@@ -39,10 +39,10 @@ public class PaginatedEmbed {
     @Singular
     private List<EmbedBuilder> pages;
 
-    @lombok.Builder.Default
     private List<ButtonEmbed> compiledPages = new ArrayList<>();
 
-    @lombok.Builder.Default
+    private boolean isCompiled = false;
+
     private AtomicInteger currentPage = new AtomicInteger();
 
     private int noPages;
@@ -234,6 +234,7 @@ public class PaginatedEmbed {
                     timestamp,
                     embeds,
                     new ArrayList<>(),
+                    false,
                     new AtomicInteger(0),
                     noPages
             );

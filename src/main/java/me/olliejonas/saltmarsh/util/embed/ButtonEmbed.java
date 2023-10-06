@@ -2,6 +2,7 @@ package me.olliejonas.saltmarsh.util.embed;
 
 import lombok.Getter;
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.util.embed.input.InputTargetEmbed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -15,7 +16,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @Getter
-public class ButtonEmbed extends MessageEmbed {
+public class ButtonEmbed extends MessageEmbed implements DecoratedEmbed {
 
     public record ActionButton(Button button, Function<ClickContext, InteractionResponses> action) {}
 

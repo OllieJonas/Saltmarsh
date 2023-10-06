@@ -46,7 +46,7 @@ public class PollCommand extends Command {
                 .map(PollOption::new)
                 .toList();
 
-        if (pollOptions.size() == 0) throw CommandFailedException.badArgs(executor, this, "option 1 | option 2 | option ...");
+        if (pollOptions.isEmpty()) throw CommandFailedException.badArgs(executor, this, "option 1 | option 2 | option ...");
         if (pollOptions.size() > 10) throw CommandFailedException.other("You can't have more than 10 options!", "no more than 10 options");
 
         PollEmbed embed = PollEmbed.builder(manager)

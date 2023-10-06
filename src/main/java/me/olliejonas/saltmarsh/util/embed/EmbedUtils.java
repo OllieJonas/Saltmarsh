@@ -22,6 +22,14 @@ public class EmbedUtils {
         return standard().setDescription(message).build();
     }
 
+    public static MessageEmbed from(String title, String description) {
+        return fromAsBuilder(title, description).build();
+    }
+
+    public static EmbedBuilder fromAsBuilder(String title, String description) {
+        return standard().setTitle(title).setDescription(description);
+    }
+
     public static MessageEmbed error(String message) {
         return essentials().setColor(Color.RED).setDescription(message).build();
     }

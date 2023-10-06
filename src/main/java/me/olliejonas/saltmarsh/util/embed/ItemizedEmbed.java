@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedBuilder> base, String title,
                                                   String author, int itemsPerPage, boolean pageCount,
-                                                  boolean displayIndex, boolean asFields) {
+                                                  boolean displayIndex, boolean asFields) implements DecoratedEmbed {
 
     public static final String AS_FIELD_SPLIT_STR = ">";
 

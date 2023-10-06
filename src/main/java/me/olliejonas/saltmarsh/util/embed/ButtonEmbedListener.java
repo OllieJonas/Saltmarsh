@@ -17,8 +17,6 @@ public class ButtonEmbedListener extends ListenerAdapter {
 
     private final ButtonEmbedManager manager;
 
-    enum ReactionType { ADD, REMOVE }
-
     public ButtonEmbedListener(ButtonEmbedManager manager) {
         this.manager = manager;
     }
