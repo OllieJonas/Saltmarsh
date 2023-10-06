@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
 import lombok.experimental.UtilityClass;
 import me.olliejonas.saltmarsh.Constants;

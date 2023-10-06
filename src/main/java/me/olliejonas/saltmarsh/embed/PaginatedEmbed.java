@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
 import lombok.*;
 import me.olliejonas.saltmarsh.Constants;

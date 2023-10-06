@@ -3,7 +3,7 @@ package me.olliejonas.saltmarsh.util;
 import lombok.experimental.UtilityClass;
 import me.olliejonas.saltmarsh.Constants;
 import me.olliejonas.saltmarsh.command.meta.CommandWatchdog;
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 

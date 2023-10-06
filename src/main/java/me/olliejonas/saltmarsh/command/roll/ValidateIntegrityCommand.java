@@ -2,12 +2,11 @@ package me.olliejonas.saltmarsh.command.roll;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.*;
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.util.Collections;
 import java.util.List;

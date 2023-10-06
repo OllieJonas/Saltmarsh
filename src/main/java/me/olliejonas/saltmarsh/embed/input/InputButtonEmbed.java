@@ -1,11 +1,9 @@
-package me.olliejonas.saltmarsh.util.embed.input;
+package me.olliejonas.saltmarsh.embed.input;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.olliejonas.saltmarsh.util.embed.ButtonEmbed;
+import me.olliejonas.saltmarsh.embed.ButtonEmbed;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-
-import java.util.Optional;
 
 @Getter
 @Setter

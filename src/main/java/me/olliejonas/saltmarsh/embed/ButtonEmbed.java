@@ -1,8 +1,7 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
 import lombok.Getter;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.util.embed.input.InputTargetEmbed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;

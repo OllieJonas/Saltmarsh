@@ -1,10 +1,8 @@
-package me.olliejonas.saltmarsh.util.embed.input;
+package me.olliejonas.saltmarsh.embed.input;
 
-import me.olliejonas.saltmarsh.util.embed.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-
-import java.util.Map;
 
 public class InputEmbedManager {
 

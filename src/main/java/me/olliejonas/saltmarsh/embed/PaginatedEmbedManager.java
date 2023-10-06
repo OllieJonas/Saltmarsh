@@ -1,15 +1,11 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
-import me.olliejonas.saltmarsh.music.exceptions.QueueException;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class PaginatedEmbedManager {
 

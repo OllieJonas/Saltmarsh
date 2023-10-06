@@ -1,6 +1,6 @@
 package me.olliejonas.saltmarsh.music.entities;
 
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;

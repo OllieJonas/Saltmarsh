@@ -4,12 +4,11 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 

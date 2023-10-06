@@ -2,8 +2,8 @@ package me.olliejonas.saltmarsh.command.debug;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.*;
-import me.olliejonas.saltmarsh.util.embed.PaginatedEmbed;
-import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.PaginatedEmbed;
+import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 

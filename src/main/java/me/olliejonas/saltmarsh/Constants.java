@@ -1,7 +1,7 @@
 package me.olliejonas.saltmarsh;
 
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.util.embed.PaginatedEmbed;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.PaginatedEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 

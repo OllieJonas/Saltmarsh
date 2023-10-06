@@ -1,6 +1,6 @@
 package me.olliejonas.saltmarsh.poll;
 
-import me.olliejonas.saltmarsh.util.embed.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 

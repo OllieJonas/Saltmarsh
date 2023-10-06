@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.Message;

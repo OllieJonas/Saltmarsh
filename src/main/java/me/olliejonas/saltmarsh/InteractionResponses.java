@@ -1,6 +1,6 @@
 package me.olliejonas.saltmarsh;
 
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;

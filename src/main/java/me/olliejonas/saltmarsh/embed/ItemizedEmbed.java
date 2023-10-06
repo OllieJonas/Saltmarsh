@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.util.embed;
+package me.olliejonas.saltmarsh.embed;
 
 import me.olliejonas.saltmarsh.util.RandomUtils;
 import net.dv8tion.jda.api.EmbedBuilder;

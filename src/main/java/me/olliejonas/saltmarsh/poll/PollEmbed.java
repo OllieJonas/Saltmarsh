@@ -1,8 +1,8 @@
 package me.olliejonas.saltmarsh.poll;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.util.embed.ButtonEmbed;
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.ButtonEmbed;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;

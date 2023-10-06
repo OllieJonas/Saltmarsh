@@ -1,7 +1,6 @@
-package me.olliejonas.saltmarsh.util.embed.input;
+package me.olliejonas.saltmarsh.embed.input;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InputEmbed {

@@ -2,7 +2,7 @@ package me.olliejonas.saltmarsh.command.meta;
 
 import me.olliejonas.saltmarsh.Constants;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
