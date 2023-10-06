@@ -5,7 +5,11 @@ on:
 
   push:
     branches:
-      - 'main'
+      - 'master'
+
+  pull_request:
+    branches:
+      - 'master'
 
 concurrency:
   group: "deploy"
@@ -16,18 +20,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Setup Docker
-        uses: docker/setup-docker@v2
-        with:
-          dockerfile: Dockerfile
-          context: .
-
-      - name: Build Docker Image
+      - name: Build Dockerfile
         run: docker build -t Saltmarsh .
 
+        
   deploy:
     runs-on: ubuntu-latest
 
