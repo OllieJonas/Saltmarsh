@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class RandomUtils {
+public class MiscUtils {
     public static Optional<URL> url(String url) {
         try {
             return Optional.of(new URL(url));

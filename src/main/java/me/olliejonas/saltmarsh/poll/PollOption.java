@@ -2,6 +2,7 @@ package me.olliejonas.saltmarsh.poll;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PollOption {
     private final String prompt;
@@ -43,5 +44,9 @@ public class PollOption {
 
     private boolean alreadyVoted(String voter) {
         return voters.contains(voter);
+    }
+
+    public String votersString() {
+        return voters.stream().collect(Collectors.joining(", ", "(", ")"));
     }
 }

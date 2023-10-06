@@ -1,6 +1,6 @@
 package me.olliejonas.saltmarsh.embed;
 
-import me.olliejonas.saltmarsh.util.RandomUtils;
+import me.olliejonas.saltmarsh.util.MiscUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
                 .map(i -> (displayIndex ? counter.getAndIncrement() + ". " : "") + i)
                 .toList();
 
-        Stream<EmbedBuilder> batches = RandomUtils.batches(representations, itemsPerPage).map(this::from);
+        Stream<EmbedBuilder> batches = MiscUtils.batches(representations, itemsPerPage).map(this::from);
 
         if (!title.equals(""))
             batches = batches.map(b -> b.setTitle(title));

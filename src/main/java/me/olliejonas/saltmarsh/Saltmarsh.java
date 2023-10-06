@@ -18,7 +18,6 @@ import me.olliejonas.saltmarsh.embed.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.VoiceAFKTimeoutTaskScheduler;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.poll.NewPollCommand;
 import me.olliejonas.saltmarsh.poll.PollCommand;
@@ -28,6 +27,8 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -89,9 +90,10 @@ public class Saltmarsh {
             throw new RuntimeException(ex);
         }
 
-        // other random stuff (should require jda)
-        VoiceAFKTimeoutTaskScheduler voiceAFKTimeoutTaskScheduler = new VoiceAFKTimeoutTaskScheduler(this.jda);
-        voiceAFKTimeoutTaskScheduler.run();
+        // register HelloWorld as a global command to get the "Supports Slash Commands" badge
+        Command command = new HelloWorldCommand();
+        SlashCommandData helloWorldData = Commands.slash(command.getPrimaryAlias(), command.info().shortDesc());
+        this.jda.updateCommands().addCommands(helloWorldData).queue();
 
 //        AutoEnableWatchdog.autoEnable(jda, commandWatchdog);
     }
@@ -108,7 +110,6 @@ public class Saltmarsh {
     public void registerCommands() {
 
         // misc
-        registerCommand(new HelloWorldCommand());
         registerCommand(new IsThisAURLCommand());
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());

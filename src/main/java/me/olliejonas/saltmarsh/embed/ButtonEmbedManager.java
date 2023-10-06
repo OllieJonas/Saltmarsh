@@ -1,8 +1,10 @@
 package me.olliejonas.saltmarsh.embed;
 
+import me.olliejonas.saltmarsh.util.MiscUtils;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.util.Optional;
@@ -41,8 +43,7 @@ public class ButtonEmbedManager {
     public void send(TextChannel channel, ButtonEmbed embed, Consumer<? super Message> onSuccess) {
         MessageCreateBuilder builder = new MessageCreateBuilder().addEmbeds(embed);
 
-        if (!embed.getButtons().isEmpty())
-            builder.setActionRow(embed.getButtons());
+        builder.setComponents(MiscUtils.batches(embed.getButtons(), 5).map(ActionRow::of).toList());
 
         channel.sendMessage(builder.build()).queue((message) -> {
             onSuccess.accept(message);

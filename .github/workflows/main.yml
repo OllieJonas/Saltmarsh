@@ -1,0 +1,33 @@
+name: build and deploy
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Docker
+        uses: docker/setup-docker@v2
+        with:
+          dockerfile: Dockerfile
+          context: .
+
+      - name: Build Docker Image
+        run: docker build -t Saltmarsh .
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH Client
+        run: sudo apt-get install openssh-client -y
+
+      - name: Copy Docker Image
+        run: scp -o StrictHostKeyChecking=no -o

@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -44,6 +45,7 @@ public class CommandListener extends ListenerAdapter {
                     Command command = e.getValue();
                     SlashCommandData data = Commands.slash(e.getKey(), e.getValue().info().shortDesc());
                     data.addOptions(command.args());
+                    data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(command.getPermissions().permissions()));
                     return data;
                 })
                 .collect(Collectors.toSet());

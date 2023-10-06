@@ -3,7 +3,7 @@ package me.olliejonas.saltmarsh.music;
 import lombok.experimental.UtilityClass;
 import me.olliejonas.saltmarsh.music.entities.AudioQueue;
 import me.olliejonas.saltmarsh.music.entities.LoadedTrack;
-import me.olliejonas.saltmarsh.util.RandomUtils;
+import me.olliejonas.saltmarsh.util.MiscUtils;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbed;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
@@ -29,7 +29,7 @@ public class ItemizedAudioQueueEmbed {
     }
 
     public List<List<String>> asStrs(AudioQueue<LoadedTrack> queue, int itemsPerPage) {
-        return RandomUtils.batches(rows(queue.tracks()), itemsPerPage).toList();
+        return MiscUtils.batches(rows(queue.tracks()), itemsPerPage).toList();
     }
 
     public List<String> flatten(List<List<String>> tracks) {

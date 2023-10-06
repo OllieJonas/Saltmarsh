@@ -9,10 +9,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -20,9 +17,9 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
                         boolean anonymous, long expirationTime, TimeUnit expirationUnit, List<PollOption> options,
                         Map<String, Integer> alreadyVoted) {
 
-    private static final long DEFAULT_EXPIRATION_TIME = 24;
+    public static final long DEFAULT_EXPIRATION_TIME = 3;
 
-    private static final TimeUnit DEFAULT_EXPIRATION_UNITS = TimeUnit.HOURS;
+    public static final TimeUnit DEFAULT_EXPIRATION_UNITS = TimeUnit.DAYS;
 
     private static final List<Button> OPTION_BUTTONS = Stream.of(
             "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "\uD83D\uDD1F"
@@ -37,16 +34,19 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
         embedBuilder.setTitle("Poll (" + author + ")");
         embedBuilder.setDescription(question);
 
+        int i = 0;
 
         for (PollOption option : options) {
-            embedBuilder.addField(option.prompt(), option.voters().size() + " vote(s)", false);
+            embedBuilder.addField(
+                    Objects.requireNonNull(OPTION_BUTTONS.get(i++).getEmoji()).getAsReactionCode() + "  " + option.prompt(),
+                    option.voters().size() + " vote(s)  " + (anonymous ? "" : option.votersString()), false);
         }
 
         embedBuilder.setFooter("This poll will expire in " + expirationTime + " " + expirationUnit.name() + " from the time this message was sent!");
 
         ButtonEmbed.Builder builder = ButtonEmbed.builder(embedBuilder);
 
-        int i = 0;
+        i = 0;
         for (PollOption option : options) {
             builder.button(OPTION_BUTTONS.get(i++), clickContext -> {
                 manager.get(clickContext.messageId()).ifPresent(embed -> {
@@ -64,18 +64,16 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
     }
 
     private void vote(Member clicker, int index) {
-        String clickerId = clicker.getId();
-        boolean shouldRemove;
+        String name = clicker.getNickname();
 
-        boolean voted = options.get(index).vote(clickerId);
+        boolean voted = options.get(index).vote(name);
 
         if (singularVote) {
-            if (alreadyVoted.containsKey(clickerId) && alreadyVoted.get(clickerId) != index) {
-                options.get(alreadyVoted.get(clickerId)).vote(clickerId); // remove previous vote if they've voted
+            if (alreadyVoted.containsKey(name) && alreadyVoted.get(name) != index) {
+                options.get(alreadyVoted.get(name)).vote(name); // remove previous vote if they've voted
             }
-            alreadyVoted.put(clickerId, index);
+            alreadyVoted.put(name, index);
         }
-
     }
 
 
@@ -126,7 +124,11 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
         }
 
         public Builder singularVotes() {
-            this.singularVotes = true;
+            return singularVotes(true);
+        }
+
+        public Builder singularVotes(boolean singularVotes) {
+            this.singularVotes = singularVotes;
             return this;
         }
 
