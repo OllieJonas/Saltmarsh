@@ -58,7 +58,6 @@ public class GlobalAudioManager {
         if (member.getVoiceState() == null)
             throw new NoVoiceChannelException("no voice state");
 
-        System.out.println("here");
 
         GuildVoiceState state = member.getVoiceState();
 
@@ -70,8 +69,9 @@ public class GlobalAudioManager {
 
     public VoiceChannel join(Guild guild, @NotNull VoiceChannel voiceChannel, TextChannel textChannel) {
         // already previously joined a channel, so we need to move it
-        if (audioManagerMap.containsKey(guild) && !audioManagerMap.get(guild).getJoinedChannelId().equals(voiceChannel.getId()))
+        if (audioManagerMap.containsKey(guild) && !audioManagerMap.get(guild).getJoinedChannelId().equals(voiceChannel.getId())) {
             guild.getAudioManager().closeAudioConnection();
+        }
 
         guild.getAudioManager().openAudioConnection(voiceChannel);
         GuildAudioManager guildAudioManager = new GuildAudioManager(guild, audioPlayerManager.createPlayer());
@@ -84,22 +84,24 @@ public class GlobalAudioManager {
         return voiceChannel;
     }
 
-    public boolean play(Guild guild, User executor, String track) throws NoVoiceChannelException {
+    public boolean play(Guild guild, User executor, String query) throws NoVoiceChannelException {
         if (!audioManagerMap.containsKey(guild))
             throw new NoVoiceChannelException();
 
         GuildAudioManager manager = audioManagerMap.get(guild);
 
-        audioPlayerManager.loadItemOrdered(manager, track, new AudioLoadResultHandler() {
+        audioPlayerManager.loadItemOrdered(manager, query, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                System.out.println("loaded track");
                 manager.queue(track, executor);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                playlist.getTracks().forEach(t -> manager.queue(t, executor));
+                if (playlist.isSearchResult())
+                    System.out.println("this was a yt search result!");
+                else
+                    playlist.getTracks().forEach(t -> manager.queue(t, executor));
             }
 
             @Override
@@ -121,6 +123,7 @@ public class GlobalAudioManager {
     }
 
     public void disconnect(Guild guild) {
+        System.out.println("disconnected! :(");
         guild.getAudioManager().closeAudioConnection();
         audioManagerMap.remove(guild);
     }

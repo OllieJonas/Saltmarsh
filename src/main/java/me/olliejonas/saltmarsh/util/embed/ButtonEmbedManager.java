@@ -2,13 +2,9 @@ package me.olliejonas.saltmarsh.util.embed;
 
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;

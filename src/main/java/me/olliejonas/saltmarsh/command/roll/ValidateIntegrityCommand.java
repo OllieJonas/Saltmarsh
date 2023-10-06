@@ -28,7 +28,7 @@ public class ValidateIntegrityCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Roll 100,000 6-sided dice and get some statistics!", "Perform a monte carlo-esque style of random analysis.");
     }
 

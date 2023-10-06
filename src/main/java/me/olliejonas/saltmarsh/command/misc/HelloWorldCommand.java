@@ -1,10 +1,12 @@
 package me.olliejonas.saltmarsh.command.misc;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.*;
+import me.olliejonas.saltmarsh.command.meta.Command;
+import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class HelloWorldCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Hello, world!", "N/A");
     }
 
@@ -37,7 +39,7 @@ public class HelloWorldCommand extends Command {
         // could implement this elsewhere, but here we are
         addSubCommand(new Command("subcommand") {
             @Override
-            public CommandInfo commandInfo() {
+            public CommandInfo info() {
                 return CommandInfo.of("Simple subcommand to test usage", "N/A");
             }
 
@@ -51,7 +53,7 @@ public class HelloWorldCommand extends Command {
             public void addSubCommands() {
                 addSubCommand(new Command("subsub") {
                     @Override
-                    public CommandInfo commandInfo() {
+                    public CommandInfo info() {
                         return CommandInfo.of("goin reaaaal deep now", "oh yeah baby");
                     }
 

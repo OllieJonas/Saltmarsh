@@ -1,12 +1,20 @@
 package me.olliejonas.saltmarsh.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class RandomUtils {
+    public static Optional<URL> url(String url) {
+        try {
+            return Optional.of(new URL(url));
+        } catch (MalformedURLException e) {
+            return Optional.empty();
+        }
+    }
 
     public static boolean betweenExclusive(int x, int min, int max) {
         return x >= min && x < max;
@@ -22,17 +30,5 @@ public class RandomUtils {
         int fullChunks = (size - 1) / length;
         return IntStream.range(0, fullChunks + 1).mapToObj(
                 n -> source.subList(n * length, n == fullChunks ? size : (n + 1) * length));
-    }
-
-    // regex courtesy of chatgpt xx (not im joking, god recent times are scary)
-    // group 1 = protocol (http(s)), group 2 = subdomain, group 3 = domain, 4 = path
-    private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?(?:([\\w\\-]+)\\.)?([\\w\\-]+(?:\\.[\\w\\-]+)+)([\\w\\-.,@?^=%&:/~+#]*[\\w\\-@?^=%&/~+#])?$");
-
-    public static Matcher url(String url) {
-        return URL_PATTERN.matcher(url);
-    }
-
-    public static boolean isUrl(String url) {
-        return URL_PATTERN.matcher(url).matches();
     }
 }

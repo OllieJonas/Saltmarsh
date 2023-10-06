@@ -34,7 +34,7 @@ public class RollCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of(DICE_DESC, "Roll dice!",
                 "Rolls a dice, using the same format you would as in Dungeons & Dragons.");
     }

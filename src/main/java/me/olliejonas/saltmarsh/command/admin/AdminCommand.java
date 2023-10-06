@@ -29,7 +29,7 @@ public class AdminCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Various misc admin commands (ADMIN)");
     }
 

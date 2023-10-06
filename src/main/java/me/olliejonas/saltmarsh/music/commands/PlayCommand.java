@@ -1,10 +1,10 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.music.exceptions.QueueException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -14,18 +14,15 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import java.util.Collection;
 import java.util.List;
 
-public class PlayCommand extends Command {
-
-    private final GlobalAudioManager manager;
+public class PlayCommand extends AudioCommand {
 
     public PlayCommand(GlobalAudioManager manager) {
-        super("play");
-        this.manager = manager;
+        super(manager, "play");
     }
 
     @Override
-    public CommandInfo commandInfo() {
-        return CommandInfo.of("Plays a track to the voice channel you are currently in");
+    public CommandInfo info() {
+        return CommandInfo.of("Plays a track to the voice channel you are currently inz`");
     }
 
     @Override
@@ -45,7 +42,11 @@ public class PlayCommand extends Command {
     }
 
     private InteractionResponses resume(Guild guild) {
-        manager.resume(guild);
+        try {
+            manager.resume(guild);
+        } catch (QueueException exception) {
+            throw CommandFailedException.other("The queue is currently empty! :(", "");
+        }
         return InteractionResponses.messageAsEmbed("Successfully resumed track!");
     }
 }

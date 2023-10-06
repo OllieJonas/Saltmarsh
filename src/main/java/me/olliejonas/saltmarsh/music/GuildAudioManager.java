@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.Getter;
 import me.olliejonas.saltmarsh.music.entities.AudioQueue;
-import me.olliejonas.saltmarsh.music.entities.Track;
+import me.olliejonas.saltmarsh.music.entities.LoadedTrack;
 import me.olliejonas.saltmarsh.music.entities.TrackPrompt;
 import me.olliejonas.saltmarsh.music.exceptions.QueueException;
 import net.dv8tion.jda.api.entities.Guild;
@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Getter
 public class GuildAudioManager {
@@ -27,7 +26,7 @@ public class GuildAudioManager {
 
     private final GuildAudioAdapter adapter;
 
-    private final AudioQueue<Track> queue;
+    private final AudioQueue<LoadedTrack> queue;
 
     private final TrackPrompt trackPrompt;
 
@@ -69,7 +68,7 @@ public class GuildAudioManager {
         if (queue.isEmpty())
             throw new QueueException(QueueException.Reason.EMPTY_QUEUE);
 
-        Optional<Track> curr = queue.next();
+        Optional<LoadedTrack> curr = queue.next();
         int tmp = 0;
 
         while (++tmp < amount && curr.isPresent()) {
@@ -84,8 +83,7 @@ public class GuildAudioManager {
     }
 
     public void queue(AudioTrack track, User owner) {
-        Track queuedTrack = new Track(track, owner);
-
+        LoadedTrack queuedTrack = new LoadedTrack(() -> track, LoadedTrack.Info.from(track), owner);
         queue.add(queuedTrack);
 
         if (!currentlyPlaying.get()) {
@@ -98,12 +96,13 @@ public class GuildAudioManager {
     }
 
     public void resume() {
-        Track curr = queue.curr().orElseThrow(() -> new QueueException(QueueException.Reason.EMPTY_QUEUE));
+        LoadedTrack curr = queue.curr().orElseThrow(() -> new QueueException(QueueException.Reason.EMPTY_QUEUE));
         player.playTrack(curr.track());
     }
 
     public void next() {
         currentlyPlaying.set(false);
+        System.out.println("next!");
         queue.next().ifPresentOrElse(track -> {
             queue.getListeners().forEach(listener -> listener.onNextItem(track));
             player.startTrack(track.track(), false);

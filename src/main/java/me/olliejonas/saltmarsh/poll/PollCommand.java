@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class PollCommand extends Command {
 
-    private static final Pattern POLL_PATTERN = Pattern.compile("^(.*)\\? (([^|]+)(?: \\| ([^|]+)){0,9})$");
+    private static final Pattern POLL_PATTERN = Pattern.compile("^(.*)\\\\? (([^|]+)(?: \\\\| ([^|]+)){0,9})$");
 
     private final PollEmbedManager manager;
 
@@ -27,7 +27,7 @@ public class PollCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.empty();
     }
 
@@ -36,6 +36,7 @@ public class PollCommand extends Command {
         String argsStr = String.join(" ", args);
         Matcher matcher = POLL_PATTERN.matcher(argsStr);
 
+        System.out.println(argsStr);
         if (!matcher.find())
             throw CommandFailedException.badArgs(executor, this, "question ? option 1 | option 2 | option 3 ");
 
@@ -55,7 +56,7 @@ public class PollCommand extends Command {
                 .options(pollOptions)
                 .build();
 
-        manager.send(channel, executor, embed);
+        manager.send(channel, embed);
         return InteractionResponses.empty();
     }
 

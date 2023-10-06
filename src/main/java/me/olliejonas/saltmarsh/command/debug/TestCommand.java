@@ -39,7 +39,7 @@ public class TestCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Test commands for debugging purposes (ADMIN)");
     }
 

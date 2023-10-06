@@ -1,7 +1,6 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
@@ -12,19 +11,16 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.List;
 
-public class SkipCommand extends Command {
+public class SkipCommand extends AudioCommand {
 
     private static final int MAX_SKIP_THRESHOLD = 200;
 
-    private final GlobalAudioManager manager;
-
     public SkipCommand(GlobalAudioManager manager) {
-        super("skip");
-        this.manager = manager;
+        super(manager, "skip");
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Skips the current track! (Specify a number to skip X tracks, e.g. -skip -5)");
     }
 
@@ -49,7 +45,7 @@ public class SkipCommand extends Command {
         }
 
 
-        GuildAudioManager guildAudioManager = Commons.from(manager, executor.getGuild());
+        GuildAudioManager guildAudioManager = from(manager, executor.getGuild());
 
         try {
             guildAudioManager.skip(amount);

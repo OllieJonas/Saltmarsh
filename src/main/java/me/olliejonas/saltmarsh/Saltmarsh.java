@@ -2,15 +2,13 @@ package me.olliejonas.saltmarsh;
 
 import lombok.Getter;
 import me.olliejonas.saltmarsh.command.admin.AdminCommand;
-import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
-import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
-import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandListener;
 import me.olliejonas.saltmarsh.command.meta.CommandRegistry;
 import me.olliejonas.saltmarsh.command.meta.CommandWatchdog;
-import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
+import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
+import me.olliejonas.saltmarsh.command.misc.*;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
@@ -18,7 +16,6 @@ import me.olliejonas.saltmarsh.music.VoiceAFKTimeoutTaskScheduler;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.poll.PollCommand;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
-import me.olliejonas.saltmarsh.util.AutoEnableWatchdog;
 import me.olliejonas.saltmarsh.util.embed.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.util.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.util.embed.PaginatedEmbedManager;
@@ -93,7 +90,7 @@ public class Saltmarsh {
         VoiceAFKTimeoutTaskScheduler voiceAFKTimeoutTaskScheduler = new VoiceAFKTimeoutTaskScheduler(this.jda);
         voiceAFKTimeoutTaskScheduler.run();
 
-        AutoEnableWatchdog.autoEnable(jda, commandWatchdog);
+//        AutoEnableWatchdog.autoEnable(jda, commandWatchdog);
     }
 
     public void destroy() {
@@ -109,6 +106,7 @@ public class Saltmarsh {
 
         // misc
         registerCommand(new HelloWorldCommand());
+        registerCommand(new IsThisAURLCommand());
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());

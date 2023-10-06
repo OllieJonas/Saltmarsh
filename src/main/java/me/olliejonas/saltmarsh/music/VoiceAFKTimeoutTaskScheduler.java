@@ -77,6 +77,7 @@ public class VoiceAFKTimeoutTaskScheduler {
         Set<Long> guilds = ConcurrentHashMap.newKeySet();
 
         marked.entrySet().stream().filter(e -> shouldRemovePredicate.test(e.getKey())).forEach(e -> {
+            System.out.println("removing for afk!");
             e.getValue().getAudioManager().closeAudioConnection();
             deletedCount.incrementAndGet();
             guilds.add(e.getKey());

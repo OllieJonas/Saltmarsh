@@ -51,7 +51,7 @@ public abstract class Command {
         this.subCommands = subCommands;
     }
 
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.empty();
     }
 

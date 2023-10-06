@@ -1,6 +1,5 @@
 package me.olliejonas.saltmarsh.music.entities;
 
-import me.olliejonas.saltmarsh.util.TimeUtils;
 import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -10,7 +9,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TrackPrompt implements AudioQueue.Listener<Track> {
+public class TrackPrompt implements AudioQueue.Listener<LoadedTrack> {
     private static final MessageEmbed EMPTY_PROMPT = EmbedUtils.standard().setTitle("Now playing").build();
     private final AtomicReference<Message> message;
 
@@ -31,7 +30,7 @@ public class TrackPrompt implements AudioQueue.Listener<Track> {
     }
 
     @Override
-    public void onNextItem(Track next) {
+    public void onNextItem(LoadedTrack next) {
         message.get().editMessage(MessageEditData.fromEmbeds(embed(next))).queue();
     }
 
@@ -41,17 +40,10 @@ public class TrackPrompt implements AudioQueue.Listener<Track> {
         message.get().editMessage(MessageEditData.fromEmbeds(EmbedUtils.from("Nothing! :("))).queue();
     }
 
-    private MessageEmbed embed(Track track) {
+    private MessageEmbed embed(LoadedTrack track) {
         EmbedBuilder builder = EmbedUtils.standard();
         builder.setTitle("Now playing");
-        builder.setDescription(trackInfo(track));
+        builder.setDescription(track.info().searchQuery());
         return builder.build();
-    }
-
-    private String trackInfo(Track track) {
-        return track.data().author +
-                " - " +
-                track.data().title + " (" +
-                TimeUtils.secondsToString(track.track().getDuration() / 1000) + ")";
     }
 }

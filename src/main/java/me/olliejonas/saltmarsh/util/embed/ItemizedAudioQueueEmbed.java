@@ -2,9 +2,8 @@ package me.olliejonas.saltmarsh.util.embed;
 
 import lombok.experimental.UtilityClass;
 import me.olliejonas.saltmarsh.music.entities.AudioQueue;
-import me.olliejonas.saltmarsh.music.entities.Track;
+import me.olliejonas.saltmarsh.music.entities.LoadedTrack;
 import me.olliejonas.saltmarsh.util.RandomUtils;
-import me.olliejonas.saltmarsh.util.TimeUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class ItemizedAudioQueueEmbed {
 
-    public PaginatedEmbed build(PaginatedEmbedManager manager, AudioQueue<Track> queue, int itemsPerPage) {
+    public PaginatedEmbed build(PaginatedEmbedManager manager, AudioQueue<LoadedTrack> queue, int itemsPerPage) {
         List<EmbedBuilder> builders = toList(queue, itemsPerPage);
         int noPages = builders.size();
         AtomicInteger counter = new AtomicInteger(0);
@@ -26,8 +25,16 @@ public class ItemizedAudioQueueEmbed {
         return embed;
     }
 
-    private List<EmbedBuilder> toList(AudioQueue<Track> queue, int itemsPerPage) {
-        List<List<String>> tracks = RandomUtils.batches(rows(queue.tracks()), itemsPerPage).toList();
+    public List<List<String>> asStrs(AudioQueue<LoadedTrack> queue, int itemsPerPage) {
+        return RandomUtils.batches(rows(queue.tracks()), itemsPerPage).toList();
+    }
+
+    public List<String> flatten(List<List<String>> tracks) {
+        return tracks.stream().flatMap(List::stream).toList();
+    }
+
+    private List<EmbedBuilder> toList(AudioQueue<LoadedTrack> queue, int itemsPerPage) {
+        List<List<String>> tracks = asStrs(queue, itemsPerPage);
         return tracks.stream().map(ItemizedAudioQueueEmbed::from).collect(Collectors.toList());
     }
 
@@ -38,12 +45,8 @@ public class ItemizedAudioQueueEmbed {
         return builder;
     }
 
-    private List<String> rows(Queue<Track> tracks) {
+    private List<String> rows(Queue<LoadedTrack> tracks) {
         AtomicInteger count = new AtomicInteger(1);
-        return tracks.stream().map(t -> count.getAndIncrement() + ". " + from(t)).collect(Collectors.toList());
-    }
-
-    private String from(Track track) {
-        return track.data().author + " - " + track.data().title + " (" + TimeUtils.secondsToString(track.data().length / 1000) + ")";
+        return tracks.stream().map(t -> count.getAndIncrement() + ". " + t.representation()).collect(Collectors.toList());
     }
 }

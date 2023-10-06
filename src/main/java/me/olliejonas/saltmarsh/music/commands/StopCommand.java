@@ -1,7 +1,6 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
@@ -11,17 +10,14 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.List;
 
-public class StopCommand extends Command {
-
-    private final GlobalAudioManager manager;
+public class StopCommand extends AudioCommand {
 
     public StopCommand(GlobalAudioManager manager) {
-        super("stop");
-        this.manager = manager;
+        super(manager, "stop");
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Stops whatever is currently playing!");
     }
 
@@ -29,7 +25,7 @@ public class StopCommand extends Command {
     public InteractionResponses execute(Member executor,
                                         TextChannel channel, List<String> args,
                                         String aliasUsed) throws CommandFailedException {
-        GuildAudioManager guildManager = Commons.from(manager, executor.getGuild());
+        GuildAudioManager guildManager = from(manager, executor.getGuild());
         guildManager.stop();
         return InteractionResponses.messageAsEmbed("Successfully stopped queue!", true);
     }

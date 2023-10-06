@@ -48,8 +48,10 @@ public class Testing {
         }, 4);
 
         repeat(i -> {
-            queue.next().ifPresentOrElse(j -> print("next (" + i + "): ", j), () -> System.out.println("next is null"));
-            queue.curr().ifPresentOrElse(j -> print("curr playing (" + i + "): ", j), () -> System.out.println("curr playing is null"));
+            queue.next().ifPresentOrElse(j -> print("next (" + i + "): ", j), () ->
+                    System.out.printf("next is null (%d)\n", i));
+            queue.curr().ifPresentOrElse(j -> print("curr playing (" + i + "): ", j), () ->
+                    System.out.printf("curr playing is null (%d)\n", i));
         }, 5);
     }
 

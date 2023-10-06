@@ -22,7 +22,7 @@ public class ClearBotMessagesCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Checks previous " + RETRIEVE_PAST_COUNT + " messages, and removes any sent by Saltmarsh.");
     }
 

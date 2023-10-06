@@ -1,7 +1,6 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
@@ -11,17 +10,14 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.List;
 
-public class PauseCommand extends Command {
-
-    private final GlobalAudioManager manager;
+public class PauseCommand extends AudioCommand {
 
     public PauseCommand(GlobalAudioManager manager) {
-        super("pause");
-        this.manager = manager;
+        super(manager, "pause");
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Pauses the music-bot, if it's playing! (Resume with -resume)");
     }
 
@@ -29,7 +25,7 @@ public class PauseCommand extends Command {
     public InteractionResponses execute(Member executor,
                                         TextChannel channel, List<String> args,
                                         String aliasUsed) throws CommandFailedException {
-        GuildAudioManager guildAudioManager = Commons.from(manager, executor.getGuild());
+        GuildAudioManager guildAudioManager = from(manager, executor.getGuild());
         guildAudioManager.pause();
         return InteractionResponses.messageAsEmbed("Successfully paused!", true);
     }

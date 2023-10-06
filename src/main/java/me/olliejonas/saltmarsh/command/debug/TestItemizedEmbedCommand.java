@@ -23,7 +23,7 @@ public class TestItemizedEmbedCommand extends Command {
         this.manager = manager;
     }
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.empty();
     }
 

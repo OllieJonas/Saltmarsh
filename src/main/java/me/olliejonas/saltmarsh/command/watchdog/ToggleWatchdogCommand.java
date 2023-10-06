@@ -19,7 +19,7 @@ public class ToggleWatchdogCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Toggles Watchdog", "Enabled/Disable also use this same thing...");
     }
 

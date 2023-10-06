@@ -21,13 +21,14 @@ public class HelpCommand extends Command {
     record Item(String command, Set<String> aliases, CommandInfo info) implements Itemizable, Comparable<Item> {
 
         public static Item from(Command command) {
-            return new Item(command.getPrimaryAlias(), command.getAliases(), command.commandInfo());
+            return new Item(command.getPrimaryAlias(), command.getAliases(), command.info());
         }
 
         @Override
         public String representation() {
             return "-" + command + (aliases.size() == 0 ? "" : " (" + aliases.stream()
-                    .map(s -> "-" + s).sorted().collect(Collectors.joining(", ")) + ")") + " - " + info.shortDesc();
+                    .map(s -> "-" + s).sorted().collect(Collectors.joining(", ")) + ")") +
+                    ItemizedEmbed.AS_FIELD_SPLIT_STR + info.shortDesc();
         }
 
         @Override
@@ -47,7 +48,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Displays a list of all commands available to you!");
     }
 

@@ -21,6 +21,7 @@ public class Constants {
 
     public static final Collection<String> COMMAND_PREFIXES = Collections.singleton("-");
     public static final String WATCHDOG_PREFIX = "[ WATCHDOG ] ";
+    public static final String MINECRAFT_INDI_IP = "149.102.134.183:32465";
 
     public static String UNKNOWN_ERROR_PROMPT(String commandRoot, String message) {
         return String.format("An internal error has occurred! Please contact an admin! (Command: %s, " +

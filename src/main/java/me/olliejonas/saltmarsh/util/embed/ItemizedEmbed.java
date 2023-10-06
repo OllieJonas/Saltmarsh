@@ -15,6 +15,10 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
                                                   String author, int itemsPerPage, boolean pageCount,
                                                   boolean displayIndex, boolean asFields) {
 
+    public static final String AS_FIELD_SPLIT_STR = ">";
+
+    public static final int DEFAULT_ITEMS_PER_PAGE = 10;
+
     public PaginatedEmbed compile(PaginatedEmbedManager manager) {
         PaginatedEmbed embed = compile();
         embed.compile(manager);
@@ -29,7 +33,6 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
                 .map(i -> (displayIndex ? counter.getAndIncrement() + ". " : "") + i)
                 .toList();
 
-        System.out.println(representations);
         Stream<EmbedBuilder> batches = RandomUtils.batches(representations, itemsPerPage).map(this::from);
 
         if (!title.equals(""))
@@ -54,8 +57,7 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
         EmbedBuilder builder = base.get();
         if (asFields) {
             page.forEach(str -> {
-                List<String> split = Arrays.stream(str.split(" - ")).map(String::strip).toList();
-                System.out.println(split);
+                List<String> split = Arrays.stream(str.split(AS_FIELD_SPLIT_STR)).map(String::strip).toList();
                 if (split.size() != 2)
                     // would need to change this a bit if you wanted to make it so that users can make itemized embeds
                     // (could probably just get away with catching IllegalArgumentExceptions & handling errors)
@@ -97,7 +99,7 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
             this.base = EmbedUtils::colour;
             this.title = "";
             this.author = "";
-            this.itemsPerPage = 10;
+            this.itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
 
             this.pageCount = false;
             this.displayIndex = false;
@@ -135,6 +137,11 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
 
         public Builder<E> pageCount(boolean pageCount) {
             this.pageCount = pageCount;
+            return this;
+        }
+
+        public Builder<E> itemsPerPage(int itemsPerPage) {
+            this.itemsPerPage = itemsPerPage;
             return this;
         }
 

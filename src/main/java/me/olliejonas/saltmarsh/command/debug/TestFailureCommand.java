@@ -15,7 +15,7 @@ public class TestFailureCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of(
                 "Testing that a CommandFailedException is triggered",
                 "Throws a CommandFailedException (of reason OTHER), that confirms that it was an" +

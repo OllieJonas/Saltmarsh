@@ -19,7 +19,7 @@ public class AllocateWatchdogChannelCommand extends Command {
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("", "");
     }
 

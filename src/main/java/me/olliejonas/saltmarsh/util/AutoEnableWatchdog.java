@@ -34,7 +34,10 @@ public class AutoEnableWatchdog {
 
         if (channel != null) {
             watchdog.allocateChannel(channel.getGuild(), channel);
-            channel.sendMessageEmbeds(EmbedUtils.from(Constants.WATCHDOG_PREFIX + "Watchdog has been automatically enabled for this channel on startup!")).queue();
+            channel.sendMessageEmbeds(
+                    EmbedUtils.from("Saltmarsh has been enabled for this guild!"),
+                    EmbedUtils.from(Constants.WATCHDOG_PREFIX + "Watchdog has been automatically enabled for this " +
+                            "channel on startup!")).queue();
         }
 
         return channel != null;

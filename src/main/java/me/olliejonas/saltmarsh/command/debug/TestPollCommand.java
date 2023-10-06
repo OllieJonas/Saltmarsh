@@ -9,8 +9,6 @@ import me.olliejonas.saltmarsh.poll.PollEmbed;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class TestPollCommand extends Command {
         this.manager = manager;
     }
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.empty();
     }
 
@@ -37,7 +35,7 @@ public class TestPollCommand extends Command {
                 .option("why")
                 .build();
 
-        manager.send(channel, executor, embed);
+        manager.send(channel, embed);
 
         return InteractionResponses.empty();
     }

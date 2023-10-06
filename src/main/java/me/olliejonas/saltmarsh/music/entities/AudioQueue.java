@@ -22,6 +22,8 @@ public class AudioQueue<E extends Queueable> {
 
     private E currentlyPlaying;
 
+    private final int loadAhead = 2;
+
     @Getter
     private final Set<Listener<E>> listeners;
 
@@ -51,6 +53,7 @@ public class AudioQueue<E extends Queueable> {
 
     public void curr(E item) {
         this.currentlyPlaying = item;
+        this.currentlyPlaying.onQueued();
     }
 
     public boolean canImmediatelyPlay() {

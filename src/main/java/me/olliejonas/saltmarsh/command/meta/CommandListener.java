@@ -4,6 +4,7 @@ import me.olliejonas.saltmarsh.Constants;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.util.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -15,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.function.Consumer2;
 import org.jooq.lambda.tuple.Tuple3;
 
@@ -44,20 +46,13 @@ public class CommandListener extends ListenerAdapter {
     }
 
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (!event.getChannelType().isMessage() || !event.getChannelType().isGuild()) return; // wasn't a message in text channel, we don't care
-
-        executeFrom(null, event.getMember(), event.getChannel().asTextChannel(), event.getMessage().getContentRaw());
-    }
-
-    @Override
     public void onGuildReady(GuildReadyEvent event) {
         Collection<? extends CommandData> commandData = registry.getCommandMap().entrySet().stream()
                 .filter(e -> e.getValue().registerAsSlashCommand())
-                .filter(e -> e.getValue().commandInfo() != null)
+                .filter(e -> e.getValue().info() != null)
                 .map(e -> {
                     Command command = e.getValue();
-                    SlashCommandData data = Commands.slash(e.getKey(), e.getValue().commandInfo().shortDesc());
+                    SlashCommandData data = Commands.slash(e.getKey(), e.getValue().info().shortDesc());
                     data.addOptions(command.args());
                     return data;
                 })
@@ -67,12 +62,19 @@ public class CommandListener extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+    public void onMessageReceived(MessageReceivedEvent event) {
         if (!event.getChannelType().isMessage() || !event.getChannelType().isGuild()) return; // wasn't a message in text channel, we don't care
-        executeFrom(event, event.getMember(), event.getChannel().asTextChannel(), event.getCommandString());
+
+        executeFrom(null, event.getMessage(), event.getMember(), event.getChannel().asTextChannel(), event.getMessage().getContentRaw());
     }
 
-    private void executeFrom(SlashCommandInteractionEvent event, Member executor, TextChannel channel, String message) {
+    @Override
+    public void onSlashCommandInteraction(final @NotNull SlashCommandInteractionEvent event) {
+        executeFrom(event, null, event.getMember(), event.getChannel().asTextChannel(), event.getCommandString());
+    }
+
+    private void executeFrom(@Nullable SlashCommandInteractionEvent event,
+                             @Nullable Message message, Member executor, TextChannel channel, String messageStr) {
         Consumer2<MessageEmbed, Boolean> onFailureReplyCons =
                 event == null ? (embed, __) -> channel.sendMessageEmbeds(embed).queue() :
                         (embed, ephemeral) -> event.replyEmbeds(embed).setEphemeral(ephemeral).queue();
@@ -80,12 +82,12 @@ public class CommandListener extends ListenerAdapter {
         String root = "";
         Throwable exception = null;
 
-        if (!isValidCommandSyntax(message) && event == null) return;
+        if (!isValidCommandSyntax(messageStr) && event == null) return;
 
         try {
-            root = getRootFrom(event, message);
+            root = getRootFrom(event, messageStr);
             Command command = registry.getOrThrow(root);  // no null checks required, throws CommandFailedException
-            Tuple3<Command, List<String>, Integer> toExecute = command.traverse(List.of(message.split(" ")));
+            Tuple3<Command, List<String>, Integer> toExecute = command.traverse(List.of(messageStr.split(" ")));
 
             CommandPermissions permissions = toExecute.v1().getPermissions();
 
@@ -108,12 +110,12 @@ public class CommandListener extends ListenerAdapter {
 
         } catch (Throwable t) {
             exception = t;
-            onFailureReplyCons.accept(EmbedUtils.error(Constants.UNKNOWN_ERROR_PROMPT(message, t.getLocalizedMessage())), false);
+            onFailureReplyCons.accept(EmbedUtils.error(Constants.UNKNOWN_ERROR_PROMPT(messageStr, t.getLocalizedMessage())), false);
             t.printStackTrace();
         }
 
         // watchdog
-        CommandWatchdog.Report report = new CommandWatchdog.Report(exception, executor, channel, root, message);
+        CommandWatchdog.Report report = new CommandWatchdog.Report(exception, executor, channel, root, messageStr);
         watchdog.report(report);
     }
 

@@ -1,7 +1,6 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
@@ -10,16 +9,13 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.List;
 
-public class ResumeCommand extends Command {
-
-    private final GlobalAudioManager manager;
+public class ResumeCommand extends AudioCommand {
 
     public ResumeCommand(GlobalAudioManager manager) {
-        super("resume");
-        this.manager = manager;
+        super(manager, "resume");
     }
     @Override
-    public CommandInfo commandInfo() {
+    public CommandInfo info() {
         return CommandInfo.of("Resumes playing of music! (-pause to pause the bot)");
     }
 
