@@ -1,8 +1,8 @@
 name: build and deploy
 
 on:
-  workflow-dispatch:
-
+  workflow_dispatch:
+    
   push:
     branches:
       - 'main'
@@ -10,7 +10,7 @@ on:
 concurrency:
   group: "deploy"
   cancel-in-progress: true
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
