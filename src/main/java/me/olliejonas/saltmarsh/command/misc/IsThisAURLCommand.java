@@ -7,11 +7,13 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.util.RandomUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class IsThisAURLCommand extends Command {
@@ -23,7 +25,7 @@ public class IsThisAURLCommand extends Command {
 
     @Override
     public List<OptionData> args() {
-        return List.of(new OptionData(OptionType.STRING, "url", "The url to check!"));
+        return List.of(new OptionData(OptionType.STRING, "url", "The url to check!", true));
     }
 
     @Override
@@ -32,11 +34,9 @@ public class IsThisAURLCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
-        if (args.size() != 1)
-            throw CommandFailedException.badArgs(executor, this, "url");
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
 
-        Optional<URL> urlOptional = RandomUtils.url(args.get(0));
+        Optional<URL> urlOptional = RandomUtils.url(args.get("url").getAsString());
         boolean isUrl = urlOptional.isPresent();
 
         StringBuilder builder = new StringBuilder("This is");

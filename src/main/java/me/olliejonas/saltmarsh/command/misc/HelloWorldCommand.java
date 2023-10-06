@@ -7,8 +7,9 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
-import java.util.List;
+import java.util.Map;
 
 public class HelloWorldCommand extends Command {
 
@@ -23,7 +24,7 @@ public class HelloWorldCommand extends Command {
 
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel,
-                                        List<String> args, String aliasUsed) throws CommandFailedException {
+                                        Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         return switch (aliasUsed) {
             case "helloworld", "hello" -> helloWorld(executor, channel);
             case "ping" -> pong(channel);
@@ -32,39 +33,6 @@ public class HelloWorldCommand extends Command {
             default -> throw CommandFailedException.saltmashInternal(
                     "switch case reached default clause on helloworld command (shouldn't see this)");
         };
-    }
-
-    @Override
-    public void addSubCommands() {
-        // could implement this elsewhere, but here we are
-        addSubCommand(new Command("subcommand") {
-            @Override
-            public CommandInfo info() {
-                return CommandInfo.of("Simple subcommand to test usage", "N/A");
-            }
-
-            @Override
-            public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
-                String message = String.format("You executed a subcommand! Args: %s", String.join(", ", args));
-                return InteractionResponses.messageAsEmbed(message);
-            }
-
-            @Override
-            public void addSubCommands() {
-                addSubCommand(new Command("subsub") {
-                    @Override
-                    public CommandInfo info() {
-                        return CommandInfo.of("goin reaaaal deep now", "oh yeah baby");
-                    }
-
-                    @Override
-                    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
-                        String message = "wow you've gone reeeeal deep now... args: " + String.join(", ", args);
-                        return InteractionResponses.messageAsEmbed(message);
-                    }
-                });
-            }
-        });
     }
 
     private InteractionResponses pong(TextChannel channel) {
@@ -76,8 +44,8 @@ public class HelloWorldCommand extends Command {
         return InteractionResponses.messageAsEmbed(message);
     }
 
-    private InteractionResponses args(TextChannel channel, List<String> args) {
-        String message = String.format("args: %s", String.join(", ", args));
+    private InteractionResponses args(TextChannel channel, Map<String, OptionMapping> args) {
+        String message = String.format("args: %s", String.join(", ", args.keySet()));
         return InteractionResponses.messageAsEmbed(message);
     }
 }

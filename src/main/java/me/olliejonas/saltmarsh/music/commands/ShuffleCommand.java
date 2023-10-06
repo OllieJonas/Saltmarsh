@@ -6,8 +6,9 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
-import java.util.List;
+import java.util.Map;
 
 public class ShuffleCommand extends AudioCommand {
 
@@ -22,7 +23,7 @@ public class ShuffleCommand extends AudioCommand {
 
     @Override
     public InteractionResponses execute(Member executor,
-                                        TextChannel channel, List<String> args,
+                                        TextChannel channel, Map<String, OptionMapping> args,
                                         String aliasUsed) throws CommandFailedException {
         manager.get(executor.getGuild());
         return InteractionResponses.messageAsEmbed("Command currently disabled!");

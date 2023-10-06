@@ -11,10 +11,12 @@ import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.List;
+import java.util.Map;
 
 public class QueueCommand extends AudioCommand {
 
@@ -34,17 +36,17 @@ public class QueueCommand extends AudioCommand {
 
     @Override
     public List<OptionData> args() {
-        return List.of(new OptionData(OptionType.STRING, "url", "The URL for a track (or playlist)!"));
+        return List.of(new OptionData(OptionType.STRING, "url", "The URL for a track (or playlist)!", false));
     }
 
 
     @Override
     public InteractionResponses execute(Member executor,
-                                        TextChannel channel, List<String> args,
+                                        TextChannel channel, Map<String, OptionMapping> args,
                                         String aliasUsed) throws CommandFailedException {
         return switch (args.size()) {
             case 0 -> queue(executor.getGuild(), channel);
-            case 1 -> Commons.joinAndPlay(manager, channel, executor, args.get(0));
+            case 1 -> Commons.joinAndPlay(manager, channel, executor, args.get("url").getAsString());
             default -> throw CommandFailedException.badArgs(executor, this, "track-url (optional)");
         };
     }

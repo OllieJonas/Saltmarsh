@@ -8,17 +8,21 @@ import me.olliejonas.saltmarsh.command.meta.CommandListener;
 import me.olliejonas.saltmarsh.command.meta.CommandRegistry;
 import me.olliejonas.saltmarsh.command.meta.CommandWatchdog;
 import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
-import me.olliejonas.saltmarsh.command.misc.*;
+import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
+import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
+import me.olliejonas.saltmarsh.command.misc.IsThisAURLCommand;
+import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.VoiceAFKTimeoutTaskScheduler;
-import me.olliejonas.saltmarsh.music.commands.*;
-import me.olliejonas.saltmarsh.poll.PollCommand;
-import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.music.VoiceAFKTimeoutTaskScheduler;
+import me.olliejonas.saltmarsh.music.commands.*;
+import me.olliejonas.saltmarsh.poll.NewPollCommand;
+import me.olliejonas.saltmarsh.poll.PollCommand;
+import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -56,7 +60,6 @@ public class Saltmarsh {
     private final CommandRegistry commandRegistry;
 
     private final CommandWatchdog commandWatchdog;
-
 
     public Saltmarsh(String jdaToken) {
         this.jdaToken = jdaToken;
@@ -98,7 +101,7 @@ public class Saltmarsh {
     }
 
     public void registerListeners() {
-        registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog, Constants.COMMAND_PREFIXES));
+        registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog));
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
     }
 
@@ -111,6 +114,9 @@ public class Saltmarsh {
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
         registerCommand(new WatchdogCommand(commandWatchdog));
+
+        // poll
+        registerCommand(new NewPollCommand(paginatedEmbedManager));
         registerCommand(new PollCommand(pollEmbedManager));
 
         // admin stuff
@@ -167,6 +173,7 @@ public class Saltmarsh {
                 )
                 .addEventListeners(listeners.toArray(new Object[0]))
                 .setMemberCachePolicy(MemberCachePolicy.VOICE)
+                .setEventPassthrough(true)
                 .enableCache(CacheFlag.VOICE_STATE)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.listening("Sea Shanties"))

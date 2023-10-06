@@ -10,8 +10,9 @@ import me.olliejonas.saltmarsh.embed.ItemizedEmbed;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TestItemizedEmbedCommand extends Command {
@@ -28,7 +29,7 @@ public class TestItemizedEmbedCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         ItemizedEmbed<Itemizable.Strings> embed = ItemizedEmbed.<Itemizable.Strings>builder()
                 .title("This is a title!")
                 .author("This is an author!")

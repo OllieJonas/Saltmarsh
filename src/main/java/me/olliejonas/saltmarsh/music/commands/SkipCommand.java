@@ -8,8 +8,13 @@ import me.olliejonas.saltmarsh.music.GuildAudioManager;
 import me.olliejonas.saltmarsh.music.exceptions.QueueException;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class SkipCommand extends AudioCommand {
 
@@ -25,13 +30,19 @@ public class SkipCommand extends AudioCommand {
     }
 
     @Override
+    public Collection<OptionData> args() {
+        return List.of(new OptionData(OptionType.INTEGER, "amount", "The amount of tracks to skip"));
+    }
+
+    @Override
     public InteractionResponses execute(Member executor,
-                                        TextChannel channel, List<String> args,
+                                        TextChannel channel, Map<String, OptionMapping> args,
                                         String aliasUsed) throws CommandFailedException {
         int amount = 1;
-        if (args.size() == 1) {
+
+        if (args.containsKey("amount")) {
             try {
-                amount = Math.max(1, Integer.parseInt(args.get(0)));
+                amount = Math.max(1, args.get("amount").getAsInt());
             } catch (NumberFormatException exception) {
                 throw CommandFailedException.badArgs(executor, this, "tracks-to-skip (whole number)");
             }

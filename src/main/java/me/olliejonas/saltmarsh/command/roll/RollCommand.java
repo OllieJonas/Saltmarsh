@@ -1,19 +1,20 @@
 package me.olliejonas.saltmarsh.command.roll;
 
+import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
-import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,32 +40,44 @@ public class RollCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed)
+    public List<OptionData> args() {
+        return List.of(new OptionData(OptionType.INTEGER, "no-dice", "The number of dice to roll", false),
+                       new OptionData(OptionType.INTEGER, "dice-ceiling", "The highest each dice can roll", false),
+                       new OptionData(OptionType.STRING, "roll", "Standard format of Xd20. You must pick either one of these.", false));
+    }
+
+    @Override
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed)
             throws CommandFailedException {
-        if (args.size() != 1)
+
+        int noDice = 0; int diceCeil = 0;
+
+        if (args.containsKey("roll")) {
+            System.out.println("hi!");
+            String diceInput = args.get("roll").getAsString();
+            System.out.println(diceInput);
+            Matcher matcher = DICE_REGEX.matcher(diceInput);
+
+            if (!matcher.matches())
+                throw CommandFailedException.badArgs(executor, this, DICE_DESC);
+
+            // regex does int checks for us
+            noDice = Integer.parseInt(matcher.group(1));
+            diceCeil = Integer.parseInt(matcher.group(3));
+
+        } else if (args.containsKey("no-dice") && args.containsKey("dice-ceiling")) {
+            noDice = args.get("no-dice").getAsInt();
+            diceCeil = args.get("dice-ceiling").getAsInt();
+
+        } else {
             throw CommandFailedException.badArgs(executor, this, DICE_DESC);
-
-        String diceInput = args.get(0);
-        Matcher matcher = DICE_REGEX.matcher(diceInput);
-
-        if (!matcher.matches())
-            throw CommandFailedException.badArgs(executor, this, DICE_DESC);
-
-        System.out.println(matcher.groupCount());
-        // regex does int checks for us
-        int noDice = Integer.parseInt(matcher.group(1));
-        int diceCeil = Integer.parseInt(matcher.group(3));
+        }
 
         List<Integer> ints = random.ints(noDice, 1, diceCeil + 1).boxed().toList();
         double average = ints.stream().mapToInt(i -> i).average().orElse(0.0D);
         int sum = ints.stream().mapToInt(i -> i).sum();
 
         return InteractionResponses.embed(asEmbed(executor, noDice, diceCeil, ints, average, sum));
-    }
-
-    @Override
-    public Collection<OptionData> args() {
-        return List.of(new OptionData(OptionType.STRING, "roll", DICE_DESC));
     }
 
     @Override
@@ -76,7 +89,7 @@ public class RollCommand extends Command {
         EmbedBuilder builder = EmbedUtils.standard();
 
         builder.setTitle(String.format("Dice Roll (%s)", executor.getEffectiveName()));
-        builder.setDescription(String.format("No Dice: %d, Max Dice: %d (%s)", noDice, diceCeil, noDice + "d" + diceCeil));
+        builder.setDescription(String.format("No Dice: %d, Dice Ceiling: %d (%s)", noDice, diceCeil, noDice + "d" + diceCeil));
 
         builder.addField("Rolls", results.stream()
                 .map(String::valueOf)

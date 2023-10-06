@@ -9,8 +9,9 @@ import me.olliejonas.saltmarsh.poll.PollEmbed;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
-import java.util.List;
+import java.util.Map;
 
 public class TestPollCommand extends Command {
 
@@ -26,7 +27,7 @@ public class TestPollCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         PollEmbed embed = PollEmbed.builder(manager)
                 .author(executor.getEffectiveName())
                 .question("Do you like cats?")

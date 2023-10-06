@@ -19,7 +19,10 @@ public class PaginatedEmbedManager {
     }
 
     public void send(TextChannel channel, PaginatedEmbed embed) {
-        send(channel, embed, PaginatedEmbed::curr, () -> {});
+        System.out.println(channel.getName());
+        send(channel, embed, PaginatedEmbed::curr, () -> {
+            System.out.println("failed!");
+        });
     }
 
     public void send(TextChannel channel, PaginatedEmbed embed, Runnable onFailure) {

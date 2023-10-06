@@ -9,9 +9,11 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.requests.RestAction;
 
 import java.util.List;
+import java.util.Map;
 
 public class ClearBotMessagesCommand extends Command {
 
@@ -27,7 +29,7 @@ public class ClearBotMessagesCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, List<String> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         channel.getHistory().retrievePast(RETRIEVE_PAST_COUNT)
                 .queue(messages -> {
                     List<Message> saltmarsh = messages.stream()

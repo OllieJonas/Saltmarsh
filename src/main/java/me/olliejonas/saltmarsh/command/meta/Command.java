@@ -6,13 +6,19 @@ import me.olliejonas.saltmarsh.InteractionResponses;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.jooq.lambda.tuple.Tuple3;
+import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.*;
 
 @Getter
 public abstract class Command {
+
+    protected static final OptionData SUBCOMMAND_ARG = new OptionData(OptionType.STRING, "subcommand", "Subcommands!", false);
+
+    protected static final OptionData FORCED_SUBCOMMAND_ARG = new OptionData(OptionType.STRING, "subcommand", "Subcommands!", true);
 
     private final CommandPermissions permissions;
     private final String primaryAlias;
@@ -56,11 +62,11 @@ public abstract class Command {
     }
 
     public abstract InteractionResponses execute(Member executor, TextChannel channel,
-                                                 List<String> args, String aliasUsed) throws CommandFailedException;
+                                                 Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException;
 
     public void addSubCommands() {}
 
-    public boolean registerAsSlashCommand() {
+    public boolean shouldRegisterAsSlashCommand() {
         return true;
     }
 
@@ -99,7 +105,7 @@ public abstract class Command {
         return "this is some help!";
     }
 
-    public Tuple3<Command, List<String>, Integer> traverse(List<String> tokens) {
+    public Tuple2<Command, Integer> traverse(List<String> tokens) {
         Command curr = this;
         int consumed = 1;
         String root;
@@ -117,7 +123,7 @@ public abstract class Command {
             consumed++;
         } while (true);
 
-        return new Tuple3<>(curr, tokens, consumed);
+        return new Tuple2<>(curr, consumed);
     }
 
     public boolean hasPermission(Member executor) {
