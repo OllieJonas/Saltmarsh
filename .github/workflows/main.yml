@@ -76,12 +76,12 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             cd Saltmarsh
-            mv saltmarsh.tar/github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
+            mv github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
             ls -la
             pwd
             docker kill saltmarsh
             docker container prune --force
-            docker image rm $PROJECT_NAME
+            docker image rm saltmarsh
             docker load --input saltmarsh.tar
             rm saltmarsh.tar
             docker run -d --name=Saltmarsh --env-file /root/Saltmarsh/env_file saltmarsh
