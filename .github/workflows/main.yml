@@ -32,6 +32,7 @@ jobs:
         run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME.tar:latest
 
   deploy:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
