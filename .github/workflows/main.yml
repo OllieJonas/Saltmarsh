@@ -10,7 +10,6 @@ on:
 
 env:
   PROJECT_NAME: saltmarsh
-  DOCKER_RUN_ARGUMENTS: '--env-file /root/Saltmarsh/env_file'
 
 
 concurrency:
@@ -31,13 +30,10 @@ jobs:
       - name: Save Dockerfile as tar
         run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME:latest
 
-      - name: pwd
-        run: ls -la
-
       - name: Save Docker image
         uses: actions/upload-artifact@master
         with:
-          name: $PROJECT_NAME.tar
+          name: saltmarsh.tar
           path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
           retention-days: 1
 
@@ -46,11 +42,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: pwd
+        run: pwd
+
       - name: Retrieve Docker image
         uses: actions/download-artifact@master
         with:
-          name: $PROJECT_NAME.tar
-          path: ./$PROJECT_NAME.tar
+          name: saltmarsh.tar
+          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
 
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
@@ -65,8 +64,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
-          source: $PROJECT_NAME.tar
-          target: ~/Saltmarsh
+          source: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
+          target: ~/saltmarsh.tar
 
       - name: SSH, Load & Run Dockerfile
         uses: appleboy/ssh-action@v1.0.0
@@ -77,10 +76,10 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             cd Saltmarsh
-            docker kill $PROJECT_NAME
-            docker container prunce --force
+            docker kill saltmarsh
+            docker container prune --force
             docker image rm $PROJECT_NAME
-            docker load --input $PROJECT_NAME.tar
-            rm $PROJET_NAME.tar
-            docker run -d --name=$PROJECT_NAME $DOCKER_RUN_ARGUMENTS $PROJECT_NAME
+            docker load --input saltmarsh.tar
+            rm saltmarsh.tar
+            docker run -d --name=Saltmarsh --env-file /root/Saltmarsh/env_file saltmarsh
             exit
