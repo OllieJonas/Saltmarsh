@@ -77,6 +77,7 @@ jobs:
           script: |
             cd Saltmarsh
             mv github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
+            rm -rf github
             ls -la
             pwd
             docker kill saltmarsh
