@@ -50,7 +50,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: $PROJECT_NAME.tar
-          path: $PROJECT_NAME.tar
+          path: ./$PROJECT_NAME.tar
 
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
