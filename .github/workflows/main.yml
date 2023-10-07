@@ -31,6 +31,9 @@ jobs:
       - name: Save Dockerfile as tar
         run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME:latest
 
+      - name: Run ls
+        run: ls -la
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
