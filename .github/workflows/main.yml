@@ -39,6 +39,9 @@ jobs:
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
 
+      - name: Run ls
+        run: ls -la
+
       - name: SCP Image
         uses: appleboy/scp-action@v0.1.4
         with:
