@@ -10,6 +10,7 @@ on:
 
 env:
   PROJECT_NAME: saltmarsh
+  PATH: /home/runner/work/Saltmarsh/Saltmarsh
   DOCKER_RUN_ARGUMENTS: '--env-file /root/Saltmarsh/env_file'
 
 
@@ -38,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: $PROJECT_NAME.tar
-          path: ./$PROJECT_NAME.tar
+          path: $PATH/$PROJECT_NAME.tar
           retention-days: 1
 
   deploy:
