@@ -31,14 +31,24 @@ jobs:
       - name: Save Dockerfile as tar
         run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME:latest
 
-      - name: Run ls
-        run: ls -la
+      - name: Save Docker image
+        uses: actions/upload-artifact@master
+        with:
+          name: $PROJECT_NAME.tar
+          path: $PROJECT_NAME.tar
+          retention-days: 1
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      - name: Retrieve Docker image
+        uses: actions/download-artifact@master
+        with:
+          name: $PROJECT_NAME.tar
+          path: $PROJECT_NAME.tar
+
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
 
