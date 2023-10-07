@@ -4,12 +4,14 @@ on:
   workflow_dispatch:
 
   push:
-    branches:
-      - 'master'
-
   pull_request:
     branches:
       - 'master'
+
+env:
+  PROJECT_NAME: saltmarsh
+  DOCKER_RUN_ARGUMENTS: '--env-file /root/Saltmarsh/env_file'
+
 
 concurrency:
   group: "deploy"
@@ -24,8 +26,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Dockerfile
-        run: docker build -t saltmarsh .
+        run: docker build -t $PROJECT_NAME .
 
+      - name: Save Dockerfile as tar
+        run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME.tar:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -33,3 +37,30 @@ jobs:
     steps:
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
+
+      - name: SCP Image
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          source: $PROJECT_NAME.tar
+          target: ~/Saltmarsh
+
+      - name: SSH, Load & Run Dockerfile
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd Saltmarsh
+            docker kill $PROJECT_NAME
+            docker container prunce --force
+            docker image rm $PROJECT_NAME
+            docker load --input $PROJECT_NAME.tar
+            rm $PROJET_NAME.tar
+            docker run -d --name=$PROJECT_NAME $DOCKER_RUN_ARGUMENTS $PROJECT_NAME
+            exit
