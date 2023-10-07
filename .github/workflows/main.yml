@@ -32,13 +32,15 @@ jobs:
         run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME:latest
 
       - name: pwd
-        run: pwd
+        run: |
+        pwd
+        ls -la
 
       - name: Save Docker image
         uses: actions/upload-artifact@master
         with:
           name: $PROJECT_NAME.tar
-          path: /home/runner/work/Saltmarsh/Saltmarsh/$PROJECT_NAME.tar
+          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
           retention-days: 1
 
   deploy:
