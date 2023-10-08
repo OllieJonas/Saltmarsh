@@ -123,6 +123,7 @@ public class PollCommand extends Command {
                     Boolean singular = (Boolean) map.get("singular");
                     GuildChannel targetChannel = (GuildChannel) map.get("targetChannel");
 
+                    options.remove("Next");
                     List<PollOption> pollOptions = options.stream().map(PollOption::new).toList();
 
                     buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions, anonymous, singular);
