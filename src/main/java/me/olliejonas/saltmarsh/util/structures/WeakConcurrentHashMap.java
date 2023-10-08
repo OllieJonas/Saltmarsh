@@ -6,10 +6,15 @@ import java.io.Serial;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 // not mine!
 // here: https://github.com/vivekjustthink/WeakConcurrentHashMap
 public class WeakConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
+
+    public static final long DEFAULT_EXPIRATION_TIME = 7;
+
+    public static final TimeUnit DEFAULT_EXPIRATION_UNITS = TimeUnit.DAYS;
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -21,7 +26,7 @@ public class WeakConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
     private boolean mapAlive = true;
 
     public WeakConcurrentHashMap() {
-        this.expiryInMillis = 10000;
+        this.expiryInMillis = DEFAULT_EXPIRATION_UNITS.toMillis(DEFAULT_EXPIRATION_TIME);
         initialize();
     }
 

@@ -5,7 +5,6 @@ import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class PollEmbedManager {
 
@@ -14,7 +13,7 @@ public class PollEmbedManager {
     private final ButtonEmbedManager manager;
 
     public PollEmbedManager(ButtonEmbedManager manager) {
-        this(manager, new WeakConcurrentHashMap<>(TimeUnit.HOURS.toMillis(24)));
+        this(manager, new WeakConcurrentHashMap<>());
     }
 
     public PollEmbedManager(ButtonEmbedManager manager, WeakConcurrentHashMap<String, PollEmbed> embedMap) {

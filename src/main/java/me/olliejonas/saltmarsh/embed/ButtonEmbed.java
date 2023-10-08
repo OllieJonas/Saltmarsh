@@ -69,8 +69,8 @@ public class ButtonEmbed extends MessageEmbed implements DecoratedEmbed {
             this.actions = actions;
         }
 
-        public Builder buttons(Map<String, Function<ClickContext, InteractionResponses>> buttons) {
-            this.actions = buttons;
+        public Builder buttons(List<ActionButton> buttons) {
+            buttons.forEach(this::button);
             return this;
         }
 
@@ -85,7 +85,7 @@ public class ButtonEmbed extends MessageEmbed implements DecoratedEmbed {
             return button(Emoji.fromUnicode(emojiUnicode), action);
         }
         public Builder button(Emoji emoji, Function<ClickContext, InteractionResponses> action) {
-            return button(new ActionButton(Button.primary("_", emoji), action));
+            return button(new ActionButton(Button.primary(String.valueOf(actions.size()), emoji), action));
         }
         public Builder button(Button button, Function<ClickContext, InteractionResponses> action) {
             return button(new ActionButton(button, action));

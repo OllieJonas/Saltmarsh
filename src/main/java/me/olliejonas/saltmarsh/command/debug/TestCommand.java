@@ -7,6 +7,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
@@ -24,6 +25,8 @@ public class TestCommand extends Command {
 
     private final PaginatedEmbedManager paginatedEmbedManager;
 
+    private final InputEmbedManager inputEmbedManager;
+
     private final GlobalAudioManager globalAudioManager;
 
     private final PollEmbedManager pollEmbedManager;
@@ -31,10 +34,12 @@ public class TestCommand extends Command {
     public TestCommand(ButtonEmbedManager buttonEmbedManager,
                        PaginatedEmbedManager paginatedEmbedManager,
                        PollEmbedManager pollEmbedManager,
+                       InputEmbedManager inputEmbedManager,
                        GlobalAudioManager globalAudioManager) {
         super(CommandPermissions.ADMIN, "test");
         this.buttonEmbedManager = buttonEmbedManager;
         this.paginatedEmbedManager = paginatedEmbedManager;
+        this.inputEmbedManager = inputEmbedManager;
         this.pollEmbedManager = pollEmbedManager;
         this.globalAudioManager = globalAudioManager;
     }
@@ -59,7 +64,7 @@ public class TestCommand extends Command {
         addSubCommand(new TestFailureCommand());
         addSubCommand(new TestEphemeralCommand());
         addSubCommand(new TestBotJoinsCommand(globalAudioManager));
-        addSubCommand(new TestInputEmbedCommand());
+        addSubCommand(new TestInputEmbedCommand(inputEmbedManager));
     }
 
     @Override

@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ButtonEmbedManager {
@@ -16,7 +15,7 @@ public class ButtonEmbedManager {
     private final WeakConcurrentHashMap<String, ButtonEmbed> buttonEmbedMap;
 
     public ButtonEmbedManager() {
-        this(new WeakConcurrentHashMap<>(TimeUnit.HOURS.toMillis(24)));
+        this(new WeakConcurrentHashMap<>());
     }
 
     public ButtonEmbedManager(WeakConcurrentHashMap<String, ButtonEmbed> buttonEmbedMap) {

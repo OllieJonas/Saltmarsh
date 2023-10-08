@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh;
 import lombok.Getter;
 import me.olliejonas.saltmarsh.command.admin.AdminCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
+import me.olliejonas.saltmarsh.command.debug.WhatTypeIsCommand;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandListener;
 import me.olliejonas.saltmarsh.command.meta.CommandRegistry;
@@ -17,9 +18,10 @@ import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.input.InputEmbedListener;
+import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.commands.*;
-import me.olliejonas.saltmarsh.poll.NewPollCommand;
 import me.olliejonas.saltmarsh.poll.PollCommand;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import net.dv8tion.jda.api.JDA;
@@ -56,6 +58,8 @@ public class Saltmarsh {
 
     private final PollEmbedManager pollEmbedManager;
 
+    private final InputEmbedManager inputEmbedManager;
+
     private final GlobalAudioManager audioManager;
 
     private final CommandRegistry commandRegistry;
@@ -71,6 +75,7 @@ public class Saltmarsh {
         this.buttonEmbedManager = new ButtonEmbedManager();
         this.paginatedEmbedManager = new PaginatedEmbedManager(buttonEmbedManager);
         this.pollEmbedManager = new PollEmbedManager(buttonEmbedManager);
+        this.inputEmbedManager = new InputEmbedManager(buttonEmbedManager);
         this.audioManager = new GlobalAudioManager();
 
         // commands
@@ -105,6 +110,7 @@ public class Saltmarsh {
     public void registerListeners() {
         registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog));
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
+        registerListener(new InputEmbedListener(this.inputEmbedManager));
     }
 
     public void registerCommands() {
@@ -117,16 +123,17 @@ public class Saltmarsh {
         registerCommand(new WatchdogCommand(commandWatchdog));
 
         // poll
-        registerCommand(new NewPollCommand(paginatedEmbedManager));
-        registerCommand(new PollCommand(pollEmbedManager));
+        registerCommand(new PollCommand(pollEmbedManager, inputEmbedManager));
 
         // admin stuff
         registerCommand(new TestCommand(
                 this.buttonEmbedManager,
                 this.paginatedEmbedManager,
                 this.pollEmbedManager,
+                this.inputEmbedManager,
                 this.audioManager
         ));
+        registerCommand(new WhatTypeIsCommand());
 
         registerCommand(new AdminCommand(
                 this.audioManager

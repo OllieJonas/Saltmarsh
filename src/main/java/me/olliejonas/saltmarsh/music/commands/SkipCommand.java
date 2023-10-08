@@ -31,7 +31,7 @@ public class SkipCommand extends AudioCommand {
 
     @Override
     public Collection<OptionData> args() {
-        return List.of(new OptionData(OptionType.INTEGER, "amount", "The amount of tracks to skip"));
+        return List.of(new OptionData(OptionType.INTEGER, "amount", "The number of of tracks to skip"));
     }
 
     @Override
@@ -40,9 +40,9 @@ public class SkipCommand extends AudioCommand {
                                         String aliasUsed) throws CommandFailedException {
         int amount = 1;
 
-        if (args.containsKey("amount")) {
+        if (args.containsKey("skipAmount")) {
             try {
-                amount = Math.max(1, args.get("amount").getAsInt());
+                amount = Math.max(1, args.get("skipAmount").getAsInt());
             } catch (NumberFormatException exception) {
                 throw CommandFailedException.badArgs(executor, this, "tracks-to-skip (whole number)");
             }
@@ -50,7 +50,7 @@ public class SkipCommand extends AudioCommand {
 
         if (amount >= MAX_SKIP_THRESHOLD) {
             sendMessage(channel, "Due to internal reasons, you are only able to skip a maximum of " +
-                    MAX_SKIP_THRESHOLD + " tracks. Capping your input at this amount."
+                    MAX_SKIP_THRESHOLD + " tracks. Capping your input at this skipAmount."
             );
             amount = MAX_SKIP_THRESHOLD;
         }

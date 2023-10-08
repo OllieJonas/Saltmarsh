@@ -46,6 +46,8 @@ public class EmbedUtils {
         return colour(footer(new EmbedBuilder()));
     }
 
+    public EmbedBuilder authored() { return author(colour(new EmbedBuilder())); }
+
     public EmbedBuilder colour() {
         return colour(new EmbedBuilder());
     }

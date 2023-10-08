@@ -76,7 +76,7 @@ public class PaginatedEmbed implements DecoratedEmbed {
         return compiledPages.isEmpty() ? Optional.empty() : Optional.of(compiledPages.get(currentPage.get()));
     }
 
-    public void compile(PaginatedEmbedManager manager) {
+    public List<ButtonEmbed> compile(PaginatedEmbedManager manager) {
         TriFunction<ButtonEmbed.ClickContext, String, Function<PaginatedEmbed, Optional<ButtonEmbed>>, InteractionResponses> consumer = (context, actionStr, function) -> {
             function.apply(this).ifPresent(newEmbed -> manager.get(context.messageId())
                     .ifPresent(embed -> context.message()
@@ -97,6 +97,8 @@ public class PaginatedEmbed implements DecoratedEmbed {
 
             return buttonBuilder.build();
         }).collect(Collectors.toList());
+
+        return this.compiledPages;
     }
 
     /* BUILDER METHODS */
