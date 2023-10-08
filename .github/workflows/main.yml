@@ -42,9 +42,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: pwd
-        run: pwd
-
       - name: Retrieve Docker Image as Artifact
         uses: actions/download-artifact@master
         with:
@@ -53,9 +50,6 @@ jobs:
 
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
-
-      - name: Run ls
-        run: ls -la
 
       - name: SCP Image
         uses: appleboy/scp-action@v0.1.4
@@ -80,7 +74,7 @@ jobs:
             rm -rf github
             ls -la
             pwd
-            docker kill saltmarsh
+            docker kill Saltmarsh
             docker container prune --force
             docker image rm saltmarsh
             docker load --input saltmarsh.tar
