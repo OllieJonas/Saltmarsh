@@ -1,5 +1,6 @@
 package me.olliejonas.saltmarsh.embed.input.types;
 
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.util.MiscUtils;
 import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import net.dv8tion.jda.api.entities.Guild;
@@ -12,7 +13,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record InputButton<T>(String identifier, MessageEmbed embed, List<Button> buttons, Class<T> clazz)
         implements InputCandidate<T> {
@@ -20,12 +20,27 @@ public record InputButton<T>(String identifier, MessageEmbed embed, List<Button>
 
 
     public MessageCreateData compile() {
+        List<Button> newButtons = new ArrayList<>(buttons);
+        newButtons.add(EXIT_BUTTON);
+
+        List<ActionRow> batched = new ArrayList<>(MiscUtils.batches(newButtons, 5)
+                .map(ActionRow::of).toList());
+
         return new MessageCreateBuilder().setEmbeds(embed)
-                .setComponents(MiscUtils.batches(buttons, 5)
-                        .map(ActionRow::of)
-                        .collect(Collectors.toList()))
+                .setComponents(batched)
                 .build();
     }
+
+    public static InputButton<Boolean> YES_NO(String identifier, String title, String description) {
+        return YES_NO(identifier, EmbedUtils.colour().setTitle(title).setDescription(description).build());
+    }
+
+    public static InputButton<Boolean> YES_NO(String identifier, MessageEmbed embed) {
+        return new InputButton<>(identifier,
+                embed,
+                List.of(Button.primary("1", "Yes"), Button.primary("2", "No")), Boolean.class);
+    }
+
     public static Builder<String> builder(Guild guild, String identifier) {
         return new Builder<>(guild, identifier, String.class);
     }

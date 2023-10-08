@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -21,11 +23,15 @@ import java.util.function.Function;
 public class InputEmbed {
 
     static MessageEmbed DEFAULT_COMPLETION_PAGE = new EmbedBuilder().setTitle("Done!").setDescription("Thanks!").build();
+
+    static MessageEmbed EXIT_PAGE = new EmbedBuilder().setTitle("Exited").setDescription("You have exited this menu!").setColor(Color.RED).build();
     private final List<InputCandidate<?>> inputSteps;
 
     private final Function<Map<String, ?>, InteractionResponses> onCompletion;
 
     private final MessageEmbed completionPage;
+
+    private final MessageEmbed exitPage;
 
     private final int noPages;
 
@@ -39,6 +45,10 @@ public class InputEmbed {
     }
 
     public InputEmbed(List<InputCandidate<?>> inputSteps, Function<Map<String, ?>, InteractionResponses> onCompletion, MessageEmbed completionPage) {
+        this(inputSteps, onCompletion, completionPage, EXIT_PAGE);
+    }
+
+    public InputEmbed(List<InputCandidate<?>> inputSteps, Function<Map<String, ?>, InteractionResponses> onCompletion, MessageEmbed completionPage, MessageEmbed exitPage) {
         this.inputSteps = inputSteps;
 
         this.noPages = inputSteps.size();
@@ -48,6 +58,7 @@ public class InputEmbed {
 
         this.onCompletion = onCompletion;
         this.completionPage = completionPage;
+        this.exitPage = exitPage;
     }
 
 
@@ -55,10 +66,9 @@ public class InputEmbed {
     public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip, InputCandidate.Method method, String text) {
         if (currentPageNo.get() + 1 >= noPages) return new Tuple2<>(Optional.empty(), true);
 
-        if (inputSteps.get(currentPageNo.get()).getClass() == InputRepeatingText.class
-                && (method == InputCandidate.Method.BUTTON)) {
-            System.out.println("button in repeating!");
-            skip = 1;
+        if (inputSteps.get(currentPageNo.get()) instanceof InputRepeatingText) {
+            if (method == InputCandidate.Method.BUTTON)
+                skip = 1;
         }
 
         return new Tuple2<>(Optional.ofNullable(inputSteps.get(currentPageNo.addAndGet(skip))), false);

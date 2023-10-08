@@ -36,7 +36,7 @@ public class TestPollCommand extends Command {
                 .option("why")
                 .build();
 
-        manager.send(channel, embed);
+        manager.send(executor, channel, embed);
 
         return InteractionResponses.empty();
     }

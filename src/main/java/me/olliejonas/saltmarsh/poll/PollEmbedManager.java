@@ -2,6 +2,7 @@ package me.olliejonas.saltmarsh.poll;
 
 import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.Optional;
@@ -21,7 +22,17 @@ public class PollEmbedManager {
         this.embedMap = embedMap;
     }
 
-    public void send(TextChannel channel, PollEmbed embed) {
+    public void send(Member sender, TextChannel channel, PollEmbed embed) {
+        send(sender, channel, embed, false);
+    }
+
+    public void send(Member sender, TextChannel channel, PollEmbed embed, boolean notifyChannel) {
+        if (notifyChannel)
+            channel.sendMessage("@here " + sender.getEffectiveName() + " has sent a poll!").queue(__ -> doSend(channel, embed));
+        else doSend(channel, embed);
+    }
+
+    private void doSend(TextChannel channel, PollEmbed embed) {
         manager.send(channel, embed.toEmbed(), message -> embedMap.put(message.getId(), embed));
     }
 

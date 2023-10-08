@@ -41,7 +41,7 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
 
     public ButtonEmbed toEmbed() {
         EmbedBuilder embedBuilder = EmbedUtils.colour();
-        embedBuilder.setTitle("Poll (created by " + author + ")");
+        embedBuilder.setTitle((anonymous ? "Anonymous " : "") + "Poll (created by " + author + ")");
         embedBuilder.setDescription(question);
 
         int i = 0;

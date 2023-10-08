@@ -71,5 +71,6 @@ public class InputEmbedManager {
 
     public void destroy(String sender) {
         activeInputEmbedsAndChannels.remove(sender);
+        usersExpectingInteraction.remove(sender);
     }
 }
