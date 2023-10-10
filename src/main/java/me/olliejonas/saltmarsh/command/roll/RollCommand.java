@@ -80,11 +80,6 @@ public class RollCommand extends Command {
         return InteractionResponses.embed(asEmbed(executor, noDice, diceCeil, ints, average, sum));
     }
 
-    @Override
-    public void addSubCommands() {
-        addSubCommand(new ValidateIntegrityCommand(random));
-    }
-
     private MessageEmbed asEmbed(Member executor, int noDice, int diceCeil, List<Integer> results, double average, int sum) {
         EmbedBuilder builder = EmbedUtils.standard();
 

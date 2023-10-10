@@ -45,6 +45,6 @@ public class ToggleEventPingCommand extends Command {
         boolean removed = manager.toggleNotification(channel.getGuild(), targetChannel);
 
         return InteractionResponses.messageAsEmbed("Successfully " + (removed ? "removed " : "added ") +
-                targetChannel.getName() + " to list of channels to receive event notifications!", true);
+                targetChannel.getName() + " from the list of channels to receive event notifications!", true);
     }
 }

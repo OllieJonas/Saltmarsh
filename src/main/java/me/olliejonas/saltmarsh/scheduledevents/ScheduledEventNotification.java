@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,23 +21,37 @@ import java.util.concurrent.ConcurrentHashMap;
 @Builder
 public record ScheduledEventNotification(Member creator, String name, OffsetDateTime start,
                                          OffsetDateTime end, String description, ImageProxy image,
-                                         String location, Set<String> interested, ScheduledEvent.Type type, ScheduledEvent.Status status) {
+                                         String location, Set<String> interested,
+                                         ScheduledEvent.Type type, ScheduledEvent.Status status) {
 
-    public void addInterested(Member member) {
-        interested.add(member.getAsMention());
-    }
-
-    public void removeInterested(Member member) {
-        interested.remove(member.getAsMention());
-    }
+    public static Map<ScheduledEvent.Status, String> STATUS_MESSAGES = Map.of(
+            ScheduledEvent.Status.SCHEDULED, "Check out the Events tab to see " +
+                    "more information and say you're coming!",
+            ScheduledEvent.Status.ACTIVE, "This event is currently underway!",
+            ScheduledEvent.Status.COMPLETED, "This event has already happened! :(",
+            ScheduledEvent.Status.CANCELED, "This event has been cancelled!"
+    );
 
     public boolean isInterested(Member member) {
         return interested.contains(member.getAsMention());
     }
 
+    public boolean isNoLongerAvailable() {
+        return status == ScheduledEvent.Status.CANCELED || status == ScheduledEvent.Status.COMPLETED;
+    }
+
     public static ScheduledEventNotification fromEvent(ScheduledEvent event) {
+        return fromEvent(event, event.getStatus());
+    }
+
+    // for some very, very stupid reason that I do not understand AT ALL, when deleting an event, the status passes
+    // through as SCHEDULED, which breaks retrieving interested members, hence im specifying it up
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status) {
         Set<String> interested = ConcurrentHashMap.newKeySet();
-        event.retrieveInterestedMembers().forEachAsync(m -> interested.add(m.getAsMention())).join();
+
+        if (status != ScheduledEvent.Status.CANCELED && status != ScheduledEvent.Status.COMPLETED) {
+            event.retrieveInterestedMembers().forEachAsync(m -> interested.add(m.getAsMention())).join();
+        }
 
         OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plus(1, ChronoUnit.HOURS);
 
@@ -44,14 +59,15 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
                 Objects.requireNonNull(event.getCreatorId())).complete(), event.getName(), event.getStartTime()
                 .plus(1, ChronoUnit.HOURS),
                 endTime, event.getDescription(), event.getImage(), event.getLocation(), interested,
-                event.getType(), event.getStatus());
+                event.getType(), status);
     }
 
     public MessageEmbed toEmbed() {
         EmbedBuilder builder = EmbedUtils.colour();
         builder.setAuthor(getFormattedDate());
-        builder.setTitle(name);
-        builder.setDescription("Check out the Events tab to see more information and say you're coming!");
+        builder.setTitle(isNoLongerAvailable() ? "~~" + name + "~~" : name);
+
+        builder.setDescription(STATUS_MESSAGES.get(status));
 
         String locationStr = type != ScheduledEvent.Type.EXTERNAL ? "<#" + location + ">" : location + " (in Person)";
 
@@ -59,6 +75,7 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         builder.addField("Location", locationStr, true);
         builder.addField("Interested", String.join(", ", interested), true);
         builder.addField("Description", description, false);
+        builder.addField("Status", statusStr(), false);
 
 
 
@@ -100,5 +117,15 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         DateTimeFormatter endDateFormatter = DateTimeFormatter.ofPattern(endFormat.toString());
 
         return start.format(startDateFormatter) + "  -  " + end.format(endDateFormatter);
+    }
+
+    private String statusStr() {
+        return switch (status) {
+            case SCHEDULED -> "Scheduled";
+            case CANCELED -> "Cancelled";
+            case ACTIVE -> "Active";
+            case COMPLETED -> "Completed";
+            case UNKNOWN -> "Unknown";
+        };
     }
 }

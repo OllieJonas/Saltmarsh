@@ -14,6 +14,7 @@ import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
 import me.olliejonas.saltmarsh.command.misc.IsThisAURLCommand;
 import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
+import me.olliejonas.saltmarsh.command.roll.ValidateIntegrityCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
@@ -26,6 +27,7 @@ import me.olliejonas.saltmarsh.poll.PollCommand;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventListener;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.commands.GetEventPingStatusCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingRolesCommand;
 import net.dv8tion.jda.api.JDA;
@@ -40,10 +42,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Saltmarsh {
 
@@ -125,13 +124,15 @@ public class Saltmarsh {
 
         // events
         registerCommand(new ToggleEventPingCommand(this.scheduledEventManager));
-
         registerCommand(new ToggleEventPingRolesCommand(this.scheduledEventManager));
+        registerCommand(new GetEventPingStatusCommand(this.scheduledEventManager));
+
         // misc
         registerCommand(new IsThisAURLCommand());
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
+        registerCommand(new ValidateIntegrityCommand(new Random()));
         registerCommand(new WatchdogCommand(commandWatchdog));
 
         // poll

@@ -18,6 +18,7 @@ public class ScheduledEventListener extends ListenerAdapter {
     enum EventType {
         CREATE,
         EDIT,
+        DELETE;
     }
     private final ScheduledEventManager manager;
 
@@ -26,11 +27,15 @@ public class ScheduledEventListener extends ListenerAdapter {
     }
 
     private void onScheduledEvent(GenericScheduledEventGatewayEvent event, EventType type) {
+        onScheduledEvent(event, type, event.getScheduledEvent().getStatus());
+    }
+
+    private void onScheduledEvent(GenericScheduledEventGatewayEvent event, EventType type, ScheduledEvent.Status status) {
         ScheduledEvent scheduledEvent = event.getScheduledEvent();
 
         if (manager.isEventUnregistered(scheduledEvent) && type != EventType.CREATE) return;
 
-        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent);
+        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent, status);
         MessageEmbed embed = notification.toEmbed();
         Role pingRole = manager.getRole(event.getGuild());
 
@@ -47,6 +52,11 @@ public class ScheduledEventListener extends ListenerAdapter {
             };
             case EDIT -> channel -> manager.callbackMessage(scheduledEvent, channel,
                     message -> message.editMessage(MessageEditData.fromEmbeds(embed)).queue());
+            case DELETE -> channel -> {
+                if (pingRole != null)
+                    channel.sendMessage(pingRole.getAsMention() + " " + notification.name() + " has unfortunately been cancelled! :(").queue();
+                manager.callbackMessage(scheduledEvent, channel, message -> message.editMessage(MessageEditData.fromEmbeds(embed)).queue());
+            };
         };
 
         manager.getChannelsFor(event.getGuild())
@@ -111,14 +121,26 @@ public class ScheduledEventListener extends ListenerAdapter {
     @Override
     public void onScheduledEventDelete(ScheduledEventDeleteEvent event) {
         ScheduledEvent scheduledEvent = event.getScheduledEvent();
+//        logScheduledEvent(scheduledEvent);
+        onScheduledEvent(event, EventType.DELETE, ScheduledEvent.Status.CANCELED);
+//        manager.getChannelsFor(event.getGuild())
+//                .forEach(channel -> manager.callbackMessage(scheduledEvent, channel,
+//                        message -> message.editMessage(MessageEditData.fromEmbeds()).queue()));
 
         if (manager.isEventUnregistered(scheduledEvent)) return;
-
-        manager.getChannelsFor(event.getGuild())
-                .forEach(channel -> manager.callbackMessage(scheduledEvent, channel,
-                        message -> message.delete().queue()));
 
         manager.removePingMessages(scheduledEvent);
         manager.destroyEvent(scheduledEvent);
     }
+
+//    private void logScheduledEvent(ScheduledEvent event) {
+//        System.out.println("Title: " + event.getName());
+//        System.out.println("Organiser: " + (event.getCreator() == null ? "null" : event.getCreator().getName()));
+//        System.out.println("Location: " + event.getLocation());
+//        System.out.println("Description: " + event.getDescription());
+//        System.out.println("Start Time: " + event.getStartTime().format(DateTimeFormatter.RFC_1123_DATE_TIME));
+//        System.out.println("End Time: " + (event.getEndTime() == null ? "null" : event.getEndTime().format(DateTimeFormatter.RFC_1123_DATE_TIME)));
+//        System.out.println("Status: " + event.getStatus().name());
+//        System.out.println("Type: " + event.getType().name());
+//    }
 }

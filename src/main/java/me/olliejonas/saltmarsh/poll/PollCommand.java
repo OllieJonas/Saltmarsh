@@ -49,7 +49,8 @@ public class PollCommand extends Command {
                 new OptionData(OptionType.STRING, "options", "the possible options! (separated by either ' | ' or ' : '"),
                 new OptionData(OptionType.BOOLEAN, "anonymous", "whether the voting should be anonymous! (defaults to true)"),
                 new OptionData(OptionType.BOOLEAN, "singular", "whether users should be allowed to vote for multiple options or just one! (defaults to true)"),
-                new OptionData(OptionType.BOOLEAN, "notify-channel", "whether the users should be tagged when the poll is sent (defaults to false)")
+                new OptionData(OptionType.CHANNEL, "target-channel", "the channel that you'd like to send the poll to! (defaults to this one)"),
+                new OptionData(OptionType.BOOLEAN, "should-notify-channel", "whether the users should be tagged when the poll is sent (defaults to false)")
         );
     }
 
@@ -62,6 +63,7 @@ public class PollCommand extends Command {
         String options = args.get("options").getAsString();
         boolean anonymous = true;
         boolean singular = true;
+        TextChannel targetChannel = channel;
         boolean notifyChannel = false;
 
 
@@ -70,6 +72,12 @@ public class PollCommand extends Command {
 
         if (args.containsKey("singular"))
             singular = args.get("singular").getAsBoolean();
+
+        if (args.containsKey("target-channel")) {
+            GuildChannel gChannel = args.get("target-channel").getAsChannel();
+            if (!(gChannel instanceof TextChannel tChannel)) return InteractionResponses.error("Please specify a text channel to send the poll to!");
+            targetChannel = tChannel;
+        }
 
         if (args.containsKey("notifyChannel"))
             singular = args.get("singular").getAsBoolean();
@@ -82,7 +90,7 @@ public class PollCommand extends Command {
         if (pollOptions.isEmpty()) throw CommandFailedException.badArgs(executor, this, "option 1 | option 2 | option ...");
         if (pollOptions.size() > 10) throw CommandFailedException.other("You can't have more than 10 options!", "no more than 10 options");
 
-        return buildAndSendPoll(executor, channel, question, pollOptions, anonymous, singular, notifyChannel);
+        return buildAndSendPoll(executor, targetChannel, question, pollOptions, anonymous, singular, notifyChannel);
     }
 
     private InteractionResponses inputEmbedPoll(Member executor, TextChannel channel) {
