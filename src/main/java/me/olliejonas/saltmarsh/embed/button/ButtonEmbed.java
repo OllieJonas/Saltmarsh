@@ -1,7 +1,8 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button;
 
 import lombok.Getter;
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.embed.DecoratedEmbed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -36,8 +37,8 @@ public class ButtonEmbed extends MessageEmbed implements DecoratedEmbed {
                 embed.getColorRaw(), embed.getThumbnail(), embed.getSiteProvider(), embed.getAuthor(),
                 embed.getVideoInfo(), embed.getFooter(), embed.getImage(), embed.getFields());
         this.embed = embed;
-        this.actions = actions;
         this.buttons = buttons;
+        this.actions = actions;
     }
 
     public static Builder builder(EmbedBuilder builder) {

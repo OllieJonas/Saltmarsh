@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import me.olliejonas.saltmarsh.music.Queueable;
 import me.olliejonas.saltmarsh.util.TimeUtils;
-import me.olliejonas.saltmarsh.embed.Itemizable;
+import me.olliejonas.saltmarsh.embed.button.derivations.Itemizable;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.function.Supplier;

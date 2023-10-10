@@ -9,14 +9,18 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public record InputRepeatingText<T>(String identifier, MessageEmbed embed, Class<T> clazz, String exitText)
+public record InputRepeatingText<T>(String identifier, MessageEmbed embed, Class<T> clazz, String exitText, Predicate<T> valid)
         implements InputCandidate<T> {
 
     public static <T> InputRepeatingText<T> of(String identifier, MessageEmbed embed, Class<T> clazz) {
-        return new InputRepeatingText<>(identifier, embed, clazz, "Next");
+        return new InputRepeatingText<>(identifier, embed, clazz, "Next", __ -> true);
+    }
+
+    public static <T> InputRepeatingText<T> of(String identifier, MessageEmbed embed, Class<T> clazz, Predicate<T> valid) {
+        return new InputRepeatingText<>(identifier, embed, clazz, "Next", valid);
     }
 
     public static <T> InputRepeatingText<T> of(String identifier, String title, String description, Class<T> clazz) {
@@ -33,15 +37,15 @@ public record InputRepeatingText<T>(String identifier, MessageEmbed embed, Class
                 .addField("", String.format("""
                         Please type your answer into the same channel that this is sent in!
                         Press "%s" when you're done!
-                        
                         """, exitText), false)
+                .addField("", "", true)
                 .addField("Current Input", items.stream().map(Object::toString).collect(Collectors.joining(", ")), false)
                 .build();
         return new MessageCreateBuilder().setEmbeds(newEmbed).setActionRow(Button.success("_", exitText), EXIT_BUTTON).build();
     }
 
     @Override
-    public Function<String, Integer> skip() {
-        return __ -> 0;
+    public int skip() {
+        return 0;
     }
 }

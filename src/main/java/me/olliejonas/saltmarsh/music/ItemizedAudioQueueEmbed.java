@@ -5,8 +5,8 @@ import me.olliejonas.saltmarsh.music.entities.AudioQueue;
 import me.olliejonas.saltmarsh.music.entities.LoadedTrack;
 import me.olliejonas.saltmarsh.util.MiscUtils;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.embed.PaginatedEmbed;
-import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbed;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.List;

@@ -5,8 +5,8 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
-import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
-import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
@@ -65,6 +65,7 @@ public class TestCommand extends Command {
         addSubCommand(new TestEphemeralCommand());
         addSubCommand(new TestBotJoinsCommand(globalAudioManager));
         addSubCommand(new TestInputEmbedCommand(inputEmbedManager));
+        addSubCommand(new TestSelectMenuCommand());
     }
 
     @Override

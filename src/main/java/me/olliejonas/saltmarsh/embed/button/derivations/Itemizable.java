@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button.derivations;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button;
 
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;

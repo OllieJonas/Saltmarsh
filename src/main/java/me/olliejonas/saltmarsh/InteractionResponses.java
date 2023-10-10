@@ -3,8 +3,10 @@ package me.olliejonas.saltmarsh;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+
+import java.util.function.Consumer;
 
 public interface InteractionResponses {
 
@@ -19,6 +21,10 @@ public interface InteractionResponses {
         return new InteractionResponses.Embed(EmbedUtils.from(message), ephemeral);
     }
 
+    static InteractionResponses createData(MessageCreateData data, boolean ephemeral, Consumer<net.dv8tion.jda.api.entities.Message> onSuccess) {
+        return new InteractionResponses.CreateData(data, ephemeral, onSuccess);
+    }
+
     static InteractionResponses embed(MessageEmbed embed, MessageEmbed... embeds) {
         return new InteractionResponses.Embed(embed, false, embeds);
     }
@@ -27,15 +33,15 @@ public interface InteractionResponses {
         return new InteractionResponses.Message(message, false);
     }
 
-    default void queue(IReplyCallback event, TextChannel channel) {
-        queue(event, channel, null);
+    static InteractionResponses error(String message) {
+        return new InteractionResponses.Embed(EmbedUtils.error(message), true);
     }
 
-    void queue(IReplyCallback event, TextChannel channel, net.dv8tion.jda.api.entities.Message original);
+    void queue(IReplyCallback event, TextChannel channel);
 
     record Message(String message, boolean ephemeral) implements InteractionResponses {
         @Override
-        public void queue(IReplyCallback event, TextChannel channel, net.dv8tion.jda.api.entities.Message original) {
+        public void queue(IReplyCallback event, TextChannel channel) {
             if (event == null)
                 channel.sendMessage(message).queue();
             else
@@ -46,35 +52,31 @@ public interface InteractionResponses {
     record Empty() implements InteractionResponses {
 
         @Override
-        public void queue(IReplyCallback event, TextChannel channel, net.dv8tion.jda.api.entities.Message original) {
+        public void queue(IReplyCallback event, TextChannel channel) {
             if (event == null) return;
 
             event.reply("Success!").setEphemeral(true).queue(message -> event.getHook().deleteOriginal().queue());
         }
     }
 
-    record Reaction(Emoji emoji) implements InteractionResponses {
+    record CreateData(MessageCreateData data, boolean ephemeral, Consumer<net.dv8tion.jda.api.entities.Message> onSuccess) implements InteractionResponses {
 
         @Override
-        public void queue(IReplyCallback event, TextChannel channel, net.dv8tion.jda.api.entities.Message original) {
-            if (original != null) // null when slash command is used
-                original.addReaction(emoji).queue();
-
-            if (event == null) // null when text command is used
-                return;
-
-            empty();
+        public void queue(IReplyCallback event, TextChannel channel) {
+            event.reply(data).queue(hook -> hook.retrieveOriginal().queue(onSuccess));
         }
     }
 
     record Embed(MessageEmbed embed, boolean ephemeral, MessageEmbed... embeds) implements InteractionResponses {
         @Override
-        public void queue(IReplyCallback event, TextChannel channel, net.dv8tion.jda.api.entities.Message original) {
-            if (event == null) {
-                channel.sendMessageEmbeds(embed).queue();
+        public void queue(IReplyCallback event, TextChannel channel) {
+            if (event != null) {
+                event.replyEmbeds(embed, embeds).setEphemeral(ephemeral).queue();
             }
             else {
-                event.replyEmbeds(embed, embeds).setEphemeral(ephemeral).queue();
+//                channel.sendMessageEmbeds(embed).queue(msg -> {
+//                    if (ephemeral) msg.delete().queue();
+//                });
             }
         }
     }

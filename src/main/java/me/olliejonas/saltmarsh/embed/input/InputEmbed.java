@@ -63,7 +63,7 @@ public class InputEmbed {
 
 
     // boolean is for whether they have completed it or not
-    public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip, InputCandidate.Method method, String text) {
+    public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip, InputCandidate.Method method) {
         if (currentPageNo.get() + 1 >= noPages) return new Tuple2<>(Optional.empty(), true);
 
         if (inputSteps.get(currentPageNo.get()) instanceof InputRepeatingText) {
@@ -74,31 +74,37 @@ public class InputEmbed {
         return new Tuple2<>(Optional.ofNullable(inputSteps.get(currentPageNo.addAndGet(skip))), false);
     }
 
-    // first boolean represents whether the user is finished
-    // second boolean represents whether the current page was successful in assigning a value.
+    // first boolean represents whether the user is finished (true = is finished)
+    // second boolean represents whether the current page was successful in assigning a value (true = was successful).
     @SuppressWarnings("unchecked")
-    public Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> assignValueAndNext(Member sender, String value,
-                                                                                    InputCandidate.Method method) {
-        InputCandidate<?> curr = inputSteps.get(currentPageNo.get());
+    public <T> Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> assignValueAndNext(Member sender, List<String> values,
+                                                                                        InputCandidate.Method method) {
+        InputCandidate<T> curr = (InputCandidate<T>) inputSteps.get(currentPageNo.get());
 
-        Optional<?> converted = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
-        if (converted.isEmpty()) return new Tuple3<>(Optional.of(curr), false, false);  // couldn't cast successfully
+        for (String value : values) {
+            Optional<T> converted = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
+            if (converted.isEmpty())
+                return new Tuple3<>(Optional.of(curr), false, false);  // couldn't cast successfully
 
-        String id = curr.identifier();
+            if (!curr.valid().test(converted.get()))
+                return new Tuple3<>(Optional.of(curr), false, false);
 
-        if (curr instanceof InputRepeatingText<?>) {
-            if (!identifierToValueMap.containsKey(id))
-                identifierToValueMap.put(id, new ArrayList<>());
+            String id = curr.identifier();
 
-            ((ArrayList<Object>) identifierToValueMap.get(id)).add(converted.get());
-        } else {
-            identifierToValueMap.put(id, converted.get());  // assign successfully cast
+            if (curr instanceof InputRepeatingText<?> || values.size() != 1) {
+                if (!identifierToValueMap.containsKey(id))
+                    identifierToValueMap.put(id, new ArrayList<>());
+
+                ((ArrayList<Object>) identifierToValueMap.get(id)).add(converted.get());
+            } else {
+                identifierToValueMap.put(id, converted.get());
+            }
         }
 
-        return next(curr.skip().apply(value), method, value).concat(true);
+        return next(curr.skip(), method).concat(true);
     }
 
-    public MessageCreateData toEmbed() {
+    public MessageCreateData toCreateData() {
         InputCandidate<?> curr = inputSteps.get(currentPageNo.get());
         return curr.compile();
     }

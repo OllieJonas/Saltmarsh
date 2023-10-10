@@ -1,8 +1,11 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button.derivations;
 
 import lombok.*;
 import me.olliejonas.saltmarsh.Constants;
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.embed.DecoratedEmbed;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
 import me.olliejonas.saltmarsh.util.functional.TriFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 

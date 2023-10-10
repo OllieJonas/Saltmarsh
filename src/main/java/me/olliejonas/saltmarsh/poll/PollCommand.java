@@ -6,9 +6,10 @@ import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.input.CommonInputMenus;
 import me.olliejonas.saltmarsh.embed.input.InputEmbed;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.types.InputButton;
+import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
 import me.olliejonas.saltmarsh.embed.input.types.InputRepeatingText;
 import me.olliejonas.saltmarsh.embed.input.types.InputText;
 import net.dv8tion.jda.api.entities.Member;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,9 +82,7 @@ public class PollCommand extends Command {
         if (pollOptions.isEmpty()) throw CommandFailedException.badArgs(executor, this, "option 1 | option 2 | option ...");
         if (pollOptions.size() > 10) throw CommandFailedException.other("You can't have more than 10 options!", "no more than 10 options");
 
-        buildAndSendPoll(executor, channel, question, pollOptions, anonymous, singular, notifyChannel);
-
-        return InteractionResponses.messageAsEmbed("Successfully created poll!", true);
+        return buildAndSendPoll(executor, channel, question, pollOptions, anonymous, singular, notifyChannel);
     }
 
     private InteractionResponses inputEmbedPoll(Member executor, TextChannel channel) {
@@ -92,11 +92,17 @@ public class PollCommand extends Command {
         InputEmbed embed = InputEmbed.builder()
                 .step(InputText.of("question", title, "What would you like the question to be?", String.class))
                 .step(InputRepeatingText.of("options", title, "Now enter the options you would like for this poll", String.class))
-                .step(InputButton.YES_NO("anonymous", title, "Would you like this poll to be anonymous?"))
-                .step(InputButton.YES_NO("singular", title,
+                .step(CommonInputMenus.YES_NO("anonymous", title, "Would you like this poll to be anonymous?"))
+                .step(CommonInputMenus.YES_NO("singular", title,
                         "Would you like this poll to be singular? (Only allow one vote per person)"))
-                .step(InputText.of("targetChannel", title, "Please tag the text channel you'd like this to be sent in!", GuildChannel.class))
-                .step(InputButton.YES_NO("notifyChannel", title,
+                .step(InputMenu.Entity.builder("targetChannel", GuildChannel.class)
+                        .embed(title, "Now please select the text channel you'd like to send this poll to!")
+                        .selectMenu(EntitySelectMenu.create("targetChannel",
+                                EntitySelectMenu.SelectTarget.CHANNEL)
+                                .build())
+                        .valid(InputMenu.Entity.TEXT_ONLY)
+                        .build())
+                .step(CommonInputMenus.YES_NO("notifyChannel", title,
                         "Would you like to notify the channel of this poll being sent? (Tag everyone in it)"))
 
                 .onCompletion(map -> {
@@ -111,24 +117,20 @@ public class PollCommand extends Command {
                     options.remove("Next");
                     List<PollOption> pollOptions = options.stream().map(PollOption::new).toList();
 
-                    buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions,
+                    return buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions,
                             anonymous, singular, notifyChannel);
-                    return InteractionResponses.empty();
                 })
 
                 .completionPage(EmbedUtils.colour()
                         .setTitle(title)
                         .setDescription("Thanks for completing this wizard! The poll should be sent now!")
                         .build())
-
                 .build();
 
-        inputEmbedManager.send(executor, channel, embed);
-
-        return InteractionResponses.empty();
+        return inputEmbedManager.createResponse(executor, channel, embed);
     }
 
-    public void buildAndSendPoll(Member executor, TextChannel channel, String question, List<PollOption> pollOptions,
+    public InteractionResponses buildAndSendPoll(Member executor, TextChannel channel, String question, List<PollOption> pollOptions,
                                  boolean anonymous, boolean singular, boolean notifyChannel) {
 
         PollEmbed embed = PollEmbed.builder(manager)
@@ -140,7 +142,7 @@ public class PollCommand extends Command {
                 .build();
 
 
-        manager.send(executor, channel, embed, notifyChannel);
+        return manager.send(executor, channel, embed, notifyChannel);
     }
 
     private String withQuestionMark(String prompt) {

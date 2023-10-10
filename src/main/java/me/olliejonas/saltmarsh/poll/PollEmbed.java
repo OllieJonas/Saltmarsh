@@ -2,7 +2,7 @@ package me.olliejonas.saltmarsh.poll;
 
 import kotlin.jvm.functions.Function4;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.embed.ButtonEmbed;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.EmbedBuilder;

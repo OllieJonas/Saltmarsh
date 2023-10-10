@@ -15,15 +15,19 @@ import me.olliejonas.saltmarsh.command.misc.IsThisAURLCommand;
 import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
-import me.olliejonas.saltmarsh.embed.ButtonEmbedListener;
-import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
-import me.olliejonas.saltmarsh.embed.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbedListener;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedListener;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.poll.PollCommand;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
+import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventListener;
+import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingCommand;
+import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingRolesCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -60,6 +64,8 @@ public class Saltmarsh {
 
     private final InputEmbedManager inputEmbedManager;
 
+    private final ScheduledEventManager scheduledEventManager;
+
     private final GlobalAudioManager audioManager;
 
     private final CommandRegistry commandRegistry;
@@ -77,6 +83,7 @@ public class Saltmarsh {
         this.pollEmbedManager = new PollEmbedManager(buttonEmbedManager);
         this.inputEmbedManager = new InputEmbedManager(buttonEmbedManager);
         this.audioManager = new GlobalAudioManager();
+        this.scheduledEventManager = new ScheduledEventManager();
 
         // commands
         this.commandRegistry = new CommandRegistry();
@@ -111,10 +118,15 @@ public class Saltmarsh {
         registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog));
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
         registerListener(new InputEmbedListener(this.inputEmbedManager));
+        registerListener(new ScheduledEventListener(this.scheduledEventManager));
     }
 
     public void registerCommands() {
 
+        // events
+        registerCommand(new ToggleEventPingCommand(this.scheduledEventManager));
+
+        registerCommand(new ToggleEventPingRolesCommand(this.scheduledEventManager));
         // misc
         registerCommand(new IsThisAURLCommand());
         registerCommand(new SayInAnEchoingVoiceCommand());
@@ -152,6 +164,7 @@ public class Saltmarsh {
 
         // help - register this last
         registerCommand(new HelpCommand(paginatedEmbedManager, commandRegistry));
+
     }
 
     public void registerIntents() {
@@ -182,9 +195,9 @@ public class Saltmarsh {
                 .addEventListeners(listeners.toArray(new Object[0]))
                 .setMemberCachePolicy(MemberCachePolicy.VOICE)
                 .setEventPassthrough(true)
-                .enableCache(CacheFlag.VOICE_STATE)
+                .enableCache(CacheFlag.VOICE_STATE, CacheFlag.SCHEDULED_EVENTS)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.listening("Sea Shanties"))
+                .setActivity(Activity.listening("Sea Shanties \uD83C\uDFB5"))
                 .build();
     }
 }

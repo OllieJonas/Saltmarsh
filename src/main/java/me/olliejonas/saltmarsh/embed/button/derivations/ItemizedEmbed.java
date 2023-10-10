@@ -1,5 +1,7 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button.derivations;
 
+import me.olliejonas.saltmarsh.embed.DecoratedEmbed;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.util.MiscUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 

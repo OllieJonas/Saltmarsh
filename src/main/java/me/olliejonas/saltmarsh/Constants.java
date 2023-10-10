@@ -1,7 +1,7 @@
 package me.olliejonas.saltmarsh;
 
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.embed.PaginatedEmbed;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -62,4 +62,7 @@ public class Constants {
             Emoji.fromUnicode("⏭"))
 
             .map(emoji -> Button.secondary("_", emoji)).toList();  // id is reset in paginatedembed anyways
+
+    public static final List<String> MONTHS = List.of("January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December");
 }

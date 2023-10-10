@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import me.olliejonas.saltmarsh.Constants;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.embed.ButtonEmbed;
-import me.olliejonas.saltmarsh.embed.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -149,14 +149,5 @@ public class CommandWatchdog {
     public void allocateChannel(Guild guild, TextChannel channel) {
         watchdogAllocatedChannels.put(guild.getId(), channel);
         toggleWatchdog(guild);
-    }
-
-    public void report(Report result) {
-        String id = result.getExecutor().getGuild().getId();
-        if (guildsToggledWatchdog.contains(id)) {
-            if (watchdogAllocatedChannels.containsKey(id)) {
-                manager.send(watchdogAllocatedChannels.get(id), result.asEmbed());
-            }
-        }
     }
 }

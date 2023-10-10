@@ -1,9 +1,9 @@
-package me.olliejonas.saltmarsh.embed;
+package me.olliejonas.saltmarsh.embed.button;
 
+import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.util.MiscUtils;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
@@ -35,18 +35,15 @@ public class ButtonEmbedManager {
             buttonEmbedMap.remove(id);
     }
 
-    public void send(TextChannel channel, ButtonEmbed embed) {
-        send(channel, embed, (__) -> {});
+    public InteractionResponses send(ButtonEmbed embed) {
+        return send(embed, (__) -> {});
     }
 
-    public void send(TextChannel channel, ButtonEmbed embed, Consumer<? super Message> onSuccess) {
+    public InteractionResponses send(ButtonEmbed embed, Consumer<Message> onSuccess) {
         MessageCreateBuilder builder = new MessageCreateBuilder().addEmbeds(embed);
 
         builder.setComponents(MiscUtils.batches(embed.getButtons(), 5).map(ActionRow::of).toList());
 
-        channel.sendMessage(builder.build()).queue((message) -> {
-            onSuccess.accept(message);
-            buttonEmbedMap.put(message.getId(), embed);
-        });
+        return InteractionResponses.createData(builder.build(), false, onSuccess.andThen(message -> buttonEmbedMap.put(message.getId(), embed)));
     }
 }

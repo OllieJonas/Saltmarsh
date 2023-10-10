@@ -4,21 +4,23 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public interface InputCandidate<T> {
 
     Button EXIT_BUTTON = Button.danger("exit", "Exit");
 
     enum Method {
+        SELECT,
+
         BUTTON,
         TEXT;
     }
 
     MessageCreateData compile();
 
-    default Function<String, Integer> skip() {
-        return __ -> 1;
+    default int skip() {
+        return 1;
     }
 
     String identifier();
@@ -26,4 +28,6 @@ public interface InputCandidate<T> {
     MessageEmbed embed();
 
     Class<T> clazz();
+
+     Predicate<T> valid();
 }
