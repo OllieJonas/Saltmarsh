@@ -60,6 +60,8 @@ public class ScheduledEventManager {
     }
 
     public Set<TextChannel> getChannelsFor(Guild guild) {
+        if (!guildToPingChannelMap.containsKey(guild.getId())) return Collections.emptySet();
+
         return guildToPingChannelMap.get(guild.getId()).stream().map(guild::getTextChannelById).collect(Collectors.toSet());
     }
 

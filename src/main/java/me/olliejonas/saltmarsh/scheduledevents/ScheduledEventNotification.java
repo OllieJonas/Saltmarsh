@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.utils.ImageProxy;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.Set;
@@ -37,9 +38,12 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         Set<String> interested = ConcurrentHashMap.newKeySet();
         event.retrieveInterestedMembers().forEachAsync(m -> interested.add(m.getAsMention())).join();
 
+        OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plus(1, ChronoUnit.HOURS);
+
         return new ScheduledEventNotification(event.getGuild().retrieveMemberById(
-                Objects.requireNonNull(event.getCreatorId())).complete(), event.getName(), event.getStartTime(),
-                event.getEndTime(), event.getDescription(), event.getImage(), event.getLocation(), interested,
+                Objects.requireNonNull(event.getCreatorId())).complete(), event.getName(), event.getStartTime()
+                .plus(1, ChronoUnit.HOURS),
+                endTime, event.getDescription(), event.getImage(), event.getLocation(), interested,
                 event.getType(), event.getStatus());
     }
 
@@ -89,7 +93,7 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
 
         if (endYear != startYear)
             endFormat.append("yyyy • ");
-        else
+        else if (endDay != startDay)
             endFormat.append("• ");
 
         endFormat.append("hh:mm a");
