@@ -90,7 +90,8 @@ public class PollCommand extends Command {
         if (pollOptions.isEmpty()) throw CommandFailedException.badArgs(executor, this, "option 1 | option 2 | option ...");
         if (pollOptions.size() > 10) throw CommandFailedException.other("You can't have more than 10 options!", "no more than 10 options");
 
-        return buildAndSendPoll(executor, targetChannel, question, pollOptions, anonymous, singular, notifyChannel);
+        buildAndSendPoll(executor, targetChannel, question, pollOptions, anonymous, singular, notifyChannel).queue(null, targetChannel);
+        return InteractionResponses.messageAsEmbed("Successfully sent poll!", false);
     }
 
     private InteractionResponses inputEmbedPoll(Member executor, TextChannel channel) {
@@ -125,8 +126,10 @@ public class PollCommand extends Command {
                     options.remove("Next");
                     List<PollOption> pollOptions = options.stream().map(PollOption::new).toList();
 
-                    return buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions,
-                            anonymous, singular, notifyChannel);
+                    buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions,
+                            anonymous, singular, notifyChannel).queue(null, (TextChannel) targetChannel);
+
+                    return InteractionResponses.empty();
                 })
 
                 .completionPage(EmbedUtils.colour()

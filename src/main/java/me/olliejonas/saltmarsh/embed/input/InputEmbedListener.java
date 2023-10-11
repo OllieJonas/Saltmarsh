@@ -3,7 +3,6 @@ package me.olliejonas.saltmarsh.embed.input;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.embed.input.types.InputCandidate;
-import me.olliejonas.saltmarsh.embed.input.types.InputRepeatingText;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -114,11 +113,7 @@ public class InputEmbedListener extends ListenerAdapter {
         }
 
         InputCandidate<?> candidate = success.v1().get();
-
-        MessageCreateData next = (candidate instanceof InputRepeatingText repeating &&
-                embed.getIdentifierToValueMap().containsKey(repeating.identifier())) ?
-                repeating.buildEmbed((List<?>) embed.getIdentifierToValueMap().get(repeating.identifier())) :
-                candidate.compile();
+        MessageCreateData next = candidate.compile();
 
         MessageEditData nextEdit = MessageEditData.fromCreateData(next);
 

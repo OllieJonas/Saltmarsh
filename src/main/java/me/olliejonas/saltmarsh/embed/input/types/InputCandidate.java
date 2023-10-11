@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public interface InputCandidate<T> {
@@ -28,6 +29,10 @@ public interface InputCandidate<T> {
     MessageEmbed embed();
 
     Class<T> clazz();
+
+    default BiConsumer<T, Method> onOptionSelection() {
+        return (__, ___) -> {};
+    }
 
      Predicate<T> valid();
 }

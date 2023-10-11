@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -37,7 +38,7 @@ public interface InteractionResponses {
         return new InteractionResponses.Embed(EmbedUtils.error(message), true);
     }
 
-    void queue(IReplyCallback event, TextChannel channel);
+    void queue(@Nullable IReplyCallback event, TextChannel channel);
 
     record Message(String message, boolean ephemeral) implements InteractionResponses {
         @Override
@@ -63,7 +64,10 @@ public interface InteractionResponses {
 
         @Override
         public void queue(IReplyCallback event, TextChannel channel) {
-            event.reply(data).queue(hook -> hook.retrieveOriginal().queue(onSuccess));
+            if (event == null)
+                channel.sendMessage(data).queue(onSuccess);
+            else
+                event.reply(data).queue(hook -> hook.retrieveOriginal().queue(onSuccess));
         }
     }
 

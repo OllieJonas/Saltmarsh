@@ -48,6 +48,8 @@ public class InputEmbed {
         this(inputSteps, onCompletion, completionPage, EXIT_PAGE);
     }
 
+    // ADD CONSUMER FOR ? FOR WHENEVER AN OPTION IS SELECT BEFORE ANYTHING ELSE HAPPENS
+    // YOU COULD DO REPEATING STEPS LIKE THIS RATHER THAN CHECKING FOR TYPE IN THE LISTENER
     public InputEmbed(List<InputCandidate<?>> inputSteps, Function<Map<String, ?>, InteractionResponses> onCompletion, MessageEmbed completionPage, MessageEmbed exitPage) {
         this.inputSteps = inputSteps;
 
@@ -63,13 +65,8 @@ public class InputEmbed {
 
 
     // boolean is for whether they have completed it or not
-    public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip, InputCandidate.Method method) {
+    public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip) {
         if (currentPageNo.get() + 1 >= noPages) return new Tuple2<>(Optional.empty(), true);
-
-        if (inputSteps.get(currentPageNo.get()) instanceof InputRepeatingText) {
-            if (method == InputCandidate.Method.BUTTON)
-                skip = 1;
-        }
 
         return new Tuple2<>(Optional.ofNullable(inputSteps.get(currentPageNo.addAndGet(skip))), false);
     }
@@ -83,13 +80,12 @@ public class InputEmbed {
 
         for (String value : values) {
             Optional<T> converted = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
-            if (converted.isEmpty())
+            if (converted.isEmpty() || !curr.valid().test(converted.get()))
                 return new Tuple3<>(Optional.of(curr), false, false);  // couldn't cast successfully
 
-            if (!curr.valid().test(converted.get()))
-                return new Tuple3<>(Optional.of(curr), false, false);
-
             String id = curr.identifier();
+
+            curr.onOptionSelection().accept(converted.get(), method);
 
             if (curr instanceof InputRepeatingText<?> || values.size() != 1) {
                 if (!identifierToValueMap.containsKey(id))
@@ -101,7 +97,7 @@ public class InputEmbed {
             }
         }
 
-        return next(curr.skip(), method).concat(true);
+        return next(curr.skip()).concat(true);
     }
 
     public MessageCreateData toCreateData() {
