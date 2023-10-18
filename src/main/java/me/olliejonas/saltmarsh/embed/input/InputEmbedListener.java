@@ -12,15 +12,18 @@ import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionE
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple3;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class InputEmbedListener extends ListenerAdapter {
 
@@ -42,9 +45,9 @@ public class InputEmbedListener extends ListenerAdapter {
 
         if (sender == null) return;
         if (!manager.isInteractingWithEmbed(sender, channel)) return;
-        if (!manager.expectingInteraction(sender)) return;
 
-        onInteraction(sender, channel, message, Collections.singletonList(text), InputCandidate.Method.TEXT).queue(null, channel);
+        onInteraction(sender, channel, message, Collections.singletonList(text),
+                InputCandidate.Method.TEXT, null).queue(null, channel);
     }
 
     @Override
@@ -54,7 +57,8 @@ public class InputEmbedListener extends ListenerAdapter {
         Message message = event.getMessage();
         List<String> text = event.getValues();
 
-        onInteraction(sender, channel, message, text, InputCandidate.Method.SELECT).queue(event, channel);
+        onInteraction(sender, channel, message, text,
+                InputCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
     }
 
     @Override
@@ -64,7 +68,8 @@ public class InputEmbedListener extends ListenerAdapter {
         Message message = event.getMessage();
         List<String> text = event.getValues().stream().map(IMentionable::getAsMention).toList();
 
-        onInteraction(sender, channel, message, text, InputCandidate.Method.SELECT).queue(event, channel);
+        onInteraction(sender, channel, message, text,
+                InputCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
     }
 
     @Override
@@ -78,21 +83,23 @@ public class InputEmbedListener extends ListenerAdapter {
         if (!manager.isInteractingWithEmbed(sender, channel)) return;
 
         if (text.equals("Exit")) {
-            InputEmbed embed = manager.getEmbed(sender);
+            InputEmbed embed = manager.getEmbed(channel);
             message.delete().queue();
-            manager.destroy(sender.getId());
+            manager.destroy(channel);
             event.reply(MessageCreateData.fromEmbeds(embed.getExitPage())).setEphemeral(true).queue();
             return;
         }
 
-        onInteraction(sender, channel, message, Collections.singletonList(text), InputCandidate.Method.BUTTON).queue(event, channel);
+        onInteraction(sender, channel, message, Collections.singletonList(text),
+                InputCandidate.Method.BUTTON, event.getButton()).queue(event, channel);
     }
 
-    private InteractionResponses onInteraction(Member sender, TextChannel channel, Message message, List<String> text, InputCandidate.Method method) {
-        InputEmbed embed = manager.getEmbed(sender);
+    private InteractionResponses onInteraction(Member sender, TextChannel channel, Message message, List<String> text,
+                                               InputCandidate.Method method, @Nullable ActionComponent component) {
+        InputEmbed embed = manager.getEmbed(channel);
 
         Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> success =
-                embed.assignValueAndNext(sender, text, method);
+                embed.assignValueAndNext(sender, text, method, component);
 
         if (!success.v3()) {
             channel.sendMessageEmbeds(
@@ -104,30 +111,36 @@ public class InputEmbedListener extends ListenerAdapter {
         }
 
         if (success.v1().isEmpty() || success.v2()) {
-            message.editMessage(MessageEditData.fromCreateData(
-                    new MessageCreateBuilder().setEmbeds(embed.getCompletionPage()).build())).queue(complete ->
+            MessageEditData editData = MessageEditData.fromCreateData(
+                    new MessageCreateBuilder().setEmbeds(embed.getCompletionPage()).build());
+
+            queueEdit(channel, message, editData, method, complete ->
                     complete.delete().queueAfter(10, TimeUnit.SECONDS));
 
-            manager.destroy(sender.getId());
+            manager.destroy(channel);
             return embed.onCompletion();
         }
 
         InputCandidate<?> candidate = success.v1().get();
-        MessageCreateData next = candidate.compile();
+        MessageCreateData next = candidate.compile(embed.isShowExitButton());
 
         MessageEditData nextEdit = MessageEditData.fromCreateData(next);
 
-        queueEdit(sender, channel, message, nextEdit, method);
+        queueEdit(channel, message, nextEdit, method);
 
 //        return InteractionResponses.messageAsEmbed("Successfully registered \"" + text.get(0) + "\" as input!", true);
         return InteractionResponses.empty();
     }
 
-    private void queueEdit(Member sender, TextChannel channel, Message eventMessage,
-                           MessageEditData data, InputCandidate.Method method) {
+    private void queueEdit(TextChannel channel, Message eventMessage, MessageEditData data, InputCandidate.Method method) {
+        queueEdit(channel, eventMessage, data, method, __ -> {});
+    }
+
+    private void queueEdit(TextChannel channel, Message eventMessage,
+                           MessageEditData data, InputCandidate.Method method, Consumer<? super Message> onSuccess) {
         if (method == InputCandidate.Method.BUTTON || method == InputCandidate.Method.SELECT)
             eventMessage.editMessage(data).queue();
         else
-            channel.retrieveMessageById(manager.getMessageId(sender)).queue(message -> message.editMessage(data).queue());
+            channel.retrieveMessageById(manager.getMessageId(channel)).queue(message -> message.editMessage(data).queue(onSuccess));
     }
 }

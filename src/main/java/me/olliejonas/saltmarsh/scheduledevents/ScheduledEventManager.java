@@ -1,5 +1,6 @@
 package me.olliejonas.saltmarsh.scheduledevents;
 
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -66,7 +68,7 @@ public class ScheduledEventManager {
     }
 
     // returns whether the channel was already there (so true = removed, false = added)
-    public boolean toggleNotification(@NotNull Guild guild, @NotNull TextChannel channel) {
+    public boolean addNotificationChannel(@NotNull Guild guild, @NotNull TextChannel channel) {
         String guildId = guild.getId();
         String channelId = channel.getId();
 
@@ -83,6 +85,21 @@ public class ScheduledEventManager {
             this.guildToPingChannelMap.get(guildId).add(channelId);
 
         return contains;
+    }
+
+    public void registerAndSend(TextChannel channel, ScheduledEvent scheduledEvent, RecurringEventManager manager) {
+        Role pingRole = getRole(channel.getGuild());
+        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent, manager);
+
+        BiConsumer<? super TextChannel, ? super Message> sendMessage = (ch, pingMessage) ->
+                ch.sendMessageEmbeds(notification.toEmbed())
+                        .queue(success -> registerMessage(scheduledEvent, channel, success, pingMessage));
+
+        if (pingRole != null) {
+            channel.sendMessage(pingRole.getAsMention() + " " +
+                            notification.creator().getEffectiveName() + " has made an event!")
+                    .queue(ping -> sendMessage.accept(channel, ping));
+        } else sendMessage.accept(channel, null);
     }
 
     public void registerMessage(ScheduledEvent event, TextChannel channel, @NotNull Message embedMessage, @Nullable Message pingMessage) {

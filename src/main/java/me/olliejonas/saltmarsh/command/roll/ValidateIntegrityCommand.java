@@ -45,7 +45,7 @@ public class ValidateIntegrityCommand extends Command {
         double actualSum = ints.stream().mapToInt(i -> i).sum();
         double actualAverage = ints.stream().mapToInt(i -> i).average().orElse(0);
 
-        return InteractionResponses.embed(asEmbed(random.getClass().getPackageName(),
+        return InteractionResponses.embed(asEmbed(random.getClass().getName(),
                 ints, expectedCountPer,
                 actualSum, expectedSum,
                 actualAverage, expectedRoll

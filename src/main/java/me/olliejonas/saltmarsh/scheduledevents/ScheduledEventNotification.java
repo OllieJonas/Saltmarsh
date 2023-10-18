@@ -2,27 +2,28 @@ package me.olliejonas.saltmarsh.scheduledevents;
 
 import lombok.Builder;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEvent;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import me.olliejonas.saltmarsh.util.MiscUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.utils.ImageProxy;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Builder
 public record ScheduledEventNotification(Member creator, String name, OffsetDateTime start,
                                          OffsetDateTime end, String description, ImageProxy image,
                                          String location, Set<String> interested,
-                                         ScheduledEvent.Type type, ScheduledEvent.Status status) {
+                                         ScheduledEvent.Type type, ScheduledEvent.Status status,
+                                         String id, @Nullable RecurringEvent.Frequency frequency) {
 
     public static Map<ScheduledEvent.Status, String> STATUS_MESSAGES = Map.of(
             ScheduledEvent.Status.SCHEDULED, "Check out the Events tab to see " +
@@ -41,12 +42,38 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
     }
 
     public static ScheduledEventNotification fromEvent(ScheduledEvent event) {
-        return fromEvent(event, event.getStatus());
+        return fromEvent(event, event.getStatus(), null);
+    }
+
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status) {
+        return fromEvent(event, status, null);
+    }
+
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, RecurringEventManager manager) {
+        return fromEvent(event, event.getStatus(), manager);
+    }
+
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status,
+                                                       RecurringEventManager manager) {
+        return fromEvent(event, status, manager,
+                event.getGuild().retrieveMemberById(
+                        Objects.requireNonNull(event.getCreatorId())).complete());
     }
 
     // for some very, very stupid reason that I do not understand AT ALL, when deleting an event, the status passes
     // through as SCHEDULED, which breaks retrieving interested members, hence im specifying it up
-    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status) {
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status,
+                                                       RecurringEventManager recurringEventManager, Member member) {
+        // recurring
+        RecurringEvent.Frequency frequency = null;
+
+        if (recurringEventManager != null)
+            frequency = recurringEventManager.getEvent(event.getId())
+                    .map(RecurringEvent::frequency).orElse(null);
+
+        System.out.println("freq is null? " + (frequency == null));
+
+        // interested
         Set<String> interested = ConcurrentHashMap.newKeySet();
 
         if (status != ScheduledEvent.Status.CANCELED && status != ScheduledEvent.Status.COMPLETED) {
@@ -55,11 +82,10 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
 
         OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plus(1, ChronoUnit.HOURS);
 
-        return new ScheduledEventNotification(event.getGuild().retrieveMemberById(
-                Objects.requireNonNull(event.getCreatorId())).complete(), event.getName(), event.getStartTime()
+        return new ScheduledEventNotification(member, event.getName(), event.getStartTime()
                 .plus(1, ChronoUnit.HOURS),
                 endTime, event.getDescription(), event.getImage(), event.getLocation(), interested,
-                event.getType(), status);
+                event.getType(), status, event.getId(), frequency);
     }
 
     public MessageEmbed toEmbed() {
@@ -67,7 +93,8 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         builder.setAuthor(getFormattedDate());
         builder.setTitle(isNoLongerAvailable() ? "~~" + name + "~~" : name);
 
-        builder.setDescription(STATUS_MESSAGES.get(status));
+        builder.setDescription(frequency == null ? STATUS_MESSAGES.get(status) :
+                "This is a recurring event that repeats " + frequency.getRepresentation().toLowerCase(Locale.ROOT) + "!");
 
         String locationStr = type != ScheduledEvent.Type.EXTERNAL ? "<#" + location + ">" : location + " (in Person)";
 
@@ -76,8 +103,6 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         builder.addField("Interested", String.join(", ", interested), true);
         builder.addField("Description", description, false);
         builder.addField("Status", statusStr(), false);
-
-
 
         ImageProxy avatar = MiscUtils.getMostRelevantAvatar(creator);
 
@@ -96,7 +121,7 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         int startYear = start.getYear();
 
         DateTimeFormatter startDateFormatter = DateTimeFormatter.ofPattern("EE MMM '" + MiscUtils.ordinal(startDay) +
-                (Calendar.getInstance().get(Calendar.YEAR) - startYear == 0 ? "' " : "' yyyy ") + "• hh:mm a");
+                (Calendar.getInstance().get(Calendar.YEAR) - startYear == 0 ? "' " : "' yyyy ") + "• kk:mm a");
 
         if (end == null || start == end)
             return start.format(startDateFormatter);
@@ -113,7 +138,7 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         else if (endDay != startDay)
             endFormat.append("• ");
 
-        endFormat.append("hh:mm a");
+        endFormat.append("kk:mm a");
         DateTimeFormatter endDateFormatter = DateTimeFormatter.ofPattern(endFormat.toString());
 
         return start.format(startDateFormatter) + "  -  " + end.format(endDateFormatter);

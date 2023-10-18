@@ -1,6 +1,7 @@
 package me.olliejonas.saltmarsh.embed.input.types.builders;
 
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.input.EntryContext;
 import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
@@ -8,9 +9,10 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends InputMenu<T, R>> extends InputMenuBuilder<T, R> {
+public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends InputMenu<T, R>> {
 
     protected final String identifier;
 
@@ -19,6 +21,8 @@ public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends Input
     protected List<R> selectMenus;
 
     protected MessageEmbed embed;
+
+    protected Consumer<EntryContext<T>> onOption;
 
     protected Predicate<T> valid;
 
@@ -35,6 +39,7 @@ public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends Input
         this.clazz = clazz;
         this.selectMenus = selectMenus;
         this.embed = embed;
+        this.onOption = (__) -> {};
         this.valid = valid;
     }
 
@@ -64,6 +69,11 @@ public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends Input
 
     public SelectMenuBuilder<T, R, V> valid(Collection<Predicate<T>> predicates) {
         return valid(predicates.stream().reduce(Predicate::and).orElse(__ -> true));
+    }
+
+    public SelectMenuBuilder<T, R, V> onOption(Consumer<EntryContext<T>> onOption) {
+        this.onOption = onOption;
+        return this;
     }
 
     public abstract V build();

@@ -30,6 +30,11 @@ import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.commands.GetEventPingStatusCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingRolesCommand;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventListener;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.DeleteRecurringEventCommand;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.RecurEventCommand;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.RegisterRecurringChannelCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -48,13 +53,13 @@ public class Saltmarsh {
 
     @Getter
     private final String jdaToken;
-
     private JDA jda;
 
     private final Set<ListenerAdapter> listeners;
 
     private final Collection<GatewayIntent> intents;
 
+    // --------------- managers ---------------
     private final ButtonEmbedManager buttonEmbedManager;
 
     private final PaginatedEmbedManager paginatedEmbedManager;
@@ -65,7 +70,13 @@ public class Saltmarsh {
 
     private final ScheduledEventManager scheduledEventManager;
 
+    private final RecurringEventManager recurringEventManager;
+
     private final GlobalAudioManager audioManager;
+
+    // --------------- listeners (that need to be accessible) ---------------
+
+    private final ScheduledEventListener scheduledEventListener;
 
     private final CommandRegistry commandRegistry;
 
@@ -83,7 +94,11 @@ public class Saltmarsh {
         this.inputEmbedManager = new InputEmbedManager(buttonEmbedManager);
         this.audioManager = new GlobalAudioManager();
         this.scheduledEventManager = new ScheduledEventManager();
+        this.recurringEventManager = new RecurringEventManager();
 
+        // listeners
+        this.scheduledEventListener = new ScheduledEventListener(this.scheduledEventManager,
+                this.recurringEventManager);
         // commands
         this.commandRegistry = new CommandRegistry();
         this.commandWatchdog = new CommandWatchdog(buttonEmbedManager);
@@ -94,6 +109,9 @@ public class Saltmarsh {
         registerCommands();
         registerListeners();
         registerIntents();
+
+        registerListener(new DevGuildSetupChannels(true, scheduledEventManager,
+                recurringEventManager, scheduledEventListener));
 
         try {
             this.jda = buildJda().awaitReady();
@@ -117,7 +135,8 @@ public class Saltmarsh {
         registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog));
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
         registerListener(new InputEmbedListener(this.inputEmbedManager));
-        registerListener(new ScheduledEventListener(this.scheduledEventManager));
+        registerListener(this.scheduledEventListener);
+        registerListener(new RecurringEventListener(this.inputEmbedManager, this.recurringEventManager, this.scheduledEventListener));
     }
 
     public void registerCommands() {
@@ -126,6 +145,11 @@ public class Saltmarsh {
         registerCommand(new ToggleEventPingCommand(this.scheduledEventManager));
         registerCommand(new ToggleEventPingRolesCommand(this.scheduledEventManager));
         registerCommand(new GetEventPingStatusCommand(this.scheduledEventManager));
+
+        registerCommand(new RegisterRecurringChannelCommand(this.recurringEventManager));
+        registerCommand(new RecurEventCommand(this.inputEmbedManager,
+                this.recurringEventManager, this.scheduledEventListener));
+        registerCommand(new DeleteRecurringEventCommand(this.inputEmbedManager, this.recurringEventManager));
 
         // misc
         registerCommand(new IsThisAURLCommand());

@@ -32,14 +32,15 @@ public class PollCommand extends Command {
     private final InputEmbedManager inputEmbedManager;
 
     public PollCommand(PollEmbedManager manager, InputEmbedManager inputEmbedManager) {
-        super(CommandPermissions.ADMIN, "poll");
+        super(CommandPermissions.EVENTS, "poll");
         this.manager = manager;
         this.inputEmbedManager = inputEmbedManager;
     }
 
     @Override
     public CommandInfo info() {
-        return CommandInfo.empty();
+        return CommandInfo.of("Create polls! " +
+                "(Use command without arguments for Wizard)");
     }
 
     @Override
@@ -56,7 +57,7 @@ public class PollCommand extends Command {
 
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
-        if (!args.containsKey("question") && !args.containsKey("options"))
+        if (!args.containsKey("question") || !args.containsKey("options"))
             return inputEmbedPoll(executor, channel);
 
         String question = args.get("question").getAsString();
@@ -100,6 +101,7 @@ public class PollCommand extends Command {
 
         InputEmbed embed = InputEmbed.builder()
                 .step(InputText.of("question", title, "What would you like the question to be?", String.class))
+                .step(CommonInputMenus.YES_NO("yesno", title, "Is this poll a Yes/No poll? (The only two options are Yes and No)", 2, 1))
                 .step(InputRepeatingText.of("options", title, "Now enter the options you would like for this poll", String.class))
                 .step(CommonInputMenus.YES_NO("anonymous", title, "Would you like this poll to be anonymous?"))
                 .step(CommonInputMenus.YES_NO("singular", title,
@@ -117,13 +119,16 @@ public class PollCommand extends Command {
                 .onCompletion(map -> {
                     String author = executor.getEffectiveName();
                     String question = (String) map.get("question");
-                    List<String> options = (List<String>) map.get("options");
+                    Boolean yesNo = (Boolean) map.get("yesno");
+                    List<String> options = yesNo ? List.of("Yes", "No") : (List<String>) map.get("options");
                     Boolean anonymous = (Boolean) map.get("anonymous");
                     Boolean singular = (Boolean) map.get("singular");
                     GuildChannel targetChannel = (GuildChannel) map.get("targetChannel");
                     Boolean notifyChannel = (Boolean) map.get("notifyChannel");
 
-                    options.remove("Next");
+                    if (!yesNo)
+                        options.remove("Next");
+
                     List<PollOption> pollOptions = options.stream().map(PollOption::new).toList();
 
                     buildAndSendPoll(executor, (TextChannel) targetChannel, question, pollOptions,
@@ -138,7 +143,7 @@ public class PollCommand extends Command {
                         .build())
                 .build();
 
-        return inputEmbedManager.createResponse(executor, channel, embed);
+        return inputEmbedManager.createEmbed(executor, channel, embed).v1();
     }
 
     public InteractionResponses buildAndSendPoll(Member executor, TextChannel channel, String question, List<PollOption> pollOptions,

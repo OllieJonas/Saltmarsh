@@ -1,10 +1,10 @@
-package me.olliejonas.saltmarsh.scheduledevents.commands;
+package me.olliejonas.saltmarsh.scheduledevents.recurring.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
-import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
@@ -16,9 +16,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class ToggleEventPingCommand extends Command {
+public class RegisterRecurringChannelCommand extends Command {
 
-    private final ScheduledEventManager manager;
+    private final RecurringEventManager manager;
+
+    public RegisterRecurringChannelCommand(RecurringEventManager manager) {
+        super(CommandPermissions.ADMIN, "register-recurring-channel");
+        this.manager = manager;
+    }
 
     @Override
     public Collection<OptionData> args() {
@@ -26,12 +31,6 @@ public class ToggleEventPingCommand extends Command {
                 new OptionData(OptionType.CHANNEL, "text-channel", "The text channel you'd like these notifications to appear in!")
         );
     }
-
-    public ToggleEventPingCommand(ScheduledEventManager manager) {
-        super(CommandPermissions.ADMIN, "toggle-event-ping");
-        this.manager = manager;
-    }
-
 
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
@@ -42,9 +41,9 @@ public class ToggleEventPingCommand extends Command {
             if (!(gChannel instanceof TextChannel tChannel)) return InteractionResponses.error("Please specify a text channel for this!");
             targetChannel = tChannel;
         }
-        boolean removed = manager.addNotificationChannel(channel.getGuild(), targetChannel);
+        manager.addChannel(channel.getGuild(), targetChannel);
 
-        return InteractionResponses.messageAsEmbed("Successfully " + (removed ? "removed " : "added ") +
-                targetChannel.getName() + " from the list of channels to receive event notifications!", true);
+        return InteractionResponses.messageAsEmbed("Successfully designated " +
+                targetChannel.getName() + " as the channel to receive recurring event update notifications!", true);
     }
 }

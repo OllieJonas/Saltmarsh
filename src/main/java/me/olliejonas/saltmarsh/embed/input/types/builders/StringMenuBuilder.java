@@ -22,6 +22,6 @@ public class StringMenuBuilder<T> extends SelectMenuBuilder<T, StringSelectMenu,
 
     @Override
     public InputMenu.String<T> build() {
-        return new InputMenu.String<>(identifier, clazz, embed, selectMenus, valid);
+        return new InputMenu.String<>(identifier, clazz, embed, selectMenus, onOption, valid);
     }
 }

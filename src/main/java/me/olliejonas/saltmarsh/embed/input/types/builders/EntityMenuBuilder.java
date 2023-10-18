@@ -22,6 +22,6 @@ public class EntityMenuBuilder<T> extends SelectMenuBuilder<T, EntitySelectMenu,
 
     @Override
     public InputMenu.Entity<T> build() {
-        return new InputMenu.Entity<>(identifier, clazz, embed, selectMenus, valid);
+        return new InputMenu.Entity<>(identifier, clazz, embed, selectMenus, onOption, valid);
     }
 }

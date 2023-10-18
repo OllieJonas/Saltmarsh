@@ -1,6 +1,7 @@
 package me.olliejonas.saltmarsh.embed.input.types.builders;
 
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.input.EntryContext;
 import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -9,6 +10,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class ButtonBuilder<T> {
@@ -22,6 +24,8 @@ public class ButtonBuilder<T> {
     private MessageEmbed embed;
 
     private Predicate<T> valid;
+
+    private Consumer<EntryContext<T>> onOption;
 
     public ButtonBuilder(String identifier, Class<T> clazz) {
         this(identifier, null, clazz, new ArrayList<>());
@@ -37,6 +41,7 @@ public class ButtonBuilder<T> {
         this.embed = embed;
         this.clazz = clazz;
         this.buttons = buttons;
+        this.onOption = __ -> {};
         this.valid = __ -> true;
     }
 
@@ -79,11 +84,16 @@ public class ButtonBuilder<T> {
         return this;
     }
 
+    public ButtonBuilder<T> onOption(Consumer<EntryContext<T>> onOption) {
+        this.onOption = onOption;
+        return this;
+    }
+
     public ButtonBuilder<T> valid(Collection<Predicate<T>> predicates) {
         return valid(predicates.stream().reduce(Predicate::and).orElse(__ -> true));
     }
 
     public InputMenu.Button<T> build() {
-        return new InputMenu.Button<>(identifier, clazz, embed, buttons, valid);
+        return InputMenu.Button.of(identifier, clazz, embed, buttons, onOption, valid);
     }
 }

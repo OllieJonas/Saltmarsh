@@ -62,8 +62,6 @@ public class TestInputEmbedCommand extends Command {
                 })
                 .build();
 
-        manager.canSend(executor, embed);
-
         return InteractionResponses.empty();
     }
 }

@@ -35,7 +35,7 @@ public class EmbedUtils {
     }
 
     public EmbedBuilder standard() {
-        return author(colour(footer(new EmbedBuilder())));
+        return colour(footer(new EmbedBuilder()));
     }
 
     public EmbedBuilder essentials() {
@@ -50,6 +50,10 @@ public class EmbedUtils {
 
     public EmbedBuilder colour() {
         return colour(new EmbedBuilder());
+    }
+
+    public MessageEmbed colour(String title, String description) {
+        return colour().setTitle(title).setDescription(description).build();
     }
 
     public EmbedBuilder author(EmbedBuilder builder) {

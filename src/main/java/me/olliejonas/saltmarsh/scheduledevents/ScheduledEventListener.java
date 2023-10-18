@@ -1,9 +1,7 @@
 package me.olliejonas.saltmarsh.scheduledevents;
 
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.ScheduledEvent;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.scheduledevent.*;
 import net.dv8tion.jda.api.events.guild.scheduledevent.update.*;
@@ -19,37 +17,47 @@ public class ScheduledEventListener extends ListenerAdapter {
         CREATE,
         EDIT,
         DELETE;
+
     }
     private final ScheduledEventManager manager;
 
-    public ScheduledEventListener(ScheduledEventManager manager) {
+    private final RecurringEventManager recurringEventManager;
+
+    public ScheduledEventListener(ScheduledEventManager manager, RecurringEventManager recurringEventManager) {
         this.manager = manager;
+        this.recurringEventManager = recurringEventManager;
     }
 
     private void onScheduledEvent(GenericScheduledEventGatewayEvent event, EventType type) {
-        onScheduledEvent(event, type, event.getScheduledEvent().getStatus());
+        onScheduledEvent(event.getGuild(), event.getScheduledEvent(), type);
+    }
+
+    private void onScheduledEvent(Guild guild, ScheduledEvent event, EventType type) {
+        onScheduledEvent(guild, event, type, event.getStatus());
     }
 
     private void onScheduledEvent(GenericScheduledEventGatewayEvent event, EventType type, ScheduledEvent.Status status) {
-        ScheduledEvent scheduledEvent = event.getScheduledEvent();
+        onScheduledEvent(event.getGuild(), event.getScheduledEvent(), type, status);
+    }
+
+    private void onScheduledEvent(Guild guild, ScheduledEvent scheduledEvent,
+                                  EventType type, ScheduledEvent.Status status) {
+//        ScheduledEvent scheduledEvent = event.getScheduledEvent();
 
         if (manager.isEventUnregistered(scheduledEvent) && type != EventType.CREATE) return;
 
-        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent, status);
+        System.out.println("For " + type.name());
+        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent,
+                status, recurringEventManager);
+
         MessageEmbed embed = notification.toEmbed();
-        Role pingRole = manager.getRole(event.getGuild());
+        Role pingRole = manager.getRole(guild);
 
         BiConsumer<? super TextChannel, ? super Message> sendMessage = (channel, pingMessage) -> channel.sendMessageEmbeds(embed)
                 .queue(success -> manager.registerMessage(scheduledEvent, channel, success, pingMessage));
 
         Consumer<? super TextChannel> action = switch (type) {
-            case CREATE -> channel -> {
-                if (pingRole != null) {
-                    channel.sendMessage(pingRole.getAsMention() + " " +
-                                    notification.creator().getEffectiveName() + " has made an event!")
-                            .queue(ping -> sendMessage.accept(channel, ping));
-                } else sendMessage.accept(channel, null);
-            };
+            case CREATE -> channel -> manager.registerAndSend(channel, scheduledEvent, recurringEventManager);
             case EDIT -> channel -> manager.callbackMessage(scheduledEvent, channel,
                     message -> message.editMessage(MessageEditData.fromEmbeds(embed)).queue());
             case DELETE -> channel -> {
@@ -59,28 +67,33 @@ public class ScheduledEventListener extends ListenerAdapter {
             };
         };
 
-        manager.getChannelsFor(event.getGuild())
+        manager.getChannelsFor(guild)
                 .forEach(action);
     }
 
     // -------- create --------
+
     @Override
     public void onScheduledEventCreate(ScheduledEventCreateEvent event) {
         onScheduledEvent(event, EventType.CREATE);
     }
-
     // -------- users --------
+
     @Override
     public void onScheduledEventUserAdd(ScheduledEventUserAddEvent event) {
         onScheduledEvent(event, EventType.EDIT);
     }
-
     @Override
     public void onScheduledEventUserRemove(ScheduledEventUserRemoveEvent event) {
         onScheduledEvent(event, EventType.EDIT);
     }
 
     //-------- edit --------
+
+    public void onScheduledEventUpdateRecurring(Guild guild, ScheduledEvent event) {
+        onScheduledEvent(guild, event, EventType.EDIT);
+    }
+
     @Override
     public void onScheduledEventUpdateDescription(ScheduledEventUpdateDescriptionEvent event) {
         onScheduledEvent(event, EventType.EDIT);

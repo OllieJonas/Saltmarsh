@@ -1,5 +1,7 @@
 package me.olliejonas.saltmarsh.embed.input.types;
 
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
+import me.olliejonas.saltmarsh.embed.input.EntryContext;
 import me.olliejonas.saltmarsh.embed.input.types.builders.ButtonBuilder;
 import me.olliejonas.saltmarsh.embed.input.types.builders.EntityMenuBuilder;
 import me.olliejonas.saltmarsh.embed.input.types.builders.StringMenuBuilder;
@@ -19,6 +21,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 // I don't know if this is the cleanest thing I've ever done in Java or the worst thing I've ever done in Java
@@ -29,18 +33,20 @@ public sealed interface InputMenu<T, R extends ItemComponent> extends InputCandi
 
     default int length() { return 1; };
 
-    default MessageCreateData compile() {
+    default MessageCreateData compile(boolean showExitButton) {
         List<ActionRow> batched = new ArrayList<>(MiscUtils.batches(components(), length())
                 .map(ActionRow::of).toList());
 
-        batched.add(ActionRow.of(EXIT_BUTTON));
+        if (showExitButton)
+            batched.add(ActionRow.of(EXIT_BUTTON));
 
         return new MessageCreateBuilder().setEmbeds(embed())
                 .setComponents(batched)
                 .build();
     }
 
-    record Entity<T>(java.lang.String identifier, Class<T> clazz, MessageEmbed embed, List<EntitySelectMenu> components, Predicate<T> valid)
+    record Entity<T>(java.lang.String identifier, Class<T> clazz, MessageEmbed embed, List<EntitySelectMenu> components,
+                     Consumer<EntryContext<T>> onOption, Predicate<T> valid)
             implements InputMenu<T, EntitySelectMenu> {
         public static final Set<Class<?>> VALID_CLASSES = Set.of(Role.class, User.class, GuildChannel.class);
 
@@ -64,7 +70,8 @@ public sealed interface InputMenu<T, R extends ItemComponent> extends InputCandi
         }
     }
 
-    record String<T>(java.lang.String identifier, Class<T> clazz, MessageEmbed embed, List<StringSelectMenu> components, Predicate<T> valid)
+    record String<T>(java.lang.String identifier, Class<T> clazz, MessageEmbed embed, List<StringSelectMenu> components,
+                     Consumer<EntryContext<T>> onOption, Predicate<T> valid)
             implements InputMenu<T, StringSelectMenu> {
 
         public static StringMenuBuilder<java.lang.String> builder(java.lang.String identifier) {
@@ -81,8 +88,25 @@ public sealed interface InputMenu<T, R extends ItemComponent> extends InputCandi
     }
 
     record Button<T>(java.lang.String identifier, Class<T> clazz, MessageEmbed embed,
-                     List<net.dv8tion.jda.api.interactions.components.buttons.Button> components, Predicate<T> valid)
+                     List<net.dv8tion.jda.api.interactions.components.buttons.Button> components,
+                     Consumer<EntryContext<T>> onOption, Predicate<T> valid, AtomicInteger skipAmount)
             implements InputMenu<T, net.dv8tion.jda.api.interactions.components.buttons.Button> {
+
+        public static <T> Button<T> of(java.lang.String identifier, Class<T> clazz, MessageEmbed embed,
+                                       List<net.dv8tion.jda.api.interactions.components.buttons.Button> components,
+                                       Consumer<EntryContext<T>> onOption, Predicate<T> valid) {
+            return new Button<>(identifier, clazz, embed,  components, onOption, valid, new AtomicInteger(1));
+        }
+
+        @Override
+        public void setSkip(int skip) {
+            skipAmount().set(skip);
+        }
+
+        @Override
+        public int skip() {
+            return skipAmount.get();
+        }
 
         @Override
         public int length() {
@@ -99,6 +123,16 @@ public sealed interface InputMenu<T, R extends ItemComponent> extends InputCandi
 
         public static <T> ButtonBuilder<T> builder(java.lang.String identifier, MessageEmbed embed, Class<T> clazz) {
             return new ButtonBuilder<>(identifier, embed, clazz);
+        }
+
+        public static ButtonBuilder<java.lang.String> builder(java.lang.String identifier,
+                                                   java.lang.String title, java.lang.String description) {
+            return builder(identifier, title, description, java.lang.String.class);
+        }
+
+        public static <T> ButtonBuilder<T> builder(java.lang.String identifier,
+                                                   java.lang.String title, java.lang.String description, Class<T> clazz) {
+            return builder(identifier, EmbedUtils.colour().setTitle(title).setDescription(description).build(), clazz);
         }
     }
 }

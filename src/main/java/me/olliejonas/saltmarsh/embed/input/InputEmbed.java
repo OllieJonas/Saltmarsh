@@ -9,7 +9,9 @@ import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple2;
 import org.jooq.lambda.tuple.Tuple3;
 
@@ -22,9 +24,17 @@ import java.util.function.Function;
 @Getter
 public class InputEmbed {
 
-    static MessageEmbed DEFAULT_COMPLETION_PAGE = new EmbedBuilder().setTitle("Done!").setDescription("Thanks!").build();
+    static MessageEmbed DEFAULT_COMPLETION_PAGE = GENERIC_COMPLETION_PAGE("Wizard");
+
+    public static MessageEmbed GENERIC_COMPLETION_PAGE(String title) {
+        return new EmbedBuilder()
+                .setTitle(title)
+                .setDescription("Thanks for completing this wizard!")
+                .build();
+    }
 
     static MessageEmbed EXIT_PAGE = new EmbedBuilder().setTitle("Exited").setDescription("You have exited this menu!").setColor(Color.RED).build();
+
     private final List<InputCandidate<?>> inputSteps;
 
     private final Function<Map<String, ?>, InteractionResponses> onCompletion;
@@ -40,17 +50,21 @@ public class InputEmbed {
     // types have been checked before adding to this map - it's safe to just cast
     private final Map<String, Object> identifierToValueMap;
 
+    private final boolean showExitButton;
+
     public static InputEmbed.Builder builder() {
         return new Builder();
     }
 
     public InputEmbed(List<InputCandidate<?>> inputSteps, Function<Map<String, ?>, InteractionResponses> onCompletion, MessageEmbed completionPage) {
-        this(inputSteps, onCompletion, completionPage, EXIT_PAGE);
+        this(inputSteps, onCompletion, completionPage, EXIT_PAGE, true);
     }
 
     // ADD CONSUMER FOR ? FOR WHENEVER AN OPTION IS SELECT BEFORE ANYTHING ELSE HAPPENS
     // YOU COULD DO REPEATING STEPS LIKE THIS RATHER THAN CHECKING FOR TYPE IN THE LISTENER
-    public InputEmbed(List<InputCandidate<?>> inputSteps, Function<Map<String, ?>, InteractionResponses> onCompletion, MessageEmbed completionPage, MessageEmbed exitPage) {
+    public InputEmbed(List<InputCandidate<?>> inputSteps,
+                      Function<Map<String, ?>, InteractionResponses> onCompletion,
+                      MessageEmbed completionPage, MessageEmbed exitPage, boolean showExitButton) {
         this.inputSteps = inputSteps;
 
         this.noPages = inputSteps.size();
@@ -61,12 +75,13 @@ public class InputEmbed {
         this.onCompletion = onCompletion;
         this.completionPage = completionPage;
         this.exitPage = exitPage;
+        this.showExitButton = showExitButton;
     }
 
 
     // boolean is for whether they have completed it or not
-    public Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip) {
-        if (currentPageNo.get() + 1 >= noPages) return new Tuple2<>(Optional.empty(), true);
+    private Tuple2<Optional<InputCandidate<?>>, Boolean> next(int skip) {
+        if (currentPageNo.get() + skip >= noPages) return new Tuple2<>(Optional.empty(), true);
 
         return new Tuple2<>(Optional.ofNullable(inputSteps.get(currentPageNo.addAndGet(skip))), false);
     }
@@ -74,26 +89,28 @@ public class InputEmbed {
     // first boolean represents whether the user is finished (true = is finished)
     // second boolean represents whether the current page was successful in assigning a value (true = was successful).
     @SuppressWarnings("unchecked")
-    public <T> Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> assignValueAndNext(Member sender, List<String> values,
-                                                                                        InputCandidate.Method method) {
+    <T> Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> assignValueAndNext(Member sender, List<String> values,
+                                                                                        InputCandidate.Method method,
+                                                                                        @Nullable ActionComponent component) {
         InputCandidate<T> curr = (InputCandidate<T>) inputSteps.get(currentPageNo.get());
 
         for (String value : values) {
-            Optional<T> converted = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
-            if (converted.isEmpty() || !curr.valid().test(converted.get()))
+            Optional<T> convertedOpt = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
+            if (convertedOpt.isEmpty() || !curr.valid().test(convertedOpt.get()))
                 return new Tuple3<>(Optional.of(curr), false, false);  // couldn't cast successfully
 
             String id = curr.identifier();
+            T converted = convertedOpt.get();
 
-            curr.onOptionSelection().accept(converted.get(), method);
+            curr.onOption().accept(EntryContext.of(curr, converted, method, component));
 
             if (curr instanceof InputRepeatingText<?> || values.size() != 1) {
                 if (!identifierToValueMap.containsKey(id))
                     identifierToValueMap.put(id, new ArrayList<>());
 
-                ((ArrayList<Object>) identifierToValueMap.get(id)).add(converted.get());
+                ((ArrayList<Object>) identifierToValueMap.get(id)).add(converted);
             } else {
-                identifierToValueMap.put(id, converted.get());
+                identifierToValueMap.put(id, converted);
             }
         }
 
@@ -102,7 +119,7 @@ public class InputEmbed {
 
     public MessageCreateData toCreateData() {
         InputCandidate<?> curr = inputSteps.get(currentPageNo.get());
-        return curr.compile();
+        return curr.compile(showExitButton);
     }
 
     public boolean expectingInteraction() {
@@ -125,10 +142,13 @@ public class InputEmbed {
 
         private MessageEmbed completionPage;
 
+        private boolean showExitButton;
+
         public Builder() {
             this.candidates = new ArrayList<>();
             this.onCompletion = (map) -> InteractionResponses.empty();
             this.completionPage = DEFAULT_COMPLETION_PAGE;
+            this.showExitButton = true;
         }
 
         public Builder step(InputCandidate<?> step) {
@@ -153,6 +173,15 @@ public class InputEmbed {
         public Builder completionPage(MessageEmbed embed) {
             this.completionPage = embed;
             return this;
+        }
+
+        public Builder showExitButton(boolean showExitButton) {
+            this.showExitButton = showExitButton;
+            return this;
+        }
+
+        public Builder disableExitButton() {
+            return showExitButton(false);
         }
 
         public InputEmbed build() {
