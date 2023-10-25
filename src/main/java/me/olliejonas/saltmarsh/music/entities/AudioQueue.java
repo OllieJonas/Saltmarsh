@@ -21,9 +21,7 @@ public class AudioQueue<E extends Queueable> {
     private final Queue<E> queue;
 
     private E currentlyPlaying;
-
-    private final int loadAhead = 2;
-
+    
     @Getter
     private final Set<Listener<E>> listeners;
 
@@ -51,11 +49,6 @@ public class AudioQueue<E extends Queueable> {
         return Optional.ofNullable(currentlyPlaying);
     }
 
-    public void curr(E item) {
-        this.currentlyPlaying = item;
-        this.currentlyPlaying.onQueued();
-    }
-
     public boolean canImmediatelyPlay() {
         return currentlyPlaying == null;
     }
@@ -64,15 +57,15 @@ public class AudioQueue<E extends Queueable> {
         if (repeating) return Optional.of(currentlyPlaying);
 
         E next = queue.poll();
-        curr(next);
+
+        this.currentlyPlaying = next;
+        this.currentlyPlaying.onQueued();
 
         // nothing left in the queue
-        if (next == null) {
+        if (next == null)
             this.listeners.forEach(Listener::onQueueEmpty);
-            return Optional.empty();
-        } else {
-            return Optional.of(next);
-        }
+
+        return Optional.ofNullable(next);
     }
 
     public Queue<E> tracks() {

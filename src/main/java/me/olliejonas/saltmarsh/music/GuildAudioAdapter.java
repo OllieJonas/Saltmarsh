@@ -27,7 +27,6 @@ public class GuildAudioAdapter extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        System.out.println("onTrackStart");
         super.onTrackStart(player, track);
     }
 
@@ -36,7 +35,6 @@ public class GuildAudioAdapter extends AudioEventAdapter {
         super.onTrackEnd(player, track, endReason);
         System.out.println("onTrackEnd (" + endReason.name() + ")");
         if (endReason.mayStartNext) {
-            System.out.println("mayStartNext");
             manager.next();
         }
     }

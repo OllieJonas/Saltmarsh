@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
 
         @Override
         public String representation() {
-            return "-" + command + (aliases.size() == 0 ? "" : " (" + aliases.stream()
+            return "-" + command + (aliases.isEmpty() ? "" : " (" + aliases.stream()
                     .map(s -> "-" + s).sorted().collect(Collectors.joining(", ")) + ")") +
                     ItemizedEmbed.AS_FIELD_SPLIT_STR + info.shortDesc();
         }
@@ -72,7 +72,7 @@ public class HelpCommand extends Command {
                 .asFields(true)
                 .build();
 
-        manager.send(channel, embed.compile(manager));
+        manager.register(embed.compile(manager));
         return empty();
     }
 }

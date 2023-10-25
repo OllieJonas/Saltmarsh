@@ -1,15 +1,16 @@
 package me.olliejonas.saltmarsh.scheduledevents;
 
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
-import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.events.guild.scheduledevent.*;
 import net.dv8tion.jda.api.events.guild.scheduledevent.update.*;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 public class ScheduledEventListener extends ListenerAdapter {
 
@@ -17,14 +18,14 @@ public class ScheduledEventListener extends ListenerAdapter {
         CREATE,
         EDIT,
         DELETE;
-
     }
-    private final ScheduledEventManager manager;
+
+    private final ScheduledEventManagerImpl manager;
 
     private final RecurringEventManager recurringEventManager;
 
     public ScheduledEventListener(ScheduledEventManager manager, RecurringEventManager recurringEventManager) {
-        this.manager = manager;
+        this.manager = (ScheduledEventManagerImpl) manager;
         this.recurringEventManager = recurringEventManager;
     }
 
@@ -42,33 +43,33 @@ public class ScheduledEventListener extends ListenerAdapter {
 
     private void onScheduledEvent(Guild guild, ScheduledEvent scheduledEvent,
                                   EventType type, ScheduledEvent.Status status) {
-//        ScheduledEvent scheduledEvent = event.getScheduledEvent();
 
         if (manager.isEventUnregistered(scheduledEvent) && type != EventType.CREATE) return;
 
-        System.out.println("For " + type.name());
-        ScheduledEventNotification notification = ScheduledEventNotification.fromEvent(scheduledEvent,
-                status, recurringEventManager);
+        if (type == EventType.CREATE)
+            manager.addCreator(scheduledEvent);
 
-        MessageEmbed embed = notification.toEmbed();
-        Role pingRole = manager.getRole(guild);
+        Optional<CacheRestAction<Member>> memberAction = manager.getCreatorAction(guild, scheduledEvent);
 
-        BiConsumer<? super TextChannel, ? super Message> sendMessage = (channel, pingMessage) -> channel.sendMessageEmbeds(embed)
-                .queue(success -> manager.registerMessage(scheduledEvent, channel, success, pingMessage));
+        if (memberAction.isEmpty()) return;
 
-        Consumer<? super TextChannel> action = switch (type) {
-            case CREATE -> channel -> manager.registerAndSend(channel, scheduledEvent, recurringEventManager);
-            case EDIT -> channel -> manager.callbackMessage(scheduledEvent, channel,
-                    message -> message.editMessage(MessageEditData.fromEmbeds(embed)).queue());
-            case DELETE -> channel -> {
-                if (pingRole != null)
-                    channel.sendMessage(pingRole.getAsMention() + " " + notification.name() + " has unfortunately been cancelled! :(").queue();
-                manager.callbackMessage(scheduledEvent, channel, message -> message.editMessage(MessageEditData.fromEmbeds(embed)).queue());
-            };
-        };
+        memberAction.get().submit()
+                .thenApply(creator -> ScheduledEventNotification.fromEvent(
+                        scheduledEvent, status, recurringEventManager, creator))
 
-        manager.getChannelsFor(guild)
-                .forEach(action);
+                .whenComplete((notification, ex) -> {
+                    Optional<Role> roleOpt = manager.getRole(guild);
+                    if (ex != null) throw new RuntimeException(ex);
+
+                    manager.getChannel(guild)
+                            .ifPresent(channel -> {
+                                switch (type) {
+                                    case CREATE -> manager.send(channel, notification);
+                                    case EDIT -> manager.edit(channel, notification);
+                                    case DELETE -> manager.delete(guild, channel, notification);
+                                }
+                            });
+                });
     }
 
     // -------- create --------
@@ -77,6 +78,7 @@ public class ScheduledEventListener extends ListenerAdapter {
     public void onScheduledEventCreate(ScheduledEventCreateEvent event) {
         onScheduledEvent(event, EventType.CREATE);
     }
+
     // -------- users --------
 
     @Override
@@ -141,19 +143,6 @@ public class ScheduledEventListener extends ListenerAdapter {
 //                        message -> message.editMessage(MessageEditData.fromEmbeds()).queue()));
 
         if (manager.isEventUnregistered(scheduledEvent)) return;
-
-        manager.removePingMessages(scheduledEvent);
-        manager.destroyEvent(scheduledEvent);
+        manager.destroy(scheduledEvent);
     }
-
-//    private void logScheduledEvent(ScheduledEvent event) {
-//        System.out.println("Title: " + event.getName());
-//        System.out.println("Organiser: " + (event.getCreator() == null ? "null" : event.getCreator().getName()));
-//        System.out.println("Location: " + event.getLocation());
-//        System.out.println("Description: " + event.getDescription());
-//        System.out.println("Start Time: " + event.getStartTime().format(DateTimeFormatter.RFC_1123_DATE_TIME));
-//        System.out.println("End Time: " + (event.getEndTime() == null ? "null" : event.getEndTime().format(DateTimeFormatter.RFC_1123_DATE_TIME)));
-//        System.out.println("Status: " + event.getStatus().name());
-//        System.out.println("Type: " + event.getType().name());
-//    }
 }

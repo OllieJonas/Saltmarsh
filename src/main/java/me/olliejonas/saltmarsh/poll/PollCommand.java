@@ -33,6 +33,7 @@ public class PollCommand extends Command {
 
     public PollCommand(PollEmbedManager manager, InputEmbedManager inputEmbedManager) {
         super(CommandPermissions.EVENTS, "poll");
+
         this.manager = manager;
         this.inputEmbedManager = inputEmbedManager;
     }
@@ -143,7 +144,7 @@ public class PollCommand extends Command {
                         .build())
                 .build();
 
-        return inputEmbedManager.createEmbed(executor, channel, embed).v1();
+        return inputEmbedManager.register(executor, channel, embed);
     }
 
     public InteractionResponses buildAndSendPoll(Member executor, TextChannel channel, String question, List<PollOption> pollOptions,

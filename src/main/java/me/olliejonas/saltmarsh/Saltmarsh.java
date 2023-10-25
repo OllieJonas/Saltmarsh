@@ -1,5 +1,6 @@
 package me.olliejonas.saltmarsh;
 
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import me.olliejonas.saltmarsh.command.admin.AdminCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
@@ -11,28 +12,35 @@ import me.olliejonas.saltmarsh.command.meta.CommandWatchdog;
 import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
 import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
 import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
-import me.olliejonas.saltmarsh.command.misc.IsThisAURLCommand;
 import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
 import me.olliejonas.saltmarsh.command.roll.ValidateIntegrityCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedListener;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManagerImpl;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManagerImpl;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedListener;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
+import me.olliejonas.saltmarsh.embed.input.InputEmbedManagerImpl;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.poll.PollCommand;
 import me.olliejonas.saltmarsh.poll.PollEmbedManager;
+import me.olliejonas.saltmarsh.poll.PollEmbedManagerImpl;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventListener;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManagerImpl;
 import me.olliejonas.saltmarsh.scheduledevents.commands.GetEventPingStatusCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingCommand;
 import me.olliejonas.saltmarsh.scheduledevents.commands.ToggleEventPingRolesCommand;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventListener;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventLoader;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManagerImpl;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.DeleteRecurringEventCommand;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.EditRecurringEventCommand;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.RecurEventCommand;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.RegisterRecurringChannelCommand;
 import net.dv8tion.jda.api.JDA;
@@ -45,15 +53,34 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.jooq.lambda.tuple.Tuple2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Saltmarsh {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(Saltmarsh.class);
+
     @Getter
     private final String jdaToken;
+
     private JDA jda;
+
+    private final HikariDataSource hikariDataSource;
+
+    @Getter
+    private Connection sqlConnection = null;
+
+    @Getter
+    private final boolean databaseEnabled;
 
     private final Set<ListenerAdapter> listeners;
 
@@ -82,23 +109,43 @@ public class Saltmarsh {
 
     private final CommandWatchdog commandWatchdog;
 
-    public Saltmarsh(String jdaToken) {
+    public Saltmarsh(String jdaToken, HikariDataSource database) {
         this.jdaToken = jdaToken;
+        this.hikariDataSource = database;
+
+        if (hikariDataSource != null) {
+            try {
+                this.sqlConnection = database.getConnection();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        this.databaseEnabled = hikariDataSource != null;
+
         this.listeners = new HashSet<>();
         this.intents = new HashSet<>();
 
         // managers
-        this.buttonEmbedManager = new ButtonEmbedManager();
-        this.paginatedEmbedManager = new PaginatedEmbedManager(buttonEmbedManager);
-        this.pollEmbedManager = new PollEmbedManager(buttonEmbedManager);
-        this.inputEmbedManager = new InputEmbedManager(buttonEmbedManager);
+        this.buttonEmbedManager = new ButtonEmbedManagerImpl();
+        this.paginatedEmbedManager = new PaginatedEmbedManagerImpl(buttonEmbedManager);
+        this.pollEmbedManager = new PollEmbedManagerImpl(buttonEmbedManager);
+        this.inputEmbedManager = new InputEmbedManagerImpl(buttonEmbedManager);
         this.audioManager = new GlobalAudioManager();
-        this.scheduledEventManager = new ScheduledEventManager();
-        this.recurringEventManager = new RecurringEventManager();
+
+
+        // RecurringEventManager requires JDA to be loaded, so loading is handled in RecurringEventLoader
+        this.recurringEventManager = new RecurringEventManagerImpl(inputEmbedManager);
+        registerListener(new RecurringEventLoader(recurringEventManager, sqlConnection));
+
+        this.scheduledEventManager = createScheduledEventManager();
 
         // listeners
         this.scheduledEventListener = new ScheduledEventListener(this.scheduledEventManager,
                 this.recurringEventManager);
+
+        ((RecurringEventManagerImpl) this.recurringEventManager).setScheduledEventListener(scheduledEventListener);
+
         // commands
         this.commandRegistry = new CommandRegistry();
         this.commandWatchdog = new CommandWatchdog(buttonEmbedManager);
@@ -109,9 +156,6 @@ public class Saltmarsh {
         registerCommands();
         registerListeners();
         registerIntents();
-
-        registerListener(new DevGuildSetupChannels(true, scheduledEventManager,
-                recurringEventManager, scheduledEventListener));
 
         try {
             this.jda = buildJda().awaitReady();
@@ -124,11 +168,21 @@ public class Saltmarsh {
         SlashCommandData helloWorldData = Commands.slash(command.getPrimaryAlias(), command.info().shortDesc());
         this.jda.updateCommands().addCommands(helloWorldData).queue();
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                destroy();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }));
 //        AutoEnableWatchdog.autoEnable(jda, commandWatchdog);
     }
 
-    public void destroy() {
+    public void destroy() throws SQLException {
+        LOGGER.info("Shutting down ...");
         this.jda.shutdownNow();
+        this.sqlConnection.close();
+        this.hikariDataSource.close();
     }
 
     public void registerListeners() {
@@ -136,7 +190,7 @@ public class Saltmarsh {
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
         registerListener(new InputEmbedListener(this.inputEmbedManager));
         registerListener(this.scheduledEventListener);
-        registerListener(new RecurringEventListener(this.inputEmbedManager, this.recurringEventManager, this.scheduledEventListener));
+        registerListener(new RecurringEventListener(this.recurringEventManager));
     }
 
     public void registerCommands() {
@@ -147,12 +201,12 @@ public class Saltmarsh {
         registerCommand(new GetEventPingStatusCommand(this.scheduledEventManager));
 
         registerCommand(new RegisterRecurringChannelCommand(this.recurringEventManager));
-        registerCommand(new RecurEventCommand(this.inputEmbedManager,
-                this.recurringEventManager, this.scheduledEventListener));
+        registerCommand(new RecurEventCommand(this.inputEmbedManager, this.recurringEventManager));
         registerCommand(new DeleteRecurringEventCommand(this.inputEmbedManager, this.recurringEventManager));
+        registerCommand(new EditRecurringEventCommand(this.inputEmbedManager, this.recurringEventManager));
 
         // misc
-        registerCommand(new IsThisAURLCommand());
+//        registerCommand(new IsThisAURLCommand());
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
@@ -170,6 +224,7 @@ public class Saltmarsh {
                 this.inputEmbedManager,
                 this.audioManager
         ));
+
         registerCommand(new WhatTypeIsCommand());
 
         registerCommand(new AdminCommand(
@@ -189,7 +244,6 @@ public class Saltmarsh {
 
         // help - register this last
         registerCommand(new HelpCommand(paginatedEmbedManager, commandRegistry));
-
     }
 
     public void registerIntents() {
@@ -209,6 +263,68 @@ public class Saltmarsh {
 
     private void registerIntent(GatewayIntent intent) {
         intents.add(intent);
+    }
+
+    private ScheduledEventManager createScheduledEventManager() {
+        Map<String, String> guildToPingChannelMap = new ConcurrentHashMap<>();
+        Map<String, String> guildToRoleMap = new ConcurrentHashMap<>();
+        Map<String, String> eventToCreatorMap = new ConcurrentHashMap<>();
+
+        Map<String, Map<String, Tuple2<String, String>>> eventToChannelToMessageMap = new ConcurrentHashMap<>();
+
+        try (PreparedStatement statement = sqlConnection.prepareStatement("SELECT * FROM " + Constants.DB.SCHEDULED_EVENTS_META + ";")) {
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet == null) throw new IllegalStateException("resultSet for createScheduledEventManager is null!");
+
+            while (resultSet.next()) {
+                String guild = resultSet.getString("guild");
+                String channel = resultSet.getString("channel");
+                String role = resultSet.getString("role");
+
+                guildToPingChannelMap.put(guild, channel);
+                guildToRoleMap.put(guild, role);
+            }
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            LOGGER.warn("Unable to execute ScheduledEventManager SQL statement! Reverting to no loads", e);
+            return new ScheduledEventManagerImpl(recurringEventManager);
+        }
+
+        try (PreparedStatement statement = sqlConnection.prepareStatement("SELECT * FROM " + Constants.DB.SCHEDULED_EVENTS + ";")) {
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet == null) throw new IllegalStateException("resultSet for createScheduledEventManager is null!");
+
+            while (resultSet.next()) {
+                String event = resultSet.getString("event");
+                String channel = resultSet.getString("channel");
+                String creator = resultSet.getString("creator");
+                String embedMessage = resultSet.getString("embed_message");
+                String pingMessage = resultSet.getString("ping_message");
+
+                eventToCreatorMap.put(event, creator);
+
+                Map<String, Tuple2<String, String>> channelToMessageMap = new HashMap<>();
+
+                channelToMessageMap.put(channel, new Tuple2<>(embedMessage, pingMessage));
+                eventToChannelToMessageMap.put(event, channelToMessageMap);
+            }
+            resultSet.close();
+
+        } catch (SQLException e) {
+            LOGGER.warn("Unable to execute ScheduledEventManager SQL statement! Reverting to no loads", e);
+            return new ScheduledEventManagerImpl(recurringEventManager);
+        }
+
+        return new ScheduledEventManagerImpl(recurringEventManager,
+                sqlConnection,
+                guildToPingChannelMap,
+                eventToChannelToMessageMap,
+                guildToRoleMap,
+                eventToCreatorMap);
     }
 
 

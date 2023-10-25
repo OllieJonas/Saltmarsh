@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 
 public class VoiceAFKTimeoutTaskScheduler {
 
-    public static final long DEFAULT_DELETION_THRESHOLD = 120;
+    public static final long DEFAULT_DELETION_THRESHOLD = 180;
 
     public static final long DEFAULT_PERIOD = 60;
 
@@ -77,7 +77,6 @@ public class VoiceAFKTimeoutTaskScheduler {
         Set<Long> guilds = ConcurrentHashMap.newKeySet();
 
         marked.entrySet().stream().filter(e -> shouldRemovePredicate.test(e.getKey())).forEach(e -> {
-            System.out.println("removing for afk!");
             e.getValue().getAudioManager().closeAudioConnection();
             deletedCount.incrementAndGet();
             guilds.add(e.getKey());

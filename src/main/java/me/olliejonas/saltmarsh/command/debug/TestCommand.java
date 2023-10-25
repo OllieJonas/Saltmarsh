@@ -36,6 +36,7 @@ public class TestCommand extends Command {
                        PollEmbedManager pollEmbedManager,
                        InputEmbedManager inputEmbedManager,
                        GlobalAudioManager globalAudioManager) {
+
         super(CommandPermissions.ADMIN, "test");
         this.buttonEmbedManager = buttonEmbedManager;
         this.paginatedEmbedManager = paginatedEmbedManager;

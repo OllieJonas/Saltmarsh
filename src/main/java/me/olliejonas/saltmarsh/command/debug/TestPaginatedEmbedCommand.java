@@ -39,7 +39,7 @@ public class TestPaginatedEmbedCommand extends Command {
 
         PaginatedEmbed embed = builder.build();
         embed.compile(manager);
-        manager.send(channel, embed);
+        manager.register(embed);
 
         return InteractionResponses.empty();
     }

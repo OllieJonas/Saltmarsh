@@ -36,7 +36,7 @@ public class QueueException extends RuntimeException {
         this.exception = exception;
     }
 
-    public CommandFailedException asFailed() {
+    public CommandFailedException asCommandFailed() {
         return CommandFailedException.other(reason.getMessage(), reason.getMessage());
     }
 }

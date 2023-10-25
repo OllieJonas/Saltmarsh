@@ -2,9 +2,8 @@ package me.olliejonas.saltmarsh.poll;
 
 import kotlin.jvm.functions.Function4;
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
+import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -64,11 +63,6 @@ public record PollEmbed(PollEmbedManager manager, String question, String author
 
             embedBuilder.addField(title, descBuilder.toString(), false);
         }
-
-        embedBuilder.setFooter("This poll will expire in " +
-                WeakConcurrentHashMap.DEFAULT_EXPIRATION_TIME + " " +
-                WeakConcurrentHashMap.DEFAULT_EXPIRATION_UNITS.name() +
-                " from the time this message was sent!");
 
         ButtonEmbed.Builder builder = ButtonEmbed.builder(embedBuilder);
 

@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  saltmarsh:
+    container_name: saltmarsh
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - lavalink
+      - mongodb
+    networks:
+      - lavalink
+      - mongodb
+
+  lavalink:  # exposes port 2333
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: lavalink
+    restart: unless-stopped
+    volumes:
+      - .application.yml:/opt/Lavalink/application.yml
+      - ./plugins/:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - data:/data/db
+    expose:
+      - 27017
+    networks:
+      - mongodb
+
+networks:
+  lavalink:
+    name: lavalink
+  mongodb:
+    name: mongodb
+
+volumes:
+  data:

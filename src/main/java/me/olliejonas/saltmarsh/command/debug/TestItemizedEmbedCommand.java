@@ -41,7 +41,7 @@ public class TestItemizedEmbedCommand extends Command {
 
         System.out.println(embed.items().stream().map(Itemizable.Strings::representation).collect(Collectors.toList()));
 
-        manager.send(channel, embed.compile(manager));
+        manager.register(embed.compile(manager));
         return empty();
     }
 }

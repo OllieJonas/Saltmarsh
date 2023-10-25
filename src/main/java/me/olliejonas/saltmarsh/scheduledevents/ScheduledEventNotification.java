@@ -14,12 +14,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Builder
-public record ScheduledEventNotification(Member creator, String name, OffsetDateTime start,
+public record ScheduledEventNotification(Member creator, String eventId, String name, OffsetDateTime start,
                                          OffsetDateTime end, String description, ImageProxy image,
                                          String location, Set<String> interested,
                                          ScheduledEvent.Type type, ScheduledEvent.Status status,
@@ -57,7 +56,13 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
                                                        RecurringEventManager manager) {
         return fromEvent(event, status, manager,
                 event.getGuild().retrieveMemberById(
-                        Objects.requireNonNull(event.getCreatorId())).complete());
+                        "140187632314351617").complete());
+    }
+
+    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status,
+                                                       String creatorId, RecurringEventManager manager) {
+        return fromEvent(event, status, manager,
+                event.getGuild().retrieveMemberById(creatorId).complete());
     }
 
     // for some very, very stupid reason that I do not understand AT ALL, when deleting an event, the status passes
@@ -68,10 +73,8 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
         RecurringEvent.Frequency frequency = null;
 
         if (recurringEventManager != null)
-            frequency = recurringEventManager.getEvent(event.getId())
+            frequency = recurringEventManager.get(event.getId())
                     .map(RecurringEvent::frequency).orElse(null);
-
-        System.out.println("freq is null? " + (frequency == null));
 
         // interested
         Set<String> interested = ConcurrentHashMap.newKeySet();
@@ -80,10 +83,10 @@ public record ScheduledEventNotification(Member creator, String name, OffsetDate
             event.retrieveInterestedMembers().forEachAsync(m -> interested.add(m.getAsMention())).join();
         }
 
-        OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plus(1, ChronoUnit.HOURS);
+        OffsetDateTime startTime = event.getStartTime().plusHours(1);
+        OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plusHours(1);
 
-        return new ScheduledEventNotification(member, event.getName(), event.getStartTime()
-                .plus(1, ChronoUnit.HOURS),
+        return new ScheduledEventNotification(member, event.getId(), event.getName(), startTime,
                 endTime, event.getDescription(), event.getImage(), event.getLocation(), interested,
                 event.getType(), status, event.getId(), frequency);
     }

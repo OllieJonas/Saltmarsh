@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class WhatTypeIsCommand extends Command {
 
@@ -39,8 +38,6 @@ public class WhatTypeIsCommand extends Command {
         potentialClasses.remove(Boolean.class);
 
         String target = args.get("thing").getAsString().strip();
-        System.out.println("target: " + target);
-        System.out.println("potentialClasses: " + potentialClasses.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")));
 
         Optional<?> match = Optional.empty();
 

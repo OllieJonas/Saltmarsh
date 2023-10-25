@@ -7,15 +7,12 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class GetEventPingStatusCommand extends Command {
 
@@ -53,14 +50,14 @@ public class GetEventPingStatusCommand extends Command {
     }
 
     private InteractionResponses getChannels(Guild guild) {
-        Set<TextChannel> channels = manager.getChannelsFor(guild);
-        return InteractionResponses.message("There are " + channels.size() + " channels currently receiving notifications! " +
-                "These are: " + channels.stream().map(Channel::getAsMention).collect(Collectors.joining(", ")));
+        return InteractionResponses.message(manager.getChannel(guild)
+                .map(channel -> channel.getName() + " is currently receiving notifications!")
+                .orElse("There aren't any channels currently receiving notifications!"));
     }
 
     private InteractionResponses getRoles(Guild guild) {
-        Role role = manager.getRole(guild);
-        return InteractionResponses.messageAsEmbed(role == null ? "No role is currently assigned!" :
-                "The current role to receive notifications is \"" + role.getName() + "\"!");
+        return InteractionResponses.messageAsEmbed(manager.getRole(guild)
+                .map(role -> "The current role to receive notifications is \"" + role.getName() + "\"!")
+                .orElse("No role is currently assigned!"));
     }
 }

@@ -36,11 +36,13 @@ public class PlayCommand extends AudioCommand {
     public InteractionResponses execute(Member executor,
                                         TextChannel channel, Map<String, OptionMapping> args,
                                         String aliasUsed) throws CommandFailedException {
-        return switch (args.size()) {
-            case 0 -> resume(executor.getGuild());
-            case 1 -> Commons.joinAndPlay(manager, channel, executor, args.get("track").getAsString());
-            default -> throw CommandFailedException.badArgs(executor, this, "track-url (optional)");
-        };
+
+        OptionMapping trackMapping = args.get("track");
+
+        if (trackMapping == null || trackMapping.getAsString().isEmpty())
+            return resume(executor.getGuild());
+
+        return joinAndPlay(manager, channel, executor, trackMapping.getAsString());
     }
 
     private InteractionResponses resume(Guild guild) {

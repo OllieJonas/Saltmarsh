@@ -8,6 +8,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.input.InputEmbed;
 import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
 import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEvent;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.Utils;
 import net.dv8tion.jda.api.entities.Guild;
@@ -19,14 +20,16 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-public class DeleteRecurringEventCommand extends Command {
+public class EditRecurringEventCommand extends Command {
 
     private final InputEmbedManager inputEmbedManager;
+
     private final RecurringEventManager manager;
 
-    public DeleteRecurringEventCommand(InputEmbedManager inputEmbedManager, RecurringEventManager manager) {
-        super(CommandPermissions.EVENTS, "delete-recurring-event");
+    public EditRecurringEventCommand(InputEmbedManager inputEmbedManager, RecurringEventManager manager) {
+        super(CommandPermissions.EVENTS, "edit-recurring-events");
 
         this.inputEmbedManager = inputEmbedManager;
         this.manager = manager;
@@ -34,7 +37,7 @@ public class DeleteRecurringEventCommand extends Command {
 
     @Override
     public CommandInfo info() {
-        return CommandInfo.of("Un-mark an event as recurring! (Doesn't delete the event)");
+        return CommandInfo.of("Edit how often an event recurs!");
     }
 
     @Override
@@ -44,26 +47,34 @@ public class DeleteRecurringEventCommand extends Command {
 
         if (events.isEmpty()) return InteractionResponses.error("There aren't any recurring events! :(");
 
-        return inputEmbedManager.register(executor, channel, buildEmbed(guild, events));
+        return inputEmbedManager.register(executor, channel, buildEmbed(guild, executor, events));
     }
 
-
-    private InputEmbed buildEmbed(Guild guild, List<ScheduledEvent> events) {
+    private InputEmbed buildEmbed(Guild guild, Member executor, List<ScheduledEvent> events) {
         List<Button> buttons = Utils.fromEvents(events, null);
+        String title = "Edit Recurring Event Wizard";
 
         return InputEmbed.builder()
-                .step(InputMenu.Button.builder("event",
-                                "Delete Recurring Event Wizard",
-                                "Please select a recurring event you would like to remove " +
-                                        "\n(Note: This doesn't delete the whole event, just stops it from recurring)")
-                        .buttons(buttons)
+                .step(InputMenu.Button.builder("events", title,
+                                "Which event would you like to edit?").buttons(buttons)
                         .build())
+                .step(InputMenu.Button.builder("frequency", title, "How often would you like this event to repeat?")
+                        .buttons(Stream.of("Daily", "Weekly", "Bi-Weekly", "Monthly")
+                                .map(s -> Button.primary(s, s)).toList())
+                        .build())
+
+                .completionPage(InputEmbed.GENERIC_COMPLETION_PAGE(title))
+
                 .onCompletion(results -> {
-                    String name = (String) results.get("event");
-                    String eventId = guild.getScheduledEventsByName(name, false).get(0).getId();
-                    manager.remove(eventId);
-                    return InteractionResponses.messageAsEmbed("Successfully removed " + name + " as a recurring event!");
+                    String eventName = (String) results.get("events");
+                    RecurringEvent.Frequency frequency = RecurringEvent.Frequency.from((String) results.get("frequency"));
+                    ScheduledEvent event = guild.getScheduledEventsByName(eventName, false).get(0);
+
+                    manager.register(RecurringEvent.of(event, executor, frequency), guild);
+
+                    return InteractionResponses.messageAsEmbed("Successfully marked " + eventName + " as repeating!", true);
                 })
                 .build();
     }
+
 }

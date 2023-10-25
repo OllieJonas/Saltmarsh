@@ -42,7 +42,7 @@ public class ToggleEventPingCommand extends Command {
             if (!(gChannel instanceof TextChannel tChannel)) return InteractionResponses.error("Please specify a text channel for this!");
             targetChannel = tChannel;
         }
-        boolean removed = manager.addNotificationChannel(channel.getGuild(), targetChannel);
+        boolean removed = manager.toggleChannel(channel.getGuild(), targetChannel);
 
         return InteractionResponses.messageAsEmbed("Successfully " + (removed ? "removed " : "added ") +
                 targetChannel.getName() + " from the list of channels to receive event notifications!", true);

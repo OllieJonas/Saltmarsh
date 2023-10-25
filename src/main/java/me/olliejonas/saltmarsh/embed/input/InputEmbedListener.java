@@ -44,7 +44,7 @@ public class InputEmbedListener extends ListenerAdapter {
         String text = message.getContentRaw().strip();
 
         if (sender == null) return;
-        if (!manager.isInteractingWithEmbed(sender, channel)) return;
+        if (manager.isNotInteracting(sender, channel)) return;
 
         onInteraction(sender, channel, message, Collections.singletonList(text),
                 InputCandidate.Method.TEXT, null).queue(null, channel);
@@ -80,7 +80,7 @@ public class InputEmbedListener extends ListenerAdapter {
         String text = event.getButton().getLabel();
 
         if (sender == null) return;
-        if (!manager.isInteractingWithEmbed(sender, channel)) return;
+        if (manager.isNotInteracting(sender, channel)) return;
 
         if (text.equals("Exit")) {
             InputEmbed embed = manager.getEmbed(channel);
