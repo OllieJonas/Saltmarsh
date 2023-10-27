@@ -27,9 +27,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Zip project
-        run: pwd
+        run: tar -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh saltmarsh.tar
 
-      - name: Upload Docker Image as Artifact
+      - name: Upload zipped archive as artifact
         uses: actions/upload-artifact@master
         with:
           name: saltmarsh.tar
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Retrieve Docker Image as Artifact
+      - name: Download zipped archive as artifact
         uses: actions/download-artifact@master
         with:
           name: saltmarsh.tar
@@ -71,10 +71,8 @@ jobs:
             cd Saltmarsh
             mv github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
             rm -rf github
-            docker kill Saltmarsh
-            docker container prune --force
-            docker image rm saltmarsh
-            docker load --input saltmarsh.tar
+            tar -xcf saltmarsh.tar Saltmarsh
             rm saltmarsh.tar
-            docker run -d --name=Saltmarsh --env-file /root/Saltmarsh/env_file saltmarsh
+            docker compose down
+            docker compose up --env-file /root/Saltmarsh/env_file
             exit
