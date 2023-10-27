@@ -5,9 +5,9 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
-import me.olliejonas.saltmarsh.embed.input.InputEmbed;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbed;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepMenu;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.Utils;
 import net.dv8tion.jda.api.entities.Guild;
@@ -22,13 +22,13 @@ import java.util.Map;
 
 public class DeleteRecurringEventCommand extends Command {
 
-    private final InputEmbedManager inputEmbedManager;
+    private final WizardEmbedManager wizardEmbedManager;
     private final RecurringEventManager manager;
 
-    public DeleteRecurringEventCommand(InputEmbedManager inputEmbedManager, RecurringEventManager manager) {
+    public DeleteRecurringEventCommand(WizardEmbedManager wizardEmbedManager, RecurringEventManager manager) {
         super(CommandPermissions.EVENTS, "delete-recurring-event");
 
-        this.inputEmbedManager = inputEmbedManager;
+        this.wizardEmbedManager = wizardEmbedManager;
         this.manager = manager;
     }
 
@@ -44,15 +44,15 @@ public class DeleteRecurringEventCommand extends Command {
 
         if (events.isEmpty()) return InteractionResponses.error("There aren't any recurring events! :(");
 
-        return inputEmbedManager.register(executor, channel, buildEmbed(guild, events));
+        return wizardEmbedManager.register(executor, channel, buildEmbed(guild, events));
     }
 
 
-    private InputEmbed buildEmbed(Guild guild, List<ScheduledEvent> events) {
+    private WizardEmbed buildEmbed(Guild guild, List<ScheduledEvent> events) {
         List<Button> buttons = Utils.fromEvents(events, null);
 
-        return InputEmbed.builder()
-                .step(InputMenu.Button.builder("event",
+        return WizardEmbed.builder()
+                .step(StepMenu.Button.builder("event",
                                 "Delete Recurring Event Wizard",
                                 "Please select a recurring event you would like to remove " +
                                         "\n(Note: This doesn't delete the whole event, just stops it from recurring)")

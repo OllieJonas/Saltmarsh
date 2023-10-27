@@ -1,18 +1,20 @@
-package me.olliejonas.saltmarsh.embed.input.types.builders;
+package me.olliejonas.saltmarsh.embed.wizard.types.builders;
 
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.embed.input.EntryContext;
-import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.embed.wizard.EntryContext;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepCandidate;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepMenu;
+import me.olliejonas.saltmarsh.util.functional.BiPredicateWithContext;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends InputMenu<T, R>> {
+public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends StepMenu<T, R>> {
 
     protected final String identifier;
 
@@ -24,17 +26,17 @@ public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends Input
 
     protected Consumer<EntryContext<T>> onOption;
 
-    protected Predicate<T> valid;
+    protected BiPredicateWithContext<T, StepCandidate<T>> valid;
 
     public SelectMenuBuilder(String identifier, Class<T> clazz) {
-        this(identifier, clazz, null, new ArrayList<>(), __ -> true);
+        this(identifier, clazz, null, new ArrayList<>(), (__, ___) -> new Tuple2<>(true, ""));
     }
 
     public SelectMenuBuilder(String identifier, Class<T> clazz, MessageEmbed embed) {
-        this(identifier, clazz, embed, new ArrayList<>(), __ -> true);
+        this(identifier, clazz, embed, new ArrayList<>(), (__, ___) -> new Tuple2<>(true, ""));
     }
 
-    public SelectMenuBuilder(String identifier, Class<T> clazz, MessageEmbed embed, List<R> selectMenus, Predicate<T> valid) {
+    public SelectMenuBuilder(String identifier, Class<T> clazz, MessageEmbed embed, List<R> selectMenus, BiPredicateWithContext<T, StepCandidate<T>> valid) {
         this.identifier = identifier;
         this.clazz = clazz;
         this.selectMenus = selectMenus;
@@ -62,13 +64,13 @@ public abstract class SelectMenuBuilder<T, R extends SelectMenu, V extends Input
         return this;
     }
 
-    public SelectMenuBuilder<T, R, V> valid(Predicate<T> predicate) {
+    public SelectMenuBuilder<T, R, V> valid(BiPredicateWithContext<T, StepCandidate<T>> predicate) {
         this.valid = predicate;
         return this;
     }
 
-    public SelectMenuBuilder<T, R, V> valid(Collection<Predicate<T>> predicates) {
-        return valid(predicates.stream().reduce(Predicate::and).orElse(__ -> true));
+    public SelectMenuBuilder<T, R, V> valid(Collection<BiPredicateWithContext<T, StepCandidate<T>>> predicates) {
+        return valid(predicates.stream().reduce(BiPredicateWithContext::and).orElse((__, ___) -> new Tuple2<>(true, "")));
     }
 
     public SelectMenuBuilder<T, R, V> onOption(Consumer<EntryContext<T>> onOption) {

@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 
 public sealed interface ButtonEmbedManager permits ButtonEmbedManagerImpl {
 
+    void addToMap(String messageId, ButtonEmbed embed);
+
     boolean exists(String id);
 
     Optional<ButtonEmbed> get(String id);

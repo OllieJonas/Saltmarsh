@@ -5,9 +5,9 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
-import me.olliejonas.saltmarsh.embed.input.InputEmbed;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbed;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepMenu;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEvent;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.Utils;
@@ -26,15 +26,15 @@ public class RecurEventCommand extends Command {
 
     public static int BUTTON_MAX_LENGTH = 80;
 
-    private final InputEmbedManager inputEmbedManager;
+    private final WizardEmbedManager wizardEmbedManager;
 
     private final RecurringEventManager manager;
 
 
-    public RecurEventCommand(InputEmbedManager inputEmbedManager,
+    public RecurEventCommand(WizardEmbedManager wizardEmbedManager,
                              RecurringEventManager manager) {
         super(CommandPermissions.EVENTS, "recur-event");
-        this.inputEmbedManager = inputEmbedManager;
+        this.wizardEmbedManager = wizardEmbedManager;
         this.manager = manager;
     }
 
@@ -56,16 +56,16 @@ public class RecurEventCommand extends Command {
 
         String title = "Recurring Event Wizard";
 
-        InputEmbed embed = InputEmbed.builder()
-                .step(InputMenu.Button.builder("events", title,
+        WizardEmbed embed = WizardEmbed.builder()
+                .step(StepMenu.Button.builder("events", title,
                         "Which event would you like to make recurring?").buttons(eventButtons)
                         .build())
-                .step(InputMenu.Button.builder("frequency", title, "How often would you like this event to repeat?")
+                .step(StepMenu.Button.builder("frequency", title, "How often would you like this event to repeat?")
                         .buttons(Stream.of("Daily", "Weekly", "Bi-Weekly", "Monthly")
                                 .map(s -> Button.primary(s, s)).toList())
                         .build())
 
-                .completionPage(InputEmbed.GENERIC_COMPLETION_PAGE(title))
+                .completionPage(WizardEmbed.GENERIC_COMPLETION_PAGE(title))
 
                 .onCompletion(results -> {
                     String eventName = (String) results.get("events");
@@ -76,6 +76,6 @@ public class RecurEventCommand extends Command {
                 })
                 .build();
 
-        return inputEmbedManager.register(executor, channel, embed);
+        return wizardEmbedManager.register(executor, channel, embed);
     }
 }

@@ -12,6 +12,11 @@ import java.util.stream.Stream;
 public class Constants {
 
     public static class DB {
+
+        public static final String POLLS = "polls";
+
+        public static final String POLL_OPTIONS = "poll_options";
+
         public static final String RECURRING_EVENTS_META = "recurring_events_meta";
         public static final String RECURRING_EVENTS = "recurring_events";
 

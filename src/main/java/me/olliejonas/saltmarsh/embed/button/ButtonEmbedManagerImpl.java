@@ -36,6 +36,10 @@ public final class ButtonEmbedManagerImpl implements ButtonEmbedManager {
             buttonEmbedMap.remove(id);
     }
 
+    public void addToMap(String messageId, ButtonEmbed embed) {
+        buttonEmbedMap.put(messageId, embed);
+    }
+
     public InteractionResponses register(ButtonEmbed embed, Consumer<Message> onSuccess) {
         if (embed == null) return InteractionResponses.empty();
 
@@ -43,6 +47,6 @@ public final class ButtonEmbedManagerImpl implements ButtonEmbedManager {
 
         builder.setComponents(MiscUtils.batches(embed.getButtons(), 5).map(ActionRow::of).toList());
 
-        return InteractionResponses.createData(builder.build(), false, onSuccess.andThen(message -> buttonEmbedMap.put(message.getId(), embed)));
+        return InteractionResponses.createData(builder.build(), false, onSuccess.andThen(message -> addToMap(message.getId(), embed)));
     }
 }

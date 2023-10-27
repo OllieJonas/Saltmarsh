@@ -1,8 +1,7 @@
-package me.olliejonas.saltmarsh.embed.input;
+package me.olliejonas.saltmarsh.embed.wizard;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.embed.input.types.InputCandidate;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepCandidate;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -18,22 +17,20 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.lambda.tuple.Tuple3;
+import org.jooq.lambda.tuple.Tuple4;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class InputEmbedListener extends ListenerAdapter {
+public class WizardEmbedListener extends ListenerAdapter {
 
-    private final InputEmbedManager manager;
+    private final WizardEmbedManager manager;
 
-    private final Map<String, Set<String>> errorMessageIds;
-
-    public InputEmbedListener(InputEmbedManager manager) {
+    public WizardEmbedListener(WizardEmbedManager manager) {
         this.manager = manager;
-        this.errorMessageIds = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -44,10 +41,10 @@ public class InputEmbedListener extends ListenerAdapter {
         String text = message.getContentRaw().strip();
 
         if (sender == null) return;
-        if (manager.isNotInteracting(sender, channel)) return;
+        if (manager.isNotInteracting(sender, channel) || !manager.requiresText(channel)) return;
 
         onInteraction(sender, channel, message, Collections.singletonList(text),
-                InputCandidate.Method.TEXT, null).queue(null, channel);
+                StepCandidate.Method.TEXT, null).queue(null, channel);
     }
 
     @Override
@@ -58,7 +55,7 @@ public class InputEmbedListener extends ListenerAdapter {
         List<String> text = event.getValues();
 
         onInteraction(sender, channel, message, text,
-                InputCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
+                StepCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
     }
 
     @Override
@@ -69,7 +66,7 @@ public class InputEmbedListener extends ListenerAdapter {
         List<String> text = event.getValues().stream().map(IMentionable::getAsMention).toList();
 
         onInteraction(sender, channel, message, text,
-                InputCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
+                StepCandidate.Method.SELECT, event.getComponent()).queue(event, channel);
     }
 
     @Override
@@ -83,7 +80,7 @@ public class InputEmbedListener extends ListenerAdapter {
         if (manager.isNotInteracting(sender, channel)) return;
 
         if (text.equals("Exit")) {
-            InputEmbed embed = manager.getEmbed(channel);
+            WizardEmbed embed = manager.getEmbed(channel);
             message.delete().queue();
             manager.destroy(channel);
             event.reply(MessageCreateData.fromEmbeds(embed.getExitPage())).setEphemeral(true).queue();
@@ -91,23 +88,19 @@ public class InputEmbedListener extends ListenerAdapter {
         }
 
         onInteraction(sender, channel, message, Collections.singletonList(text),
-                InputCandidate.Method.BUTTON, event.getButton()).queue(event, channel);
+                StepCandidate.Method.BUTTON, event.getButton()).queue(event, channel);
     }
 
     private InteractionResponses onInteraction(Member sender, TextChannel channel, Message message, List<String> text,
-                                               InputCandidate.Method method, @Nullable ActionComponent component) {
-        InputEmbed embed = manager.getEmbed(channel);
+                                               StepCandidate.Method method, @Nullable ActionComponent component) {
+        WizardEmbed embed = manager.getEmbed(channel);
 
-        Tuple3<Optional<InputCandidate<?>>, Boolean, Boolean> success =
+        Tuple4<Optional<StepCandidate<?>>, Boolean, Boolean, String> success =
                 embed.assignValueAndNext(sender, text, method, component);
 
         if (!success.v3()) {
-            channel.sendMessageEmbeds(
-                    EmbedUtils.error("The thing you entered isn't valid!" +
-                            " :( Please try typing something else that matches!")).queue(msg -> {
-                                if (!errorMessageIds.containsKey(sender.getId())) errorMessageIds.put(sender.getId(), new HashSet<>());
-                                errorMessageIds.get(sender.getId()).add(msg.getId());
-            });
+            System.out.println(success.v4());
+            return InteractionResponses.error(success.v4(), false);
         }
 
         if (success.v1().isEmpty() || success.v2()) {
@@ -121,7 +114,7 @@ public class InputEmbedListener extends ListenerAdapter {
             return embed.onCompletion();
         }
 
-        InputCandidate<?> candidate = success.v1().get();
+        StepCandidate<?> candidate = success.v1().get();
         MessageCreateData next = candidate.compile(embed.isShowExitButton());
 
         MessageEditData nextEdit = MessageEditData.fromCreateData(next);
@@ -132,13 +125,13 @@ public class InputEmbedListener extends ListenerAdapter {
         return InteractionResponses.empty();
     }
 
-    private void queueEdit(TextChannel channel, Message eventMessage, MessageEditData data, InputCandidate.Method method) {
+    private void queueEdit(TextChannel channel, Message eventMessage, MessageEditData data, StepCandidate.Method method) {
         queueEdit(channel, eventMessage, data, method, __ -> {});
     }
 
     private void queueEdit(TextChannel channel, Message eventMessage,
-                           MessageEditData data, InputCandidate.Method method, Consumer<? super Message> onSuccess) {
-        if (method == InputCandidate.Method.BUTTON || method == InputCandidate.Method.SELECT)
+                           MessageEditData data, StepCandidate.Method method, Consumer<? super Message> onSuccess) {
+        if (method == StepCandidate.Method.BUTTON || method == StepCandidate.Method.SELECT)
             eventMessage.editMessage(data).queue();
         else
             channel.retrieveMessageById(manager.getMessageId(channel)).queue(message -> message.editMessage(data).queue(onSuccess));

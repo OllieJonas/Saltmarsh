@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
 
   push:
+    branches:
+      - 'master'
   pull_request:
     branches:
       - 'master'
@@ -72,8 +74,6 @@ jobs:
             cd Saltmarsh
             mv github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
             rm -rf github
-            ls -la
-            pwd
             docker kill Saltmarsh
             docker container prune --force
             docker image rm saltmarsh

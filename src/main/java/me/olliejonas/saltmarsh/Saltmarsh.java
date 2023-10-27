@@ -21,14 +21,12 @@ import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManagerImpl;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManagerImpl;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedListener;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManagerImpl;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedListener;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManagerImpl;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
 import me.olliejonas.saltmarsh.music.commands.*;
-import me.olliejonas.saltmarsh.poll.PollCommand;
-import me.olliejonas.saltmarsh.poll.PollEmbedManager;
-import me.olliejonas.saltmarsh.poll.PollEmbedManagerImpl;
+import me.olliejonas.saltmarsh.poll.*;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventListener;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManagerImpl;
@@ -91,9 +89,9 @@ public class Saltmarsh {
 
     private final PaginatedEmbedManager paginatedEmbedManager;
 
-    private final PollEmbedManager pollEmbedManager;
+    private final PollManager pollManager;
 
-    private final InputEmbedManager inputEmbedManager;
+    private final WizardEmbedManager wizardEmbedManager;
 
     private final ScheduledEventManager scheduledEventManager;
 
@@ -129,13 +127,16 @@ public class Saltmarsh {
         // managers
         this.buttonEmbedManager = new ButtonEmbedManagerImpl();
         this.paginatedEmbedManager = new PaginatedEmbedManagerImpl(buttonEmbedManager);
-        this.pollEmbedManager = new PollEmbedManagerImpl(buttonEmbedManager);
-        this.inputEmbedManager = new InputEmbedManagerImpl(buttonEmbedManager);
+
+        this.pollManager = new PollManagerImpl(sqlConnection, buttonEmbedManager);
+        registerListener(new PollLoader(pollManager, sqlConnection));
+
+        this.wizardEmbedManager = new WizardEmbedManagerImpl();
         this.audioManager = new GlobalAudioManager();
 
 
         // RecurringEventManager requires JDA to be loaded, so loading is handled in RecurringEventLoader
-        this.recurringEventManager = new RecurringEventManagerImpl(inputEmbedManager);
+        this.recurringEventManager = new RecurringEventManagerImpl(wizardEmbedManager);
         registerListener(new RecurringEventLoader(recurringEventManager, sqlConnection));
 
         this.scheduledEventManager = createScheduledEventManager();
@@ -188,7 +189,7 @@ public class Saltmarsh {
     public void registerListeners() {
         registerListener(new CommandListener(this.commandRegistry, this.commandWatchdog));
         registerListener(new ButtonEmbedListener(this.buttonEmbedManager));
-        registerListener(new InputEmbedListener(this.inputEmbedManager));
+        registerListener(new WizardEmbedListener(this.wizardEmbedManager));
         registerListener(this.scheduledEventListener);
         registerListener(new RecurringEventListener(this.recurringEventManager));
     }
@@ -201,9 +202,9 @@ public class Saltmarsh {
         registerCommand(new GetEventPingStatusCommand(this.scheduledEventManager));
 
         registerCommand(new RegisterRecurringChannelCommand(this.recurringEventManager));
-        registerCommand(new RecurEventCommand(this.inputEmbedManager, this.recurringEventManager));
-        registerCommand(new DeleteRecurringEventCommand(this.inputEmbedManager, this.recurringEventManager));
-        registerCommand(new EditRecurringEventCommand(this.inputEmbedManager, this.recurringEventManager));
+        registerCommand(new RecurEventCommand(this.wizardEmbedManager, this.recurringEventManager));
+        registerCommand(new DeleteRecurringEventCommand(this.wizardEmbedManager, this.recurringEventManager));
+        registerCommand(new EditRecurringEventCommand(this.wizardEmbedManager, this.recurringEventManager));
 
         // misc
 //        registerCommand(new IsThisAURLCommand());
@@ -214,14 +215,14 @@ public class Saltmarsh {
         registerCommand(new WatchdogCommand(commandWatchdog));
 
         // poll
-        registerCommand(new PollCommand(pollEmbedManager, inputEmbedManager));
+        registerCommand(new PollCommand(pollManager, wizardEmbedManager));
 
         // admin stuff
         registerCommand(new TestCommand(
                 this.buttonEmbedManager,
                 this.paginatedEmbedManager,
-                this.pollEmbedManager,
-                this.inputEmbedManager,
+                this.pollManager,
+                this.wizardEmbedManager,
                 this.audioManager
         ));
 
@@ -319,8 +320,8 @@ public class Saltmarsh {
             return new ScheduledEventManagerImpl(recurringEventManager);
         }
 
-        return new ScheduledEventManagerImpl(recurringEventManager,
-                sqlConnection,
+        return new ScheduledEventManagerImpl(sqlConnection,
+                recurringEventManager,
                 guildToPingChannelMap,
                 eventToChannelToMessageMap,
                 guildToRoleMap,

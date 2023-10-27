@@ -29,7 +29,7 @@ public class PollOption {
     }
 
     public boolean vote(String voter) {
-        boolean alreadyVoted = alreadyVoted(voter);
+        boolean alreadyVoted = voters.contains(voter);
 
         if (alreadyVoted) {
             voters.remove(voter);
@@ -40,10 +40,6 @@ public class PollOption {
         }
 
         return alreadyVoted;
-    }
-
-    private boolean alreadyVoted(String voter) {
-        return voters.contains(voter);
     }
 
     public String votersString() {

@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.scheduledevents;
 import lombok.Getter;
 import lombok.Setter;
 import me.olliejonas.saltmarsh.Constants;
+import me.olliejonas.saltmarsh.SQLManager;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -13,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
 
 @Getter
 @Setter
-public final class ScheduledEventManagerImpl implements ScheduledEventManager {
+public final class ScheduledEventManagerImpl extends SQLManager implements ScheduledEventManager {
 
     static BiFunction<String, String, String> EVENT_CREATED_MESSAGE = (mention, creator) ->
             mention + " " + creator + " has created an event! Check it out in the Events tab! :heart:";
@@ -34,8 +34,6 @@ public final class ScheduledEventManagerImpl implements ScheduledEventManager {
 
 
     private final RecurringEventManager recurringEventManager;
-
-    private final Connection connection;
 
     private Map<String, String> guildToPingChannelMap;
 
@@ -51,16 +49,17 @@ public final class ScheduledEventManagerImpl implements ScheduledEventManager {
     private Map<String, String> guildToRolesMap;
 
     public ScheduledEventManagerImpl(RecurringEventManager recurringEventManager) {
-        this(recurringEventManager, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+        this(null, recurringEventManager, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
     }
 
-    public ScheduledEventManagerImpl(RecurringEventManager recurringEventManager,
-                                     Connection connection, Map<String, String> guildToPingChannelMap,
+    public ScheduledEventManagerImpl(Connection connection, RecurringEventManager recurringEventManager,
+                                     Map<String, String> guildToPingChannelMap,
                                      Map<String, Map<String, Tuple2<String, String>>> eventToChannelToMessageMap,
                                      Map<String, String> guildToRolesMap, Map<String, String> eventToCreatorMap) {
 
+        super(connection);
+
         this.recurringEventManager = recurringEventManager;
-        this.connection = connection;
         this.guildToPingChannelMap = guildToPingChannelMap;
         this.eventToChannelToMessageMap = eventToChannelToMessageMap;
         this.guildToRolesMap = guildToRolesMap;
@@ -184,37 +183,39 @@ public final class ScheduledEventManagerImpl implements ScheduledEventManager {
     }
 
     private void removeScheduledEventFromSql(String event) {
-        if (connection == null) return;
-
         String stmtStr = "DELETE FROM " + Constants.DB.SCHEDULED_EVENTS + " WHERE event = ?;";
 
-        try (PreparedStatement statement = connection.prepareStatement(stmtStr)) {
-            statement.setString(1, event);
+        prepareStatement(stmtStr).ifPresent(statement -> {
+            try {
+                statement.setString(1, event);
 
-            statement.execute();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+                statement.execute();
+                statement.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void registerEventInSql(String event, String channel, String creator, String embedMessage, String pingMessage) {
-        if (connection == null) return;
 
         String stmtStr = "INSERT INTO " + Constants.DB.SCHEDULED_EVENTS +
                 "(`event`, `channel`, `creator`, `embed_message`, `ping_message`) VALUES (?, ?, ?, ?, ?);";
 
-        try (PreparedStatement statement = connection.prepareStatement(stmtStr)) {
-            statement.setString(1, event);
-            statement.setString(2, channel);
-            statement.setString(3, creator);
-            statement.setString(4, embedMessage);
-            statement.setString(5, pingMessage);
+        prepareStatement(stmtStr).ifPresent(statement -> {
+            try {
+                statement.setString(1, event);
+                statement.setString(2, channel);
+                statement.setString(3, creator);
+                statement.setString(4, embedMessage);
+                statement.setString(5, pingMessage);
 
-            statement.execute();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+                statement.execute();
+                statement.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void registerRoleInSql(String guild, String role) {
@@ -231,15 +232,17 @@ public final class ScheduledEventManagerImpl implements ScheduledEventManager {
                 "(`guild`, `" + column + "`) " +
                 "VALUES (?, ?) AS new_entry ON DUPLICATE KEY UPDATE " + column + " = new_entry." + column + ";";
 
-        try (PreparedStatement statement = connection.prepareStatement(stmtStr)) {
+        prepareStatement(stmtStr).ifPresent(statement -> {
+            try {
+                statement.setString(1, guild);
+                statement.setString(2, value);
 
-            statement.setString(1, guild);
-            statement.setString(2, value);
+                statement.execute();
+                statement.close();
 
-            statement.execute();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

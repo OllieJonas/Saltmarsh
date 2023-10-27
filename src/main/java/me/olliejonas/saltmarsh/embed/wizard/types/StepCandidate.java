@@ -1,14 +1,14 @@
-package me.olliejonas.saltmarsh.embed.input.types;
+package me.olliejonas.saltmarsh.embed.wizard.types;
 
-import me.olliejonas.saltmarsh.embed.input.EntryContext;
+import me.olliejonas.saltmarsh.embed.wizard.EntryContext;
+import me.olliejonas.saltmarsh.util.functional.BiPredicateWithContext;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public interface InputCandidate<T> {
+public interface StepCandidate<T> {
 
 
     Button EXIT_BUTTON = Button.danger("exit", "Exit");
@@ -40,5 +40,9 @@ public interface InputCandidate<T> {
     // self, value, method
     Consumer<EntryContext<T>> onOption();
 
-     Predicate<T> valid();
+    BiPredicateWithContext<T, StepCandidate<T>> valid();
+
+    default boolean requiresText() {
+        return false;
+    }
 }

@@ -2,6 +2,7 @@ package me.olliejonas.saltmarsh;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import me.olliejonas.saltmarsh.poll.PollManager;
 import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +49,21 @@ public class Launcher {
         String createDbStmtStr = "CREATE DATABASE IF NOT EXISTS " + Constants.APP_TITLE + " CHARACTER SET UTF8MB4;";
         PreparedStatement createDbStmt = connection.prepareStatement(createDbStmtStr);
         boolean createDb = createDbStmt.execute();
+        createDbStmt.close();
 
+        boolean createRE = setupRecurringEvents(connection);
+        boolean createSE = setupScheduledEvents(connection);
+        boolean setupPolls = setupPolls(connection);
+
+        return createDb && createRE && createSE && setupPolls;
+    }
+
+    private static boolean setupRecurringEvents(Connection connection) throws SQLException {
         // recurring events
         String createREMStmtStr =
                 "CREATE TABLE IF NOT EXISTS " + Constants.DB.RECURRING_EVENTS_META +
-                "(`guild` VARCHAR(64) NOT NULL, `text_channel` VARCHAR(64), PRIMARY KEY(`guild`)); ";
-                        
+                        "(`guild` VARCHAR(64) NOT NULL, `text_channel` VARCHAR(64), PRIMARY KEY(`guild`)); ";
+
         String createREStmtStr = "CREATE TABLE IF NOT EXISTS " + Constants.DB.RECURRING_EVENTS +
                 "(`event` VARCHAR(64), `guild` VARCHAR(64), `creator` VARCHAR (64), " +
                 "`frequency` VARCHAR(64), PRIMARY KEY(`event`));";
@@ -64,14 +74,21 @@ public class Launcher {
         PreparedStatement createREStmt = connection.prepareStatement(createREStmtStr);
         boolean createRE = createREStmt.execute();
 
+        createREMStmt.close();
+        createREStmt.close();
+
+        return createREM && createRE;
+    }
+
+    private static boolean setupScheduledEvents(Connection connection) throws SQLException {
 
         String createSEMStmtStr =
                 "CREATE TABLE IF NOT EXISTS " + Constants.DB.SCHEDULED_EVENTS_META +
-                "(`guild` VARCHAR(64) NOT NULL, `channel` VARCHAR(64), `role` VARCHAR(64), PRIMARY KEY(`guild`));";
+                        "(`guild` VARCHAR(64) NOT NULL, `channel` VARCHAR(64), `role` VARCHAR(64), PRIMARY KEY(`guild`));";
 
         String createSEStmtStr =
                 "CREATE TABLE IF NOT EXISTS " + Constants.DB.SCHEDULED_EVENTS +
-                "(`event` VARCHAR(64), `channel` VARCHAR(64), `creator` VARCHAR(64), " +
+                        "(`event` VARCHAR(64), `channel` VARCHAR(64), `creator` VARCHAR(64), " +
                         "`embed_message` VARCHAR(64), " +
                         "`ping_message` VARCHAR(64), " +
                         "PRIMARY KEY(`event`));";
@@ -82,20 +99,36 @@ public class Launcher {
         PreparedStatement createSEStmt = connection.prepareStatement(createSEStmtStr);
         boolean createSE = createSEStmt.execute();
 
-        createDbStmt.close();
-
-        createREMStmt.close();
-        createREStmt.close();
-
         createSEMStmt.close();
         createSEStmt.close();
 
-        return createDb && (createRE && createREM) && (createSE && createSEM);
+        return createSEM && createSE;
+    }
+
+    private static boolean setupPolls(Connection connection) throws SQLException {
+        String createPollsStmtStr =
+                "CREATE TABLE IF NOT EXISTS " + Constants.DB.POLLS +
+                        " (`message_id` VARCHAR(64), `question` VARCHAR(" + PollManager.QUESTION_MAX_LENGTH + "), " +
+                        "`creator` VARCHAR(64), " +
+                        "`anonymous` TINYINT, `singular` TINYINT, `text_repr` TINYINT, " +
+                        "`options` VARCHAR (" + PollManager.SQL_OPTION_LENGTH + "), PRIMARY KEY(`message_id`)); ";
+
+        String createPollOptionsStmtStr =
+                "CREATE TABLE IF NOT EXISTS " + Constants.DB.POLL_OPTIONS +
+                        " (`id` INT AUTO_INCREMENT, `message_id` VARCHAR(64), `guild` VARCHAR(64)," +
+                        " `voter` VARCHAR(64), `option` SMALLINT UNSIGNED, PRIMARY KEY(`id`));";
+
+        PreparedStatement createPollsStmt = connection.prepareStatement(createPollsStmtStr + createPollOptionsStmtStr);
+        boolean createPolls = createPollsStmt.execute();
+
+        createPollsStmt.close();
+
+        return createPolls;
     }
 
     private static HikariDataSource connectToDB(String name, String password) {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/saltmarsh");
+        config.setJdbcUrl("jdbc:mysql://localhost:3306/saltmarsh?autoReconnect=true&allowMultiQueries=true");
         config.setUsername(name);
         config.setPassword(password);
 

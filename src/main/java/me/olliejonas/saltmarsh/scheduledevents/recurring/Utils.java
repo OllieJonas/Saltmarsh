@@ -17,5 +17,4 @@ public class Utils {
                 .map(tuple -> tuple.map2(str -> str.length() >= BUTTON_MAX_LENGTH ? str.substring(0, BUTTON_MAX_LENGTH - 3) + "..." : str))
                 .map(tuple -> Button.primary(tuple.v1(), tuple.v2())).toList();
     }
-
 }
