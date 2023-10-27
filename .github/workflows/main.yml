@@ -77,5 +77,5 @@ jobs:
             tar -xvzf saltmarsh.tar.gz .
             rm saltmarsh.tar.gz
             docker compose down
-            docker compose --env-file /root/Saltmarsh/.env up 
+            docker compose up 
             exit
