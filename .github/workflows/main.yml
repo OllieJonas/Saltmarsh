@@ -26,8 +26,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
+      - name: Touch archive
+        run: touch saltmarsh.tar.gz
+
       - name: Create tar archive
-        run: tar --exclude='saltmarsh.tar.gz' -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh
+        run: tar --exclude='saltmarsh.tar.gz' -cvzf saltmarsh.tar.gz .
 
       - name: Upload tar archive as artifact
         uses: actions/upload-artifact@master
