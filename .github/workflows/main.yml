@@ -26,14 +26,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Zip project
-        run: tar -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh saltmarsh.tar
+      - name: Create tar archive
+        run: tar -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh
 
-      - name: Upload zipped archive as artifact
+      - name: Upload tar archive as artifact
         uses: actions/upload-artifact@master
         with:
-          name: saltmarsh.tar
-          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
+          name: saltmarsh.tar.gz
+          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar.gz
           retention-days: 1
 
   deploy:
@@ -41,11 +41,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download zipped archive as artifact
+      - name: Download tar archive as artifact
         uses: actions/download-artifact@master
         with:
-          name: saltmarsh.tar
-          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
+          name: saltmarsh.tar.gz
+          path: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar.gz
 
       - name: Install SSH Client
         run: sudo apt-get install openssh-client -y
@@ -69,10 +69,10 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             cd Saltmarsh
-            mv github/workspace/saltmarsh.tar/saltmarsh.tar saltmarsh.tar
+            mv github/workspace/saltmarsh.tar/saltmarsh.tar.gz saltmarsh.tar.gz
             rm -rf github
-            tar -xcf saltmarsh.tar Saltmarsh
-            rm saltmarsh.tar
+            tar -xcf saltmarsh.tar.gz Saltmarsh
+            rm saltmarsh.tar.gz
             docker compose down
             docker compose up --env-file /root/Saltmarsh/env_file
             exit
