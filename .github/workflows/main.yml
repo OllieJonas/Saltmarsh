@@ -26,11 +26,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Build Dockerfile
-        run: docker build -t $PROJECT_NAME .
-
-      - name: Save Dockerfile as Tar
-        run: docker save -o $PROJECT_NAME.tar $PROJECT_NAME:latest
+      - name: Zip project
+        run: pwd
 
       - name: Upload Docker Image as Artifact
         uses: actions/upload-artifact@master

@@ -6,38 +6,32 @@ services:
     build: .
     restart: unless-stopped
     depends_on:
-      - lavalink
-      - mongodb
+      - mysql
     networks:
-      - lavalink
-      - mongodb
+      - mysql
 
-  lavalink:  # exposes port 2333
-    image: ghcr.io/lavalink-devs/lavalink:4
-    container_name: lavalink
+  mysql:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    container_name: mysql
     restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: 'saltmarsh'
     volumes:
-      - .application.yml:/opt/Lavalink/application.yml
-      - ./plugins/:/opt/Lavalink/plugins/
-    networks:
-      - lavalink
-
-  mongodb:
-    image: mongodb/mongodb-community-server:6.0-ubi8
-    container_name: mongodb
-    restart: unless-stopped
-    volumes:
-      - data:/data/db
+      - db:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
     expose:
-      - 27017
+      - '3306'
     networks:
-      - mongodb
+      - mysql
 
 networks:
-  lavalink:
-    name: lavalink
-  mongodb:
-    name: mongodb
+  mysql:
+    name: mysql
 
 volumes:
-  data:
+  db:
+    driver: local

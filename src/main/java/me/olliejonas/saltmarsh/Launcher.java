@@ -22,7 +22,7 @@ public class Launcher {
         String discToken = getDiscordToken(args);
 
         // could be null
-        String sqlUsername = getEnvVariable("MYSQL_USERNAME", "root");
+        String sqlUsername = getEnvVariable("MYSQL_USER", "root");  // these aren't the actual credentials lol
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
 
 
