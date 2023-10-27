@@ -74,7 +74,7 @@ jobs:
             cd Saltmarsh
             mv github/workspace/saltmarsh.tar.gz/saltmarsh.tar.gz saltmarsh.tar.gz
             rm -rf github
-            tar -xcf saltmarsh.tar.gz .
+            tar -xvzf saltmarsh.tar.gz .
             rm saltmarsh.tar.gz
             docker compose down
             docker compose --env-file /root/Saltmarsh/.env up 
