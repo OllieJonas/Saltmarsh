@@ -57,7 +57,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
-          source: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar
+          source: /home/runner/work/Saltmarsh/Saltmarsh/saltmarsh.tar.gz
           target: ~/Saltmarsh
 
       - name: SSH, Load & Run Dockerfile
