@@ -4,6 +4,8 @@ services:
   saltmarsh:
     container_name: saltmarsh
     build: .
+    env_file:
+      - env_file
     restart: unless-stopped
     depends_on:
       - mysql
@@ -16,8 +18,8 @@ services:
       - SYS_NICE
     container_name: mysql
     restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: 'saltmarsh'
+    env_file:
+      - env_file
     volumes:
       - db:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
