@@ -24,10 +24,10 @@ public class Launcher {
         // could be null
         String sqlUsername = getEnvVariable("MYSQL_USER", "root");  // these aren't the actual credentials lol
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
-        String sqlIp = getEnvVariable("MYSQL_IP", "localhost");
+        String sqlHost = getEnvVariable("MYSQL_HOST", "localhost");
 
 
-        HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlIp);
+        HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlHost);
 
         try {
             setupInitialDBTables(dataSource.getConnection());
@@ -127,9 +127,9 @@ public class Launcher {
         return createPolls;
     }
 
-    private static HikariDataSource connectToDB(String name, String password, String sqlIp) {
+    private static HikariDataSource connectToDB(String name, String password, String host) {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + sqlIp + ":3306/saltmarsh?autoReconnect=true&allowMultiQueries=true");
+        config.setJdbcUrl("jdbc:mysql://" + host + ":3306/saltmarsh?autoReconnect=true&allowMultiQueries=true");
         config.setUsername(name);
         config.setPassword(password);
 

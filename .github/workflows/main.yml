@@ -77,5 +77,6 @@ jobs:
             tar -xvzf saltmarsh.tar.gz .
             rm saltmarsh.tar.gz
             docker compose down
-            docker compose up 
+            docker compose build
+            docker compose up --detach
             exit
