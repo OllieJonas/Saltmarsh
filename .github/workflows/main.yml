@@ -69,7 +69,7 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             cd Saltmarsh
-            mv github/workspace/saltmarsh.tar/saltmarsh.tar.gz saltmarsh.tar.gz
+            mv github/workspace/saltmarsh.tar.gz/saltmarsh.tar.gz saltmarsh.tar.gz
             rm -rf github
             tar -xcf saltmarsh.tar.gz Saltmarsh
             rm saltmarsh.tar.gz
