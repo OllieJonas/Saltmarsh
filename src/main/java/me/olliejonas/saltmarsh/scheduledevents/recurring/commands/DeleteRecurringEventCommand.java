@@ -5,38 +5,36 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
-import me.olliejonas.saltmarsh.embed.input.InputEmbed;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbed;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepMenu;
 import me.olliejonas.saltmarsh.scheduledevents.recurring.RecurringEventManager;
+import me.olliejonas.saltmarsh.scheduledevents.recurring.Utils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.List;
 import java.util.Map;
 
 public class DeleteRecurringEventCommand extends Command {
 
-    static int BUTTON_MAX_LENGTH = 80;
-
-    private final InputEmbedManager inputEmbedManager;
+    private final WizardEmbedManager wizardEmbedManager;
     private final RecurringEventManager manager;
 
-    public DeleteRecurringEventCommand(InputEmbedManager inputEmbedManager, RecurringEventManager manager) {
+    public DeleteRecurringEventCommand(WizardEmbedManager wizardEmbedManager, RecurringEventManager manager) {
         super(CommandPermissions.EVENTS, "delete-recurring-event");
 
-        this.inputEmbedManager = inputEmbedManager;
+        this.wizardEmbedManager = wizardEmbedManager;
         this.manager = manager;
     }
 
     @Override
     public CommandInfo info() {
-        return CommandInfo.of("Mark an event as not recurring! (Doesn't delete event)");
+        return CommandInfo.of("Un-mark an event as recurring! (Doesn't delete the event)");
     }
 
     @Override
@@ -46,24 +44,24 @@ public class DeleteRecurringEventCommand extends Command {
 
         if (events.isEmpty()) return InteractionResponses.error("There aren't any recurring events! :(");
 
-        return inputEmbedManager.createEmbed(executor, channel, buildEmbed(guild, events)).v1();
+        return wizardEmbedManager.register(executor, channel, buildEmbed(guild, events));
     }
 
 
-    private InputEmbed buildEmbed(Guild guild, List<ScheduledEvent> events) {
-        List<Button> buttons = events.stream()
-                .map(event -> new Tuple2<>(event.getId(), event.getName()))
-                .map(tuple -> tuple.map2(str -> str.length() >= BUTTON_MAX_LENGTH ? str.substring(0, BUTTON_MAX_LENGTH - 3) + "..." : str))
-                .map(tuple -> Button.primary(tuple.v1(), tuple.v2())).toList();
+    private WizardEmbed buildEmbed(Guild guild, List<ScheduledEvent> events) {
+        List<Button> buttons = Utils.fromEvents(events, null);
 
-        return InputEmbed.builder()
-                .step(InputMenu.Button.builder("event")
+        return WizardEmbed.builder()
+                .step(StepMenu.Button.builder("event",
+                                "Delete Recurring Event Wizard",
+                                "Please select a recurring event you would like to remove " +
+                                        "\n(Note: This doesn't delete the whole event, just stops it from recurring)")
                         .buttons(buttons)
                         .build())
                 .onCompletion(results -> {
                     String name = (String) results.get("event");
                     String eventId = guild.getScheduledEventsByName(name, false).get(0).getId();
-                    manager.removeEvent(eventId);
+                    manager.remove(eventId);
                     return InteractionResponses.messageAsEmbed("Successfully removed " + name + " as a recurring event!");
                 })
                 .build();

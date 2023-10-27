@@ -1,12 +1,17 @@
 package me.olliejonas.saltmarsh.util;
 
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.utils.ImageProxy;
+import org.jooq.lambda.tuple.Tuple2;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,6 +46,25 @@ public class MiscUtils {
             case 11, 12, 13 -> i + "th";
             default -> i + suffixes[i % 10];
         };
+    }
+
+    public static void printMap(String pfx, Map<String, String> map) {
+        System.out.println(pfx + map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining(", ")));
+    }
+
+    public static void logScheduledEvent(ScheduledEvent event) {
+        System.out.println("Title: " + event.getName());
+        System.out.println("Organiser: " + (event.getCreator() == null ? "null" : event.getCreator().getName()));
+        System.out.println("Location: " + event.getLocation());
+        System.out.println("Description: " + event.getDescription());
+        System.out.println("Start Time: " + event.getStartTime().format(DateTimeFormatter.RFC_1123_DATE_TIME));
+        System.out.println("End Time: " + (event.getEndTime() == null ? "null" : event.getEndTime().format(DateTimeFormatter.RFC_1123_DATE_TIME)));
+        System.out.println("Status: " + event.getStatus().name());
+        System.out.println("Type: " + event.getType().name());
+    }
+
+    public static void printNestedMap(String pfx, Map<String, Map<String, Tuple2<String, String>>> map) {
+        System.out.println(pfx + map.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue().entrySet().stream().map(e1 -> e1.getKey() + ": " + e1.getValue()).collect(Collectors.joining(", ", "{", "}"))).collect(Collectors.joining(", ", "{", "}")));
     }
 
     public static ImageProxy getMostRelevantAvatar(Member member) {

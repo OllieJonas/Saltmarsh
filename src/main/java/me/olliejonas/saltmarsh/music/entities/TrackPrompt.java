@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TrackPrompt implements AudioQueue.Listener<LoadedTrack> {
+public class TrackPrompt implements AudioQueue.Listener<PlayableTrack> {
     private static final MessageEmbed EMPTY_PROMPT = EmbedUtils.standard().setTitle("Now playing").build();
     private final AtomicReference<Message> message;
 
@@ -30,17 +30,17 @@ public class TrackPrompt implements AudioQueue.Listener<LoadedTrack> {
     }
 
     @Override
-    public void onNextItem(LoadedTrack next) {
+    public void onNextItem(PlayableTrack next) {
         message.get().editMessage(MessageEditData.fromEmbeds(embed(next))).queue();
     }
 
     @Override
     public void onQueueEmpty() {
-        System.out.println("queue is empty!");
-        message.get().editMessage(MessageEditData.fromEmbeds(EmbedUtils.from("Nothing! :("))).queue();
+        message.get().editMessage(
+                MessageEditData.fromEmbeds(EmbedUtils.from("Now playing", "Nothing! :("))).queue();
     }
 
-    private MessageEmbed embed(LoadedTrack track) {
+    private MessageEmbed embed(PlayableTrack track) {
         EmbedBuilder builder = EmbedUtils.standard();
         builder.setTitle("Now playing");
         builder.setDescription(track.info().searchQuery());

@@ -35,7 +35,11 @@ public interface InteractionResponses {
     }
 
     static InteractionResponses error(String message) {
-        return new InteractionResponses.Embed(EmbedUtils.error(message), true);
+        return error(message, true);
+    }
+
+    static InteractionResponses error(String message, boolean ephemeral) {
+        return new InteractionResponses.Embed(EmbedUtils.error(message), ephemeral);
     }
 
     void queue(@Nullable IReplyCallback event, TextChannel channel);
@@ -78,9 +82,9 @@ public interface InteractionResponses {
                 event.replyEmbeds(embed, embeds).setEphemeral(ephemeral).queue();
             }
             else {
-//                channel.sendMessageEmbeds(embed).queue(msg -> {
-//                    if (ephemeral) msg.delete().queue();
-//                });
+                channel.sendMessageEmbeds(embed).queue(msg -> {
+                    if (ephemeral) msg.delete().queue();
+                });
             }
         }
     }

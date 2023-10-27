@@ -3,11 +3,11 @@ package me.olliejonas.saltmarsh.music.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.exceptions.QueueException;
-import me.olliejonas.saltmarsh.music.ItemizedAudioQueueEmbed;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbed;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
+import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.music.ItemizedAudioQueueEmbed;
+import me.olliejonas.saltmarsh.music.exceptions.QueueException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -45,13 +45,13 @@ public class QueueCommand extends AudioCommand {
                                         TextChannel channel, Map<String, OptionMapping> args,
                                         String aliasUsed) throws CommandFailedException {
         return switch (args.size()) {
-            case 0 -> queue(executor.getGuild(), channel);
-            case 1 -> Commons.joinAndPlay(manager, channel, executor, args.get("url").getAsString());
+            case 0 -> queue(executor.getGuild());
+            case 1 -> joinAndPlay(manager, channel, executor, args.get("url").getAsString());
             default -> throw CommandFailedException.badArgs(executor, this, "track-url (optional)");
         };
     }
 
-    private InteractionResponses queue(Guild guild, TextChannel channel) {
+    private InteractionResponses queue(Guild guild) {
         PaginatedEmbed queueEmbed = ItemizedAudioQueueEmbed.build(embedManager,
                 manager.get(guild)
                         .orElseThrow(() ->
@@ -59,11 +59,11 @@ public class QueueCommand extends AudioCommand {
                                         "tbh, the bot isn't even initialised. im just tryna be nice here :/"))
                         .getQueue(), DEFAULT_ITEMS_PER_PAGE);
         try {
-            embedManager.send(channel, queueEmbed, () -> {throw CommandFailedException.other(
+            embedManager.register(queueEmbed, () -> {throw CommandFailedException.other(
                     "The queue is currently empty!",
                     "ok bot is initted, the queue is actually empty wow");});
         } catch (QueueException ex) {
-            throw ex.asFailed();
+            throw ex.asCommandFailed();
         }
         return InteractionResponses.messageAsEmbed("Successfully displayed queue!");
     }

@@ -1,17 +1,19 @@
-package me.olliejonas.saltmarsh.embed.input.types.builders;
+package me.olliejonas.saltmarsh.embed.wizard.types.builders;
 
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
-import me.olliejonas.saltmarsh.embed.input.EntryContext;
-import me.olliejonas.saltmarsh.embed.input.types.InputMenu;
+import me.olliejonas.saltmarsh.embed.wizard.EntryContext;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepCandidate;
+import me.olliejonas.saltmarsh.embed.wizard.types.StepMenu;
+import me.olliejonas.saltmarsh.util.functional.BiPredicateWithContext;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.jooq.lambda.tuple.Tuple2;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class ButtonBuilder<T> {
 
@@ -23,7 +25,7 @@ public class ButtonBuilder<T> {
 
     private MessageEmbed embed;
 
-    private Predicate<T> valid;
+    private BiPredicateWithContext<T, StepCandidate<T>> valid;
 
     private Consumer<EntryContext<T>> onOption;
 
@@ -42,7 +44,7 @@ public class ButtonBuilder<T> {
         this.clazz = clazz;
         this.buttons = buttons;
         this.onOption = __ -> {};
-        this.valid = __ -> true;
+        this.valid = (__, ___) -> new Tuple2<>(true, "ignored");
     }
 
     public ButtonBuilder<T> embed(String title, String description) {
@@ -79,7 +81,7 @@ public class ButtonBuilder<T> {
         return buttons(List.of(buttons));
     }
 
-    public ButtonBuilder<T> valid(Predicate<T> predicate) {
+    public ButtonBuilder<T> valid(BiPredicateWithContext<T, StepCandidate<T>> predicate) {
         this.valid = predicate;
         return this;
     }
@@ -89,11 +91,11 @@ public class ButtonBuilder<T> {
         return this;
     }
 
-    public ButtonBuilder<T> valid(Collection<Predicate<T>> predicates) {
-        return valid(predicates.stream().reduce(Predicate::and).orElse(__ -> true));
+    public ButtonBuilder<T> valid(Collection<BiPredicateWithContext<T, StepCandidate<T>>> predicates) {
+        return valid(predicates.stream().reduce(BiPredicateWithContext::and).orElse((__, ___) -> new Tuple2<>(true, "")));
     }
 
-    public InputMenu.Button<T> build() {
-        return InputMenu.Button.of(identifier, clazz, embed, buttons, onOption, valid);
+    public StepMenu.Button<T> build() {
+        return StepMenu.Button.of(identifier, clazz, embed, buttons, onOption, valid);
     }
 }

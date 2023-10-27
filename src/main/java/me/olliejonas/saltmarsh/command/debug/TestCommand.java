@@ -7,9 +7,9 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
-import me.olliejonas.saltmarsh.embed.input.InputEmbedManager;
+import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
 import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.poll.PollEmbedManager;
+import me.olliejonas.saltmarsh.poll.PollManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -25,22 +25,23 @@ public class TestCommand extends Command {
 
     private final PaginatedEmbedManager paginatedEmbedManager;
 
-    private final InputEmbedManager inputEmbedManager;
+    private final WizardEmbedManager wizardEmbedManager;
 
     private final GlobalAudioManager globalAudioManager;
 
-    private final PollEmbedManager pollEmbedManager;
+    private final PollManager pollManager;
 
     public TestCommand(ButtonEmbedManager buttonEmbedManager,
                        PaginatedEmbedManager paginatedEmbedManager,
-                       PollEmbedManager pollEmbedManager,
-                       InputEmbedManager inputEmbedManager,
+                       PollManager pollManager,
+                       WizardEmbedManager wizardEmbedManager,
                        GlobalAudioManager globalAudioManager) {
+
         super(CommandPermissions.ADMIN, "test");
         this.buttonEmbedManager = buttonEmbedManager;
         this.paginatedEmbedManager = paginatedEmbedManager;
-        this.inputEmbedManager = inputEmbedManager;
-        this.pollEmbedManager = pollEmbedManager;
+        this.wizardEmbedManager = wizardEmbedManager;
+        this.pollManager = pollManager;
         this.globalAudioManager = globalAudioManager;
     }
 
@@ -60,11 +61,11 @@ public class TestCommand extends Command {
         addSubCommand(new TestPaginatedEmbedCommand(paginatedEmbedManager));
         addSubCommand(new TestButtonEmbedCommand(buttonEmbedManager));
         addSubCommand(new TestItemizedEmbedCommand(paginatedEmbedManager));
-        addSubCommand(new TestPollCommand(pollEmbedManager));
+        addSubCommand(new TestPollCommand(pollManager));
         addSubCommand(new TestFailureCommand());
         addSubCommand(new TestEphemeralCommand());
         addSubCommand(new TestBotJoinsCommand(globalAudioManager));
-        addSubCommand(new TestInputEmbedCommand(inputEmbedManager));
+        addSubCommand(new TestInputEmbedCommand(wizardEmbedManager));
         addSubCommand(new TestSelectMenuCommand());
     }
 

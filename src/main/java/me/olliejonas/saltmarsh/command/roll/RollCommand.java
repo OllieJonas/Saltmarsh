@@ -53,9 +53,7 @@ public class RollCommand extends Command {
         int noDice = 0; int diceCeil = 0;
 
         if (args.containsKey("roll")) {
-            System.out.println("hi!");
             String diceInput = args.get("roll").getAsString();
-            System.out.println(diceInput);
             Matcher matcher = DICE_REGEX.matcher(diceInput);
 
             if (!matcher.matches())

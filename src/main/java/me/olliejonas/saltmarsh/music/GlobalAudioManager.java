@@ -31,7 +31,6 @@ public class GlobalAudioManager {
 
         AudioSourceManagers.registerLocalSource(audioPlayerManager);
         AudioSourceManagers.registerRemoteSources(audioPlayerManager);
-
     }
 
     public GlobalAudioManager(AudioPlayerManager audioPlayerManager) {
@@ -115,7 +114,7 @@ public class GlobalAudioManager {
             }
         });
 
-        return manager.getQueue().size() == 0;
+        return manager.getQueue().isEmpty();
     }
 
     private boolean shouldJoin(Guild guild) {

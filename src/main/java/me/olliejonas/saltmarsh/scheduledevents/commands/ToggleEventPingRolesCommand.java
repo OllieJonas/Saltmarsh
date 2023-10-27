@@ -35,7 +35,7 @@ public class ToggleEventPingRolesCommand extends Command {
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         Role role = args.get("role").getAsRole();
-        boolean removed = manager.addRole(executor.getGuild(), role);
+        boolean removed = manager.toggleRole(executor.getGuild(), role);
 
         return InteractionResponses.messageAsEmbed("Successfully " + (removed ? "removed " : "designated ") + role.getName() + " as the role to receive notifications!", true);
     }

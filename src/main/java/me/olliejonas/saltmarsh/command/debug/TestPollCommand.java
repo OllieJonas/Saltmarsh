@@ -6,7 +6,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.poll.PollEmbed;
-import me.olliejonas.saltmarsh.poll.PollEmbedManager;
+import me.olliejonas.saltmarsh.poll.PollManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -15,9 +15,9 @@ import java.util.Map;
 
 public class TestPollCommand extends Command {
 
-    private final PollEmbedManager manager;
+    private final PollManager manager;
 
-    public TestPollCommand(PollEmbedManager manager) {
+    public TestPollCommand(PollManager manager) {
         super(CommandPermissions.ADMIN, "poll");
         this.manager = manager;
     }
@@ -28,16 +28,30 @@ public class TestPollCommand extends Command {
 
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
-        PollEmbed embed = PollEmbed.builder(manager)
+        PollEmbed singular = PollEmbed.builder()
                 .author(executor.getEffectiveName())
-                .question("Do you like cats?")
+                .question("Do you like cats? (SINGULAR)")
                 .option("yes")
                 .option("no")
                 .option("why")
+                .singularVotes()
+                .textRepresented()
+                .anonymous(false)
                 .build();
 
-        manager.send(executor, channel, embed);
+        PollEmbed nonSingular = PollEmbed.builder()
+                .author(executor.getEffectiveName())
+                .question("Do you like cats? (NON-SINGULAR)")
+                .option("yes")
+                .option("no")
+                .option("why")
+                .textRepresented()
+                .anonymous(false)
+                .build();
 
-        return InteractionResponses.empty();
+        manager.send(executor, channel, singular).queue(null, channel);
+        manager.send(executor, channel, nonSingular).queue(null, channel);
+
+        return InteractionResponses.messageAsEmbed("Sent command!", false);
     }
 }

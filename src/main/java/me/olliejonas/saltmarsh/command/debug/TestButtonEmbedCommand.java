@@ -5,9 +5,9 @@ import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
 import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
-import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -40,8 +40,6 @@ public class TestButtonEmbedCommand extends Command {
                         context -> InteractionResponses.messageAsEmbed("I hope you're having a wonderful day, " +
                                 context.clicker().getEffectiveName() + "!")).build();
 
-        manager.send(embed);
-
-        return InteractionResponses.messageAsEmbed("Successfully tested embeds!");
+        return manager.register(embed);
     }
 }
