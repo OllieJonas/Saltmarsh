@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Create tar archive
-        run: tar -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh
+        run: tar --exclude='saltmarsh.tar.gz' -cvzf saltmarsh.tar.gz /home/runner/work/Saltmarsh
 
       - name: Upload tar archive as artifact
         uses: actions/upload-artifact@master
