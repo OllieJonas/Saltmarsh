@@ -46,16 +46,11 @@ public class Launcher {
     private static boolean setupInitialDBTables(Connection connection) throws SQLException {
         if (connection == null) return false;
 
-        String createDbStmtStr = "CREATE DATABASE IF NOT EXISTS " + Constants.APP_TITLE + " CHARACTER SET UTF8MB4;";
-        PreparedStatement createDbStmt = connection.prepareStatement(createDbStmtStr);
-        boolean createDb = createDbStmt.execute();
-        createDbStmt.close();
-
         boolean createRE = setupRecurringEvents(connection);
         boolean createSE = setupScheduledEvents(connection);
         boolean setupPolls = setupPolls(connection);
 
-        return createDb && createRE && createSE && setupPolls;
+        return createRE && createSE && setupPolls;
     }
 
     private static boolean setupRecurringEvents(Connection connection) throws SQLException {
