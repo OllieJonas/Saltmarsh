@@ -26,7 +26,6 @@ public class Launcher {
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
         String sqlHost = getEnvVariable("MYSQL_HOST", "localhost");
 
-
         HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlHost);
 
         try {
@@ -128,13 +127,16 @@ public class Launcher {
     }
 
     private static HikariDataSource connectToDB(String name, String password, String host) {
+        LOGGER.info("Attempting to connect to MySQL database " +
+                "(" + host + ") with username " + name + " and password " + password);
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + host + ":3306/saltmarsh?autoReconnect=true&allowMultiQueries=true");
         config.setUsername(name);
         config.setPassword(password);
 
         HikariDataSource hikariDataSource = new HikariDataSource(config);
-        boolean validConnection = false;
+        boolean validConnection;
 
         try {
             validConnection = hikariDataSource.getConnection().isValid(10000);

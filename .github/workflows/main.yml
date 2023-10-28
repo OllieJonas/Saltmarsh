@@ -76,7 +76,6 @@ jobs:
             rm -rf github
             tar -xvzf saltmarsh.tar.gz .
             rm saltmarsh.tar.gz
-            docker compose down
-            docker compose build
-            docker compose up --detach
+            docker compose down -v
+            docker compose up --build --detach
             exit

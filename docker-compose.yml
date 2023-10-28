@@ -9,10 +9,8 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql
-    networks:
-      - mysql
 
-  mysql:
+  database:
     image: mysql:8.0
     cap_add:
       - SYS_NICE
@@ -27,12 +25,6 @@ services:
       - '3306:3306'
     expose:
       - '3306'
-    networks:
-      - mysql
-
-networks:
-  mysql:
-    name: mysql
 
 volumes:
   db:
