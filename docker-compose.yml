@@ -8,7 +8,7 @@ services:
       - env_file
     restart: unless-stopped
     depends_on:
-      - mysql
+      - database
 
   database:
     image: mysql:8.0
