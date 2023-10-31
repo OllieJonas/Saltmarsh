@@ -283,6 +283,10 @@ public class Saltmarsh {
                 String channel = resultSet.getString("channel");
                 String role = resultSet.getString("role");
 
+                Objects.requireNonNull(guild);
+                Objects.requireNonNull(channel);
+                Objects.requireNonNull(role);
+
                 guildToPingChannelMap.put(guild, channel);
                 guildToRoleMap.put(guild, role);
             }
