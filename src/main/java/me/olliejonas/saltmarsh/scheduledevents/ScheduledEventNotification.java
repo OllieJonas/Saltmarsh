@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.utils.ImageProxy;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,8 +85,17 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
             event.retrieveInterestedMembers().forEachAsync(m -> interested.add(m.getAsMention())).join();
         }
 
-        OffsetDateTime startTime = event.getStartTime().plusHours(1);
-        OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime().plusHours(1);
+
+        OffsetDateTime startTime = event.getStartTime();
+        OffsetDateTime endTime = event.getEndTime() == null ? null : event.getEndTime();
+
+        ZoneId zoneId = ZoneId.of("Europe/London");
+        ZoneOffset offset = startTime.getOffset();
+
+        boolean isDST = offset.getTotalSeconds() != zoneId.getRules().getOffset(startTime.toInstant()).getTotalSeconds();
+
+        startTime = isDST ? startTime.plusHours(1) : startTime;
+        endTime = isDST ? endTime.plusHours(1) : endTime;
 
         return new ScheduledEventNotification(member, event.getId(), event.getName(), startTime,
                 endTime, event.getDescription(), event.getImage(), event.getLocation(), interested,
