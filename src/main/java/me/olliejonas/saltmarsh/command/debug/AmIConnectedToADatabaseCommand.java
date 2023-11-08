@@ -22,6 +22,6 @@ public class AmIConnectedToADatabaseCommand extends Command {
     
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
-        return InteractionResponses.messageAsEmbed("You are " + (amIConnected ? "" : "not ") + "connected to a database!");
+        return InteractionResponses.messageAsEmbed("I am " + (amIConnected ? "" : "not ") + "connected to a database!");
     }
 }
