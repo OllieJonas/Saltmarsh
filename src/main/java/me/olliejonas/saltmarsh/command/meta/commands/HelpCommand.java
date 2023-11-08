@@ -72,7 +72,7 @@ public class HelpCommand extends Command {
                 .asFields(true)
                 .build();
 
-        manager.register(embed.compile(manager));
+        manager.register(embed.toPaginatedEmbed());
         return empty();
     }
 }

@@ -8,11 +8,14 @@
 ## Features
 - Automatically updating notifications for Discord Events
 - Repeating Discord Events
-- Polls with support for up to 10 options
-- "Wizards" (Step-based surveys that execute some action using input collected over the steps upon completion)
+- Polls (including support for Anonymous and Singular / Multiple Votes)
+- "Wizards" (Step-based surveys that execute some action using input collected over the steps upon completion, allows for the specification of types upfront and performs casting / type checking of user input automatically).
 
+## Motivation
+
+Starting off as a replacement for music bots, this bot is now primarily designed to provide utility for friends online (who have varying degrees of experience with Discord).
 ## Installation
-This bot makes a significant number of calls to the Discord API(mainly due to the more complicated features it offers,
+This bot makes a significant number of calls to the Discord API (mainly due to the more complicated features it offers,
 namely Wizards), and therefore I have no intention of hosting this bot publicly.
 However, it isn't too complicated to host it yourself!
 

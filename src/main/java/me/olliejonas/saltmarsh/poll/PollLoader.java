@@ -34,6 +34,8 @@ public class PollLoader extends ListenerAdapter {
     }
 
     private void updatePollManager(JDA jda) {
+        if (connection == null) return;
+
         Map<String, PollEmbed> pollEmbedMap = new HashMap<>();
         boolean singularVote = false;
 

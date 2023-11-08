@@ -38,9 +38,7 @@ public class TestPaginatedEmbedCommand extends Command {
                 .textPage("like reeeeal bad xoxoxoxo");
 
         PaginatedEmbed embed = builder.build();
-        embed.compile(manager);
-        manager.register(embed);
-
-        return InteractionResponses.empty();
+        
+        return manager.register(embed);
     }
 }

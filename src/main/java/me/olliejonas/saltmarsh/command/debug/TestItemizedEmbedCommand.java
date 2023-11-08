@@ -35,13 +35,14 @@ public class TestItemizedEmbedCommand extends Command {
                 .author("This is an author!")
                 .item(new Itemizable.Strings("testing!"))
                 .item(new Itemizable.Strings("123!"))
+                .item(new Itemizable.Strings("yan sucks lmao"))
+                .itemsPerPage(1)
                 .displayIndex()
                 .pageCount()
                 .build();
 
         System.out.println(embed.items().stream().map(Itemizable.Strings::representation).collect(Collectors.toList()));
 
-        manager.register(embed.compile(manager));
-        return empty();
+        return manager.register(embed.toPaginatedEmbed());
     }
 }

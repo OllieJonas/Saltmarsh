@@ -1,8 +1,11 @@
 package me.olliejonas.saltmarsh;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
-import me.olliejonas.saltmarsh.command.admin.AdminCommand;
+import me.olliejonas.saltmarsh.command.debug.AmIConnectedToADatabaseCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
 import me.olliejonas.saltmarsh.command.debug.WhatTypeIsCommand;
 import me.olliejonas.saltmarsh.command.meta.Command;
@@ -24,9 +27,13 @@ import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManagerImp
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedListener;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManagerImpl;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.music.AudioManagerImpl;
 import me.olliejonas.saltmarsh.music.commands.*;
-import me.olliejonas.saltmarsh.poll.*;
+import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
+import me.olliejonas.saltmarsh.poll.PollCommand;
+import me.olliejonas.saltmarsh.poll.PollLoader;
+import me.olliejonas.saltmarsh.poll.PollManager;
+import me.olliejonas.saltmarsh.poll.PollManagerImpl;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventListener;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManager;
 import me.olliejonas.saltmarsh.scheduledevents.ScheduledEventManagerImpl;
@@ -44,7 +51,6 @@ import me.olliejonas.saltmarsh.scheduledevents.recurring.commands.RegisterRecurr
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -80,24 +86,29 @@ public class Saltmarsh {
     @Getter
     private final boolean databaseEnabled;
 
+    private final boolean developerMode;
+
     private final Set<ListenerAdapter> listeners;
 
     private final Collection<GatewayIntent> intents;
 
     // --------------- managers ---------------
+    private final AudioManager audioManager;
+
+    private final PollManager pollManager;
+
+    private final RecurringEventManager recurringEventManager;
+
+    private final ScheduledEventManager scheduledEventManager;
+
     private final ButtonEmbedManager buttonEmbedManager;
 
     private final PaginatedEmbedManager paginatedEmbedManager;
 
-    private final PollManager pollManager;
-
     private final WizardEmbedManager wizardEmbedManager;
 
-    private final ScheduledEventManager scheduledEventManager;
+    private PresenceUpdaterTask presenceUpdaterTask;
 
-    private final RecurringEventManager recurringEventManager;
-
-    private final GlobalAudioManager audioManager;
 
     // --------------- listeners (that need to be accessible) ---------------
 
@@ -107,9 +118,10 @@ public class Saltmarsh {
 
     private final CommandWatchdog commandWatchdog;
 
-    public Saltmarsh(String jdaToken, HikariDataSource database) {
+    public Saltmarsh(String jdaToken, HikariDataSource database, boolean developerMode) {
         this.jdaToken = jdaToken;
         this.hikariDataSource = database;
+        this.developerMode = developerMode;
 
         if (hikariDataSource != null) {
             try {
@@ -127,13 +139,12 @@ public class Saltmarsh {
         // managers
         this.buttonEmbedManager = new ButtonEmbedManagerImpl();
         this.paginatedEmbedManager = new PaginatedEmbedManagerImpl(buttonEmbedManager);
+        this.wizardEmbedManager = new WizardEmbedManagerImpl();
+
+        this.audioManager = createAudioManager();
 
         this.pollManager = new PollManagerImpl(sqlConnection, buttonEmbedManager);
         registerListener(new PollLoader(pollManager, sqlConnection));
-
-        this.wizardEmbedManager = new WizardEmbedManagerImpl();
-        this.audioManager = new GlobalAudioManager();
-
 
         // RecurringEventManager requires JDA to be loaded, so loading is handled in RecurringEventLoader
         this.recurringEventManager = new RecurringEventManagerImpl(wizardEmbedManager);
@@ -164,11 +175,15 @@ public class Saltmarsh {
             throw new RuntimeException(ex);
         }
 
-        // register HelloWorld as a global command to get the "Supports Slash Commands" badge
+        // register HelloWorld as a global command (doesn't work) to get the "Supports Slash Commands" badge
         Command command = new HelloWorldCommand();
         SlashCommandData helloWorldData = Commands.slash(command.getPrimaryAlias(), command.info().shortDesc());
         this.jda.updateCommands().addCommands(helloWorldData).queue();
 
+        this.presenceUpdaterTask = new PresenceUpdaterTask(jda);
+        presenceUpdaterTask.run();
+
+        // shutdown hook to gracefully terminate program
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 destroy();
@@ -176,14 +191,18 @@ public class Saltmarsh {
                 throw new RuntimeException(e);
             }
         }));
-//        AutoEnableWatchdog.autoEnable(jda, commandWatchdog);
     }
 
     public void destroy() throws SQLException {
         LOGGER.info("Shutting down ...");
         this.jda.shutdownNow();
-        this.sqlConnection.close();
-        this.hikariDataSource.close();
+        this.presenceUpdaterTask.getExecutorService().shutdownNow();
+
+        if (sqlConnection != null)
+            this.sqlConnection.close();
+
+        if (hikariDataSource != null)
+            this.hikariDataSource.close();
     }
 
     public void registerListeners() {
@@ -195,6 +214,13 @@ public class Saltmarsh {
     }
 
     public void registerCommands() {
+        // music
+        registerCommand(new DisconnectCommand(this.audioManager));
+        registerCommand(new NowPlayingCommand(this.audioManager));
+        registerCommand(new PlayCommand(this.audioManager));
+        registerCommand(new StopCommand(this.audioManager));
+        registerCommand(new QueueCommand(this.paginatedEmbedManager, this.audioManager));
+        registerCommand(new SkipCommand(this.audioManager));
 
         // events
         registerCommand(new ToggleEventPingCommand(this.scheduledEventManager));
@@ -207,7 +233,7 @@ public class Saltmarsh {
         registerCommand(new EditRecurringEventCommand(this.wizardEmbedManager, this.recurringEventManager));
 
         // misc
-//        registerCommand(new IsThisAURLCommand());
+        registerCommand(new AmIConnectedToADatabaseCommand(databaseEnabled));
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
@@ -218,30 +244,15 @@ public class Saltmarsh {
         registerCommand(new PollCommand(pollManager, wizardEmbedManager));
 
         // admin stuff
-        registerCommand(new TestCommand(
+        registerCommand(new TestCommand(!this.developerMode,
+                this.audioManager,
                 this.buttonEmbedManager,
                 this.paginatedEmbedManager,
                 this.pollManager,
-                this.wizardEmbedManager,
-                this.audioManager
+                this.wizardEmbedManager
         ));
 
         registerCommand(new WhatTypeIsCommand());
-
-        registerCommand(new AdminCommand(
-                this.audioManager
-        ));
-
-        // music commands
-        registerCommand(new DisconnectCommand(this.audioManager));
-        registerCommand(new PauseCommand(this.audioManager));
-        registerCommand(new PlayCommand(this.audioManager));
-        registerCommand(new RepeatingCommand(this.audioManager));
-        registerCommand(new ResumeCommand(this.audioManager));
-        registerCommand(new ShuffleCommand(this.audioManager));
-        registerCommand(new SkipCommand(this.audioManager));
-        registerCommand(new StopCommand(this.audioManager));
-        registerCommand(new QueueCommand(this.audioManager, this.paginatedEmbedManager));
 
         // help - register this last
         registerCommand(new HelpCommand(paginatedEmbedManager, commandRegistry));
@@ -266,7 +277,17 @@ public class Saltmarsh {
         intents.add(intent);
     }
 
+    private AudioManager createAudioManager() {
+        AudioPlayerManager manager = new DefaultAudioPlayerManager();
+
+        AudioSourceManagers.registerRemoteSources(manager);
+        AudioSourceManagers.registerLocalSource(manager);
+
+        return new AudioManagerImpl(manager);
+    }
     private ScheduledEventManager createScheduledEventManager() {
+        if (sqlConnection == null) return new ScheduledEventManagerImpl(this.recurringEventManager);
+
         Map<String, String> guildToPingChannelMap = new ConcurrentHashMap<>();
         Map<String, String> guildToRoleMap = new ConcurrentHashMap<>();
         Map<String, String> eventToCreatorMap = new ConcurrentHashMap<>();
@@ -325,7 +346,7 @@ public class Saltmarsh {
         }
 
         return new ScheduledEventManagerImpl(sqlConnection,
-                recurringEventManager,
+                this.recurringEventManager,
                 guildToPingChannelMap,
                 eventToChannelToMessageMap,
                 guildToRoleMap,
@@ -343,7 +364,6 @@ public class Saltmarsh {
                 .setEventPassthrough(true)
                 .enableCache(CacheFlag.VOICE_STATE, CacheFlag.SCHEDULED_EVENTS)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.listening("Sea Shanties \uD83C\uDFB5"))
                 .build();
     }
 }

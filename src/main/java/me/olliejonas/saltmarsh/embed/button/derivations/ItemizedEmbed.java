@@ -14,22 +14,20 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedBuilder> base, String title,
-                                                  String author, int itemsPerPage, boolean pageCount,
+                                                  String author, String onEmpty, int itemsPerPage, boolean pageCount,
                                                   boolean displayIndex, boolean asFields) implements DecoratedEmbed {
 
     public static final String AS_FIELD_SPLIT_STR = ">";
 
     public static final int DEFAULT_ITEMS_PER_PAGE = 10;
 
-    public PaginatedEmbed compile(PaginatedEmbedManager manager) {
-        PaginatedEmbed embed = compile();
-        embed.compile(manager);
-        return embed;
-    }
-
-    private PaginatedEmbed compile() {
+    public PaginatedEmbed toPaginatedEmbed() {
         // compile items into representation
         AtomicInteger counter = new AtomicInteger(1);
+
+        if (items.isEmpty())
+            return PaginatedEmbed.builder().embed(base.get().setTitle(title).setDescription(onEmpty)).build();
+
         List<String> representations = items.stream()
                 .map(Itemizable::representation)
                 .map(i -> (displayIndex ? counter.getAndIncrement() + ". " : "") + i)
@@ -37,15 +35,15 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
 
         Stream<EmbedBuilder> batches = MiscUtils.batches(representations, itemsPerPage).map(this::from);
 
-        if (!title.equals(""))
+        if (!title.isEmpty())
             batches = batches.map(b -> b.setTitle(title));
 
-        if (!author.equals(""))
+        if (!author.isEmpty())
             batches = batches.map(b -> b.setAuthor(author));
 
         List<EmbedBuilder> builders = batches.toList();
 
-        if (pageCount) {
+        if (pageCount && items.size() > itemsPerPage) {
             int noPages = builders.size();
             counter.set(1);
             builders = builders.stream().map(b -> b.setFooter("Page " + counter.incrementAndGet() + " / " + noPages))
@@ -87,6 +85,8 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
         private String title;
 
         private String author;
+
+        private String onEmpty;
 
         private int itemsPerPage;
 
@@ -133,6 +133,11 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
             return this;
         }
 
+        public Builder<E> onEmpty(String onEmpty) {
+            this.onEmpty = onEmpty;
+            return this;
+        }
+
         public Builder<E> pageCount() {
             return pageCount(true);
         }
@@ -166,7 +171,7 @@ public record ItemizedEmbed<E extends Itemizable>(List<E> items, Supplier<EmbedB
         }
 
         public ItemizedEmbed<E> build() {
-            return new ItemizedEmbed<>(items, base, title, author, itemsPerPage, pageCount, displayIndex, asFields);
+            return new ItemizedEmbed<>(items, base, title, author, onEmpty, itemsPerPage, pageCount, displayIndex, asFields);
         }
     }
 }

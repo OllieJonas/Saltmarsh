@@ -1,11 +1,11 @@
 package me.olliejonas.saltmarsh.music.commands;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
-import me.olliejonas.saltmarsh.command.meta.CommandInfo;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.GuildAudioManager;
-import me.olliejonas.saltmarsh.music.exceptions.QueueException;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
+import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -16,55 +16,32 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class SkipCommand extends AudioCommand {
+public class SkipCommand extends Command {
 
-    private static final int MAX_SKIP_THRESHOLD = 200;
+    private final AudioManager manager;
 
-    public SkipCommand(GlobalAudioManager manager) {
-        super(manager, "skip");
-    }
-
-    @Override
-    public CommandInfo info() {
-        return CommandInfo.of("Skips the current track! (Specify a number to skip X tracks, e.g. -skip -5)");
+    public SkipCommand(AudioManager manager) {
+        super(CommandPermissions.ALL, "skip");
+        this.manager = manager;
     }
 
     @Override
     public Collection<OptionData> args() {
-        return List.of(new OptionData(OptionType.INTEGER, "amount", "The number of of tracks to skip"));
+        return List.of(
+                new OptionData(OptionType.INTEGER, "skip", "The amount of tracks to skip (defaults to 1)")
+        );
     }
 
     @Override
-    public InteractionResponses execute(Member executor,
-                                        TextChannel channel, Map<String, OptionMapping> args,
-                                        String aliasUsed) throws CommandFailedException {
-        int amount = 1;
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+        int skip = 1;
 
-        if (args.containsKey("skipAmount")) {
-            try {
-                amount = Math.max(1, args.get("skipAmount").getAsInt());
-            } catch (NumberFormatException exception) {
-                throw CommandFailedException.badArgs(executor, this, "tracks-to-skip (whole number)");
-            }
-        }
+        if (args.containsKey("skip"))
+            skip = args.get("skip").getAsInt();
 
-        if (amount >= MAX_SKIP_THRESHOLD) {
-            sendMessage(channel, "Due to internal reasons, you are only able to skip a maximum of " +
-                    MAX_SKIP_THRESHOLD + " tracks. Capping your input at this skipAmount."
-            );
-            amount = MAX_SKIP_THRESHOLD;
-        }
-
-
-        GuildAudioManager guildAudioManager = from(manager, executor.getGuild());
-
-        try {
-            guildAudioManager.skip(amount);
-        } catch (QueueException ex) {
-            throw CommandFailedException.other(ex.getMessage(), ex.getMessage());
-        }
-
-        return InteractionResponses.messageAsEmbed("Successfully skipped " + amount + " track" +
-                (amount == 1 ? "" : "s") + " !", true);
+        AudioTrack newTrack = manager.skip(executor.getGuild(), skip);
+        return InteractionResponses.messageAsEmbed("Successfully skipped " + skip + " tracks! " +
+                (newTrack == null ? "(Skipped to the end of the queue!)" :
+                        "(Skipped to \"" + newTrack.getInfo().author + " - " + newTrack.getInfo().title + "\")"));
     }
 }

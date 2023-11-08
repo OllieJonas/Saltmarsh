@@ -1,31 +1,28 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
-import me.olliejonas.saltmarsh.command.meta.CommandInfo;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
+import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.Map;
 
-public class DisconnectCommand extends AudioCommand {
+public class DisconnectCommand extends Command {
 
-    public DisconnectCommand(GlobalAudioManager manager) {
-        super(manager, "disconnect", "dc", "quit", "exit");
+    private final AudioManager manager;
+
+    public DisconnectCommand(AudioManager manager) {
+        super(CommandPermissions.ALL, "disconnect", "dc");
+        this.manager = manager;
     }
 
     @Override
-    public CommandInfo info() {
-        return CommandInfo.of("Disconnects the bot from the voice channel!");
-    }
-
-    @Override
-    public InteractionResponses execute(Member executor,
-                                        TextChannel channel, Map<String, OptionMapping> args,
-                                        String aliasUsed) throws CommandFailedException {
-        manager.disconnect(executor.getGuild());
-        return InteractionResponses.messageAsEmbed("Goodbye! <3");
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+        boolean disconnected = manager.disconnect(executor.getGuild());
+        return InteractionResponses.messageAsEmbed(disconnected ? "Goodbye! <3" : "I'm not currently in a voice channel!");
     }
 }

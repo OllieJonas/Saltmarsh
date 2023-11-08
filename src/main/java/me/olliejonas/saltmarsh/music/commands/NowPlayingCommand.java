@@ -1,4 +1,4 @@
-package me.olliejonas.saltmarsh.command.debug;
+package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
@@ -11,26 +11,18 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.Map;
 
-public class TestPlayCommand extends Command {
+public class NowPlayingCommand extends Command {
 
     private final AudioManager manager;
 
-    public TestPlayCommand(AudioManager manager) {
-        super(CommandPermissions.ADMIN, "play");
+    public NowPlayingCommand(AudioManager manager) {
+        super(CommandPermissions.ALL, "nowplaying");
         this.manager = manager;
     }
 
-    static final String TOM_SCOTT_ONE = "https://www.youtube.com/watch?v=j3OqAN4ISOw";
-
-    static final String TOM_SCOTT_TWO = "https://www.youtube.com/watch?v=CmZdGo6b5yA";
-    static final String BONK = "https://www.youtube.com/watch?v=6TP0abZdRXg";
-
     @Override
     public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
-        manager.playTrack(executor, TOM_SCOTT_ONE);
-        manager.playTrack(executor, BONK);
-        manager.playTrack(executor, TOM_SCOTT_TWO);
-
+        manager.sendNowPlayingPrompt(executor.getGuild(), channel);
         return InteractionResponses.empty();
     }
 }

@@ -1,12 +1,13 @@
 package me.olliejonas.saltmarsh.embed.button.derivations;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Setter;
+import lombok.Singular;
 import me.olliejonas.saltmarsh.Constants;
-import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.embed.DecoratedEmbed;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbed;
-import me.olliejonas.saltmarsh.util.functional.TriFunction;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.awt.*;
@@ -16,8 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.*;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -42,8 +41,10 @@ public class PaginatedEmbed implements DecoratedEmbed {
     @Singular
     private List<EmbedBuilder> pages;
 
+    @Setter
     private List<ButtonEmbed> compiledPages = new ArrayList<>();
 
+    @Setter
     private boolean isCompiled = false;
 
     private AtomicInteger currentPage = new AtomicInteger();
@@ -77,31 +78,6 @@ public class PaginatedEmbed implements DecoratedEmbed {
     public Optional<ButtonEmbed> last() {
         currentPage.set(pages.size() - 1);
         return compiledPages.isEmpty() ? Optional.empty() : Optional.of(compiledPages.get(currentPage.get()));
-    }
-
-    public List<ButtonEmbed> compile(PaginatedEmbedManager manager) {
-        TriFunction<ButtonEmbed.ClickContext, String, Function<PaginatedEmbed, Optional<ButtonEmbed>>, InteractionResponses> consumer = (context, actionStr, function) -> {
-            function.apply(this).ifPresent(newEmbed -> manager.get(context.messageId())
-                    .ifPresent(embed -> context.message()
-                            .queue(message -> message.editMessageEmbeds(newEmbed).queue())));
-
-            return InteractionResponses.empty();
-        };
-
-        AtomicInteger counter = new AtomicInteger(0);
-        this.compiledPages = pages.stream().map(builder -> {
-            builder.setFooter("Page (" + counter.incrementAndGet() + " / " + pages.size() + ")");
-            ButtonEmbed.Builder buttonBuilder = ButtonEmbed.builder(builder);
-
-            buttonBuilder.button(Constants.PAGINATED_EMBED_BUTTONS.get(0), context -> consumer.apply(context, "first", PaginatedEmbed::first));
-            buttonBuilder.button(Constants.PAGINATED_EMBED_BUTTONS.get(1), context -> consumer.apply(context, "previous", PaginatedEmbed::prev));
-            buttonBuilder.button(Constants.PAGINATED_EMBED_BUTTONS.get(2), context -> consumer.apply(context, "next", PaginatedEmbed::next));
-            buttonBuilder.button(Constants.PAGINATED_EMBED_BUTTONS.get(3), context -> consumer.apply(context, "last", PaginatedEmbed::last));
-
-            return buttonBuilder.build();
-        }).collect(Collectors.toList());
-
-        return this.compiledPages;
     }
 
     /* BUILDER METHODS */

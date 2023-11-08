@@ -1,70 +1,33 @@
 package me.olliejonas.saltmarsh.music.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
+import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
-import me.olliejonas.saltmarsh.command.meta.CommandInfo;
+import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbed;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
-import me.olliejonas.saltmarsh.music.ItemizedAudioQueueEmbed;
-import me.olliejonas.saltmarsh.music.exceptions.QueueException;
-import net.dv8tion.jda.api.entities.Guild;
+import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
+import me.olliejonas.saltmarsh.music.interfaces.GuildAudioManager;
+import me.olliejonas.saltmarsh.music.structures.QueueEmbed;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-import java.util.List;
 import java.util.Map;
 
-public class QueueCommand extends AudioCommand {
+public class QueueCommand extends Command {
+    private final PaginatedEmbedManager paginatedEmbedManager;
 
-    private final static int DEFAULT_ITEMS_PER_PAGE = 10;
-
-    private final PaginatedEmbedManager embedManager;
-
-    public QueueCommand(GlobalAudioManager audioManager, PaginatedEmbedManager embedManager) {
-        super(audioManager, "queue");
-        this.embedManager = embedManager;
+    private final AudioManager manager;
+    public QueueCommand(PaginatedEmbedManager paginatedEmbedManager, AudioManager manager) {
+        super(CommandPermissions.ALL, "queue");
+        this.paginatedEmbedManager = paginatedEmbedManager;
+        this.manager = manager;
     }
-
     @Override
-    public CommandInfo info() {
-        return CommandInfo.of("Displays the music track queue");
-    }
-
-    @Override
-    public List<OptionData> args() {
-        return List.of(new OptionData(OptionType.STRING, "url", "The URL for a track (or playlist)!", false));
-    }
-
-
-    @Override
-    public InteractionResponses execute(Member executor,
-                                        TextChannel channel, Map<String, OptionMapping> args,
-                                        String aliasUsed) throws CommandFailedException {
-        return switch (args.size()) {
-            case 0 -> queue(executor.getGuild());
-            case 1 -> joinAndPlay(manager, channel, executor, args.get("url").getAsString());
-            default -> throw CommandFailedException.badArgs(executor, this, "track-url (optional)");
-        };
-    }
-
-    private InteractionResponses queue(Guild guild) {
-        PaginatedEmbed queueEmbed = ItemizedAudioQueueEmbed.build(embedManager,
-                manager.get(guild)
-                        .orElseThrow(() ->
-                                CommandFailedException.other("The queue is currently empty! :(",
-                                        "tbh, the bot isn't even initialised. im just tryna be nice here :/"))
-                        .getQueue(), DEFAULT_ITEMS_PER_PAGE);
-        try {
-            embedManager.register(queueEmbed, () -> {throw CommandFailedException.other(
-                    "The queue is currently empty!",
-                    "ok bot is initted, the queue is actually empty wow");});
-        } catch (QueueException ex) {
-            throw ex.asCommandFailed();
-        }
-        return InteractionResponses.messageAsEmbed("Successfully displayed queue!");
+    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+        GuildAudioManager audioManager = manager.getGuildManager(channel.getGuild());
+        PaginatedEmbed embed = new QueueEmbed(audioManager.getTracks()).toPaginatedEmbed();
+        return paginatedEmbedManager.register(embed);
     }
 }

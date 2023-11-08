@@ -26,15 +26,20 @@ public class Launcher {
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
         String sqlHost = getEnvVariable("MYSQL_HOST", "localhost");
 
+        boolean developerMode = Boolean.getBoolean(getEnvVariable("DEVELOPER_MODE", "true"));
+
         HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlHost);
 
         try {
-            setupInitialDBTables(dataSource.getConnection());
+            if (dataSource != null) {
+                Connection connection = dataSource.getConnection();
+                setupInitialDBTables(connection);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        Saltmarsh saltmarsh = new Saltmarsh(discToken, dataSource);
+        Saltmarsh saltmarsh = new Saltmarsh(discToken, dataSource, developerMode);
 
         try {
             saltmarsh.init();
@@ -130,12 +135,14 @@ public class Launcher {
         config.setUsername(name);
         config.setPassword(password);
 
-        HikariDataSource hikariDataSource = new HikariDataSource(config);
         boolean validConnection;
 
+        HikariDataSource hikariDataSource = null;
+
         try {
+            hikariDataSource = new HikariDataSource(config);
             validConnection = hikariDataSource.getConnection().isValid(10000);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.warn(NO_DB);
             return null;
         }
@@ -143,7 +150,7 @@ public class Launcher {
         if (!validConnection)
             LOGGER.warn(NO_DB);
 
-        return validConnection ? hikariDataSource : null;
+        return hikariDataSource;
     }
 
     private static String getDiscordToken(String[] args) {

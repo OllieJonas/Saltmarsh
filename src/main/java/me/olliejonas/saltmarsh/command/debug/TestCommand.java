@@ -8,7 +8,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
-import me.olliejonas.saltmarsh.music.GlobalAudioManager;
+import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.poll.PollManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -21,28 +21,31 @@ import java.util.Map;
 
 public class TestCommand extends Command {
 
+    private final AudioManager audioManager;
+
     private final ButtonEmbedManager buttonEmbedManager;
 
     private final PaginatedEmbedManager paginatedEmbedManager;
 
     private final WizardEmbedManager wizardEmbedManager;
 
-    private final GlobalAudioManager globalAudioManager;
-
     private final PollManager pollManager;
 
-    public TestCommand(ButtonEmbedManager buttonEmbedManager,
+    private final boolean shouldRegister;
+
+
+    public TestCommand(boolean shouldRegister, AudioManager audioManager, ButtonEmbedManager buttonEmbedManager,
                        PaginatedEmbedManager paginatedEmbedManager,
                        PollManager pollManager,
-                       WizardEmbedManager wizardEmbedManager,
-                       GlobalAudioManager globalAudioManager) {
+                       WizardEmbedManager wizardEmbedManager) {
 
         super(CommandPermissions.ADMIN, "test");
+        this.shouldRegister = shouldRegister;
+        this.audioManager = audioManager;
         this.buttonEmbedManager = buttonEmbedManager;
         this.paginatedEmbedManager = paginatedEmbedManager;
         this.wizardEmbedManager = wizardEmbedManager;
         this.pollManager = pollManager;
-        this.globalAudioManager = globalAudioManager;
     }
 
     @Override
@@ -57,16 +60,15 @@ public class TestCommand extends Command {
 
     @Override
     public void addSubCommands() {
-        addSubCommand(new TestPlayCommand(globalAudioManager));
         addSubCommand(new TestPaginatedEmbedCommand(paginatedEmbedManager));
         addSubCommand(new TestButtonEmbedCommand(buttonEmbedManager));
         addSubCommand(new TestItemizedEmbedCommand(paginatedEmbedManager));
         addSubCommand(new TestPollCommand(pollManager));
         addSubCommand(new TestFailureCommand());
         addSubCommand(new TestEphemeralCommand());
-        addSubCommand(new TestBotJoinsCommand(globalAudioManager));
         addSubCommand(new TestInputEmbedCommand(wizardEmbedManager));
         addSubCommand(new TestSelectMenuCommand());
+        addSubCommand(new TestPlayCommand(audioManager));
     }
 
     @Override
@@ -76,6 +78,6 @@ public class TestCommand extends Command {
 
     @Override
     public boolean shouldRegisterAsSlashCommand() {
-        return true;
+        return this.shouldRegister;
     }
 }
