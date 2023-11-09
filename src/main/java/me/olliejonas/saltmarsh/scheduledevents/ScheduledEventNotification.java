@@ -26,6 +26,9 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
                                          ScheduledEvent.Type type, ScheduledEvent.Status status,
                                          String id, @Nullable RecurringEvent.Frequency frequency) {
 
+    static final int AVATAR_SIZE = 48;
+    static final int IMAGE_SIZE = 1024;
+
     public static Map<ScheduledEvent.Status, String> STATUS_MESSAGES = Map.of(
             ScheduledEvent.Status.SCHEDULED, "Check out the Events tab to see " +
                     "more information and say you're coming!",
@@ -121,10 +124,10 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
         ImageProxy avatar = MiscUtils.getMostRelevantAvatar(creator);
 
         if (image != null)
-            builder.setThumbnail(image.getUrl());
+            builder.setImage(image.getUrl(IMAGE_SIZE));
 
-//        if (avatar != null)
-//            builder.setImage(avatar.getUrl());
+        if (avatar != null)
+            builder.setThumbnail(MiscUtils.getMostRelevantAvatar(creator).getUrl(AVATAR_SIZE));
 
         return builder.build();
     }
