@@ -22,7 +22,7 @@ namely Wizards), and therefore I have no intention of hosting this bot publicly.
 However, it isn't too complicated to host it yourself!
 
 ### Without Docker
-You can build the project using Maven (for example, running `mvn clean package` in the root directory).
+You can build the project using Maven (for example, running `mvn clean package` in the root directory), then run it using `java -jar <outputted-jar-name>.jar`.
 
 To enable support for scheduled event messages, recurring events and polls to persist when starting / stopping the bot, 
 you need to [host a MySQL server](https://www.prisma.io/dataguide/mysql/setting-up-a-local-mysql-database).
