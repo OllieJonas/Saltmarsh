@@ -27,7 +27,7 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
                                          String id, @Nullable RecurringEvent.Frequency frequency) {
 
     static final int AVATAR_SIZE = 32;
-    static final int IMAGE_SIZE = 1024;
+    static final int IMAGE_SIZE = 2048;
 
     static final int INTERESTED_LENGTH_THRESHOLD = 25;
 
@@ -49,22 +49,15 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
     }
 
     public static ScheduledEventNotification fromEvent(ScheduledEvent event) {
-        return fromEvent(event, event.getStatus(), null);
+        return fromEvent(event, event.getStatus(), event.getCreatorId(), null);
     }
 
     public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status) {
-        return fromEvent(event, status, null);
+        return fromEvent(event, status, event.getCreatorId(), null);
     }
 
     public static ScheduledEventNotification fromEvent(ScheduledEvent event, RecurringEventManager manager) {
-        return fromEvent(event, event.getStatus(), manager);
-    }
-
-    public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status,
-                                                       RecurringEventManager manager) {
-        return fromEvent(event, status, manager,
-                event.getGuild().retrieveMemberById(
-                        "140187632314351617").complete());
+        return fromEvent(event, event.getStatus(), event.getCreatorId(), manager);
     }
 
     public static ScheduledEventNotification fromEvent(ScheduledEvent event, ScheduledEvent.Status status,
