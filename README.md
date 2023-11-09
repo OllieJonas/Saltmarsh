@@ -28,7 +28,7 @@ To enable support for scheduled event messages, recurring events and polls to pe
 you need to [host a MySQL server](https://www.prisma.io/dataguide/mysql/setting-up-a-local-mysql-database).
 
 ### Docker-Compose
-You can simply run this bot using `docker compose up`.
+You can simply run this bot using `docker compose up (--build) (--detach)`.
 To specify environment variables, create a file called `env_file` in the root directory of the project.
 
 ### Environment Variables
