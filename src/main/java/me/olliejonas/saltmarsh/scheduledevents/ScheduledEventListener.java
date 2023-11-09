@@ -106,11 +106,10 @@ public class ScheduledEventListener extends ListenerAdapter {
         onScheduledEvent(event, EventType.EDIT);
     }
 
-    // think jda forgot to include this one?
-//    @Override
-//    public void onScheduledEventUpdateImage(ScheduledEventUpdateImageEvent event) {
-//        onScheduledEvent(event, EventType.EDIT);
-//    }
+    @Override
+    public void onScheduledEventUpdateImage(ScheduledEventUpdateImageEvent event) {
+        onScheduledEvent(event, EventType.EDIT);
+    }
 
     @Override
     public void onScheduledEventUpdateLocation(ScheduledEventUpdateLocationEvent event) {
