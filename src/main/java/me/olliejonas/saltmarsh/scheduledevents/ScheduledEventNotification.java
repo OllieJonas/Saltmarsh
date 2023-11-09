@@ -26,7 +26,7 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
                                          ScheduledEvent.Type type, ScheduledEvent.Status status,
                                          String id, @Nullable RecurringEvent.Frequency frequency) {
 
-    static final int AVATAR_SIZE = 48;
+    static final int AVATAR_SIZE = 32;
     static final int IMAGE_SIZE = 1024;
 
     public static Map<ScheduledEvent.Status, String> STATUS_MESSAGES = Map.of(
