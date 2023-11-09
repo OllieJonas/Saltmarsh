@@ -45,6 +45,10 @@ public class SkipCommand extends Command {
         if (args.containsKey("skip"))
             skip = args.get("skip").getAsInt();
 
+        if (skip <= 0)
+            return InteractionResponses.error("Please choose a number greater than 0!", true);
+
+
         AudioTrack newTrack = manager.skip(executor.getGuild(), skip);
 
         return InteractionResponses.messageAsEmbed("Successfully skipped " + skip + " tracks! " +

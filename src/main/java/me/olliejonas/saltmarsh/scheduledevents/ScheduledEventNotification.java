@@ -29,6 +29,9 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
     static final int AVATAR_SIZE = 32;
     static final int IMAGE_SIZE = 1024;
 
+    static final int INTERESTED_LENGTH_THRESHOLD = 25;
+
+
     public static Map<ScheduledEvent.Status, String> STATUS_MESSAGES = Map.of(
             ScheduledEvent.Status.SCHEDULED, "Check out the Events tab to see " +
                     "more information and say you're coming!",
@@ -114,10 +117,12 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
                 "This is a recurring event that repeats " + frequency.getRepresentation().toLowerCase(Locale.ROOT) + "!");
 
         String locationStr = type != ScheduledEvent.Type.EXTERNAL ? "<#" + location + ">" : location + " (in Person)";
+        String interestedText = String.join(", ", interested);
+        boolean shouldInterestedInline = interestedText.length() < INTERESTED_LENGTH_THRESHOLD;
 
         builder.addField("Organiser", creator.getAsMention(), true);
         builder.addField("Location", locationStr, true);
-        builder.addField("Interested", String.join(", ", interested), true);
+        builder.addField("Interested", String.join(", ", interested), shouldInterestedInline);
         builder.addField("Description", description, false);
         builder.addField("Status", statusStr(), false);
 
