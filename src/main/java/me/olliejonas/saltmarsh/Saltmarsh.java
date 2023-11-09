@@ -118,20 +118,20 @@ public class Saltmarsh {
 
     private final CommandWatchdog commandWatchdog;
 
-    public Saltmarsh(String jdaToken, HikariDataSource database, boolean developerMode) {
-        this.jdaToken = jdaToken;
-        this.hikariDataSource = database;
-        this.developerMode = developerMode;
+    public Saltmarsh(Launcher.Props props) {
+        this.jdaToken = props.discToken();
+        this.hikariDataSource = props.dataSource();
+        this.developerMode = props.developerMode();
 
         if (hikariDataSource != null) {
             try {
-                this.sqlConnection = database.getConnection();
+                this.sqlConnection = this.hikariDataSource.getConnection();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        this.databaseEnabled = hikariDataSource != null;
+        this.databaseEnabled = this.hikariDataSource != null;
 
         this.listeners = new HashSet<>();
         this.intents = new HashSet<>();

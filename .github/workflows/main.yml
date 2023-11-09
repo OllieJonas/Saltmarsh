@@ -71,6 +71,8 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
           script: |
+            rm -rf Saltmarsh
+            mkdir Saltmarsh
             cd Saltmarsh
             mv github/workspace/saltmarsh.tar.gz/saltmarsh.tar.gz saltmarsh.tar.gz
             rm -rf github

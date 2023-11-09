@@ -14,9 +14,16 @@ import java.sql.SQLException;
 import java.util.function.Supplier;
 
 public class Launcher {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
     static final String NO_DB = "Unable to connect to database! This functionality has therefore been disabled!";
+
+    public record Props(String discToken, HikariDataSource dataSource, Spotify spotify, boolean developerMode) {
+        record Spotify(String client, String secret) {}
+
+    }
+
     public static void main(String[] args) {
         // not null
         String discToken = getDiscordToken(args);
@@ -26,7 +33,10 @@ public class Launcher {
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
         String sqlHost = getEnvVariable("MYSQL_HOST", "localhost");
 
-        boolean developerMode = Boolean.getBoolean(getEnvVariable("DEVELOPER_MODE", "true"));
+        String spotifyClient = getEnvVariable("SPOTIFY_CLIENT_ID", "");
+        String spotifySecret = getEnvVariable("SPOTIFY_SECRET", "");
+
+        Boolean developerMode = getEnvVariable("DEVELOPER_MODE", Boolean.class, true);
 
         HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlHost);
 
@@ -39,7 +49,9 @@ public class Launcher {
             throw new RuntimeException(e);
         }
 
-        Saltmarsh saltmarsh = new Saltmarsh(discToken, dataSource, developerMode);
+        Props props = new Props(discToken, dataSource, new Props.Spotify(spotifyClient, spotifySecret), developerMode);
+
+        Saltmarsh saltmarsh = new Saltmarsh(props);
 
         try {
             saltmarsh.init();
@@ -154,7 +166,7 @@ public class Launcher {
     }
 
     private static String getDiscordToken(String[] args) {
-        return args.length > 0 ? args[0] : getEnvVariable("SALTMARSH_DISCORD_TOKEN", true);
+        return args.length > 0 ? args[0] : getEnvVariable("SALTMARSH_DISCORD_TOKEN");
     }
 
     private static String getEnvVariable(String name) {
