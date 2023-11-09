@@ -51,7 +51,7 @@ public class PollLoader extends ListenerAdapter {
                 boolean anonymous = results.getBoolean("anonymous");
                 singularVote = results.getBoolean("singular");
                 boolean textRepresentation = results.getBoolean("text_repr");
-                List<PollOption> options = Arrays.stream(results.getString("options").split(PollManager.SQL_POLL_SPLIT)).map(PollOption::new).toList();
+                List<PollOption> options = Arrays.stream(results.getString("options").split("\\|")).map(PollOption::new).toList();
 
                 pollEmbedMap.put(id, new PollEmbed(question, creator, singularVote, anonymous, textRepresentation, options, new HashMap<>()));
             }

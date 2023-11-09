@@ -320,6 +320,9 @@ public class Saltmarsh {
 
                 Objects.requireNonNull(guild);
 
+                channel = channel == null ? "" : channel;
+                role = role == null ? "" : role;
+
                 guildToPingChannelMap.put(guild, channel);
                 guildToRoleMap.put(guild, role);
             }
