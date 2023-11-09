@@ -51,7 +51,7 @@ public class RecurringEventLoader extends ListenerAdapter {
                 guildToChannelRecurringEventMap.put(guild, textChannel);
             }
 
-            manager.setGuildToChannelRecurringEventMap(guildToChannelRecurringEventMap);
+            manager.setGuildToChannelMap(guildToChannelRecurringEventMap);
             resultSet.close();
 
         } catch (SQLException e) {

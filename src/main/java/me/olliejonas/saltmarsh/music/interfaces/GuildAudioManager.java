@@ -27,5 +27,7 @@ public interface GuildAudioManager {
 
     void sendNowPlayingPrompt(TextChannel channel);
 
+    boolean shuffle();
+
     AudioTrack skip(Integer skip);
 }

@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.music.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
@@ -22,10 +23,15 @@ public class PlayCommand extends Command {
     private final Map<String, Map<TextChannel, Long>> nowPlayingPromptChannels;
 
     public PlayCommand(AudioManager manager) {
-        super(CommandPermissions.ALL, "play");
+        super(CommandPermissions.MUSIC, "play");
 
         this.manager = manager;
         this.nowPlayingPromptChannels = new WeakConcurrentHashMap<>();
+    }
+
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(MUSIC) Adds a track to the queue");
     }
 
     @Override
@@ -52,8 +58,17 @@ public class PlayCommand extends Command {
         }
 
         // add ytsearch transformation here
-
+        if (!isUrl(link))
+            link = withYtSearch(link);
 
         return InteractionResponses.messageAsEmbed(manager.playTrack(executor, link), true);
+    }
+
+    private boolean isUrl(String input) {
+        return input.startsWith("http://") || input.startsWith("https://");
+    }
+
+    private String withYtSearch(String input) {
+        return input.startsWith("ytsearch:") ? input : "ytsearch:" + input;
     }
 }

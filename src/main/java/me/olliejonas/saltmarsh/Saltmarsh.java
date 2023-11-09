@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import me.olliejonas.saltmarsh.command.debug.AmIConnectedToADatabaseCommand;
+import me.olliejonas.saltmarsh.command.debug.GetConfigurationCommand;
 import me.olliejonas.saltmarsh.command.debug.TestCommand;
 import me.olliejonas.saltmarsh.command.debug.WhatTypeIsCommand;
 import me.olliejonas.saltmarsh.command.meta.Command;
@@ -220,6 +221,7 @@ public class Saltmarsh {
         registerCommand(new PlayCommand(this.audioManager));
         registerCommand(new StopCommand(this.audioManager));
         registerCommand(new QueueCommand(this.paginatedEmbedManager, this.audioManager));
+        registerCommand(new ShuffleCommand(this.audioManager));
         registerCommand(new SkipCommand(this.audioManager));
 
         // events
@@ -251,6 +253,9 @@ public class Saltmarsh {
                 this.pollManager,
                 this.wizardEmbedManager
         ));
+
+        registerCommand(new GetConfigurationCommand(this.developerMode,
+                this.scheduledEventManager, this.recurringEventManager));
 
         registerCommand(new WhatTypeIsCommand());
 

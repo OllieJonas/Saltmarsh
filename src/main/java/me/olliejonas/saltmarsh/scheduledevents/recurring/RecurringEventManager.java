@@ -12,6 +12,8 @@ public sealed interface RecurringEventManager permits RecurringEventManagerImpl 
 
     Optional<RecurringEvent> get(String eventId);
 
+    Optional<TextChannel> getChannel(Guild guild);
+
     boolean isRecurring(ScheduledEvent event);
 
     void register(RecurringEvent event, Guild guild);

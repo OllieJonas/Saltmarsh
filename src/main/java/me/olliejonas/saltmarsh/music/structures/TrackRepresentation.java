@@ -19,11 +19,20 @@ public record TrackRepresentation(AudioTrack track) implements Itemizable {
         return info.author + " - " + info.title + " (" + minutes(length) + ":" + seconds(length) + ")";
     }
 
-    private int seconds(long millis) {
+    private String seconds(long millis) {
+        int seconds = doSeconds(millis);
+        return (seconds < 10 ? "0" : "") + seconds;
+    }
+
+    private String minutes(long millis) {
+        return String.valueOf(doMinutes(millis));
+    }
+
+    private int doSeconds(long millis) {
         return (int) ((millis / 1000) % 60);
     }
 
-    private int minutes(long millis) {
+    private int doMinutes(long millis) {
         return (int) ((millis / 1000) / 60);
     }
 }

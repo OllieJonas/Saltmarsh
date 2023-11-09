@@ -31,4 +31,8 @@ public interface AudioManager {
     default boolean stop(Guild guild) {
         return getGuildManager(guild).stop();
     }
+
+    default boolean shuffle(Guild guild) {
+        return getGuildManager(guild).shuffle();
+    }
 }

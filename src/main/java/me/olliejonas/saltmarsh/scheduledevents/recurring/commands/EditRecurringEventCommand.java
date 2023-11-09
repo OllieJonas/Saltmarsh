@@ -70,7 +70,7 @@ public class EditRecurringEventCommand extends Command {
                     RecurringEvent.Frequency frequency = RecurringEvent.Frequency.from((String) results.get("frequency"));
                     ScheduledEvent event = guild.getScheduledEventsByName(eventName, false).get(0);
 
-                    manager.register(RecurringEvent.of(event, executor, frequency), guild);
+                    manager.update(RecurringEvent.of(event, executor, frequency), guild);
 
                     return InteractionResponses.messageAsEmbed("Successfully marked " + eventName + " as repeating!", true);
                 })

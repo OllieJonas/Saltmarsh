@@ -118,6 +118,11 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
     }
 
     @Override
+    public boolean shuffle() {
+        return !tracks.shuffle().isEmpty();
+    }
+
+    @Override
     public AudioTrack skip(Integer skip) {
         AudioTrack nextMinusOne = tracks.skip(skip - 1);
 

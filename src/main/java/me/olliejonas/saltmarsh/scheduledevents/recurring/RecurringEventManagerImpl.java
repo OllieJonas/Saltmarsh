@@ -34,7 +34,7 @@ public final class RecurringEventManagerImpl extends SQLManager implements Recur
 
     private ScheduledEventListener scheduledEventListener;
 
-    private Map<String, String> guildToChannelRecurringEventMap;
+    private Map<String, String> guildToChannelMap;
 
     private Map<String, RecurringEvent> eventIdToRecurringEvents;
 
@@ -43,7 +43,7 @@ public final class RecurringEventManagerImpl extends SQLManager implements Recur
     }
 
     public RecurringEventManagerImpl(Connection connection, WizardEmbedManager wizardEmbedManager,
-                                     Map<String, String> guildToChannelRecurringEventMap,
+                                     Map<String, String> guildToChannelMap,
                                      Map<String, RecurringEvent> eventIdToRecurringEvents) {
 
         super(connection);
@@ -51,13 +51,13 @@ public final class RecurringEventManagerImpl extends SQLManager implements Recur
         this.wizardEmbedManager = wizardEmbedManager;
 
 
-        this.guildToChannelRecurringEventMap = guildToChannelRecurringEventMap;
+        this.guildToChannelMap = guildToChannelMap;
         this.eventIdToRecurringEvents = eventIdToRecurringEvents;
     }
 
     public void addChannel(Guild guild, TextChannel channel) {
         insertChannelIntoSql(guild.getId(), channel.getId());
-        guildToChannelRecurringEventMap.put(guild.getId(), channel.getId());
+        guildToChannelMap.put(guild.getId(), channel.getId());
     }
 
     public void register(RecurringEvent event, Guild guild) {
@@ -81,10 +81,10 @@ public final class RecurringEventManagerImpl extends SQLManager implements Recur
         return get(event.getId()).isPresent();
     }
 
-    Optional<TextChannel> getChannel(Guild guild) {
-        if (!guildToChannelRecurringEventMap.containsKey(guild.getId())) return Optional.empty();
+    public Optional<TextChannel> getChannel(Guild guild) {
+        if (!guildToChannelMap.containsKey(guild.getId())) return Optional.empty();
 
-        return Optional.ofNullable(guild.getTextChannelById(guildToChannelRecurringEventMap.get(guild.getId())));
+        return Optional.ofNullable(guild.getTextChannelById(guildToChannelMap.get(guild.getId())));
     }
 
     InteractionResponses sendUpdateEventEmbed(Guild guild, ScheduledEvent event, ScheduledEvent.Status reason) {
