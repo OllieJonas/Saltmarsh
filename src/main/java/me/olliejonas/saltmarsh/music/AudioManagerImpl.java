@@ -69,7 +69,7 @@ public class AudioManagerImpl implements AudioManager {
                 return "Spotify is currently disabled! :(";
             }
 
-            LOGGER.info(String.join(", ", tracks));
+            LOGGER.debug("Track Info (from Spotify): " + String.join(", ", tracks));
 
             if (tracks.isEmpty()) {
                 return "This listening method isn't currently supported! (Only supports tracks, albums & playlists :( )";

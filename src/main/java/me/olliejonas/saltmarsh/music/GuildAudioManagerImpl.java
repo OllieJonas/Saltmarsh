@@ -167,7 +167,7 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         @Override
         public void playlistLoaded(AudioPlaylist playlist) {
             if (playlist.isSearchResult()) {
-                LOGGER.info(playlist.getTracks().stream().map(TrackRepresentation::new).map(TrackRepresentation::toString).collect(Collectors.joining(", ")));
+                LOGGER.debug("Search Results: " + playlist.getTracks().stream().map(TrackRepresentation::new).map(TrackRepresentation::toString).collect(Collectors.joining(", ")));
                 addTrack(playlist.getTracks().get(0));
             } else
                 playlist.getTracks().forEach(GuildAudioManagerImpl.this::addTrack);
