@@ -29,6 +29,7 @@ import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedListener;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManagerImpl;
 import me.olliejonas.saltmarsh.music.AudioManagerImpl;
+import me.olliejonas.saltmarsh.music.SpotifyWrapper;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.poll.PollCommand;
@@ -81,6 +82,8 @@ public class Saltmarsh {
 
     private final HikariDataSource hikariDataSource;
 
+    private final SpotifyWrapper spotify;
+
     @Getter
     private Connection sqlConnection = null;
 
@@ -122,6 +125,7 @@ public class Saltmarsh {
     public Saltmarsh(Launcher.Props props) {
         this.jdaToken = props.discToken();
         this.hikariDataSource = props.dataSource();
+        this.spotify = props.spotify();
         this.developerMode = props.developerMode();
 
         if (hikariDataSource != null) {
@@ -197,13 +201,17 @@ public class Saltmarsh {
     public void destroy() throws SQLException {
         LOGGER.info("Shutting down ...");
         this.jda.shutdownNow();
-        this.presenceUpdaterTask.getExecutorService().shutdownNow();
+        this.presenceUpdaterTask.shutdown();
+        this.spotify.shutdown();
 
-        if (sqlConnection != null)
+        if (sqlConnection != null) {
             this.sqlConnection.close();
+        }
 
-        if (hikariDataSource != null)
+        if (hikariDataSource != null) {
             this.hikariDataSource.close();
+        }
+
     }
 
     public void registerListeners() {
@@ -216,6 +224,7 @@ public class Saltmarsh {
 
     public void registerCommands() {
         // music
+        registerCommand(new ClearQueueCommand(this.audioManager));
         registerCommand(new DisconnectCommand(this.audioManager));
         registerCommand(new NowPlayingCommand(this.audioManager));
         registerCommand(new PlayCommand(this.audioManager));
@@ -288,7 +297,7 @@ public class Saltmarsh {
         AudioSourceManagers.registerRemoteSources(manager);
         AudioSourceManagers.registerLocalSource(manager);
 
-        return new AudioManagerImpl(manager);
+        return new AudioManagerImpl(manager, spotify);
     }
     private ScheduledEventManager createScheduledEventManager() {
         if (sqlConnection == null) return new ScheduledEventManagerImpl(this.recurringEventManager);
@@ -357,8 +366,6 @@ public class Saltmarsh {
                 guildToRoleMap,
                 eventToCreatorMap);
     }
-
-
 
     public JDA buildJda() {
         return JDABuilder.createLight(this.jdaToken,

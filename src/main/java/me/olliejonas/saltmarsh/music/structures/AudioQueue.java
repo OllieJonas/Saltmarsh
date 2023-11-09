@@ -118,4 +118,10 @@ public class AudioQueue<E> {
     public void print() {
         System.out.println(queue.stream().map(Object::toString).collect(Collectors.joining(", ")));
     }
+
+    public int clearQueue() {
+        int size = size();
+        queue.clear();
+        return size;
+    }
 }

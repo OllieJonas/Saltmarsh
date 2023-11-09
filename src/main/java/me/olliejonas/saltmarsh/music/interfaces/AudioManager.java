@@ -4,26 +4,35 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import org.apache.hc.core5.http.ParseException;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+
+import java.io.IOException;
 
 public interface AudioManager {
 
     // returns response message (either error or successfully played)
-    String playTrack(Member executor, String identifier);
+    String addTrack(Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException;
 
+
+    default int clearQueue(Guild guild) {
+        return getGuildManager(guild).clearQueue();
+    }
 
     GuildAudioManager getGuildManager(Guild guild);
-
-    default boolean pause(Guild guild) {
-        return getGuildManager(guild).togglePause();
-    }
 
     default boolean disconnect(Guild guild) {
         return getGuildManager(guild).disconnect();
     }
 
+    default boolean pause(Guild guild) {
+        return getGuildManager(guild).togglePause();
+    }
+
     default void sendNowPlayingPrompt(Guild guild, TextChannel channel) {
         getGuildManager(guild).sendNowPlayingPrompt(channel);
     }
+
     default AudioTrack skip(Guild guild, Integer skip) {
         return getGuildManager(guild).skip(skip);
     }

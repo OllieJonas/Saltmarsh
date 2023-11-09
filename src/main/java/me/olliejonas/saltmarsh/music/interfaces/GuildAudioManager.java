@@ -11,6 +11,8 @@ public interface GuildAudioManager {
 
     String connect(Member member);
 
+    int clearQueue();
+
     boolean disconnect();
 
     AudioSendHandler getSendHandler();

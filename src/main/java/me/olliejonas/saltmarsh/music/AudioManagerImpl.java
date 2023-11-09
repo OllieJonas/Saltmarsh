@@ -6,22 +6,35 @@ import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.music.interfaces.GuildAudioManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import org.apache.hc.core5.http.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AudioManagerImpl implements AudioManager {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(AudioManagerImpl.class);
 
     private final AudioPlayerManager audioPlayerManager;
 
     private final Map<String, GuildAudioManager> guildManagerMap;
 
-    public AudioManagerImpl(AudioPlayerManager audioPlayerManager) {
-        this(audioPlayerManager, new HashMap<>());
+    private final SpotifyWrapper spotify;
+
+
+    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapper spotify) {
+        this(audioPlayerManager, spotify, new HashMap<>());
     }
 
-    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, Map<String, GuildAudioManager> guildManagerMap) {
+    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapper spotify, Map<String, GuildAudioManager> guildManagerMap) {
         this.audioPlayerManager = audioPlayerManager;
+        this.spotify = spotify;
         this.guildManagerMap = guildManagerMap;
     }
 
@@ -33,7 +46,7 @@ public class AudioManagerImpl implements AudioManager {
         return guildManagerMap.get(guild.getId());
     }
 
-    public String playTrack(Member executor, String identifier) {
+    public String addTrack(Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException {
         Guild guild = executor.getGuild();
         GuildAudioManager manager = getGuildManager(guild);
 
@@ -43,11 +56,37 @@ public class AudioManagerImpl implements AudioManager {
         return addTrack(guild, identifier);
     }
 
-    public String addTrack(Guild guild, String identifier) {
+    public String addTrack(Guild guild, String identifier) throws IOException, ParseException, SpotifyWebApiException {
         GuildAudioManager guildAudioManager = getGuildManager(guild);
-        // add transformation to spotify search here
-        audioPlayerManager.loadItem(identifier, guildAudioManager.getTrackLoader());
-        return "Successfully added track to queue!";
+
+        List<String> tracks = Collections.emptyList();
+
+        if (identifier.contains("spotify")) {
+            tracks = spotify.transform(identifier);
+
+
+            if (tracks == null) {
+                return "Spotify is currently disabled! :(";
+            }
+
+            LOGGER.info(String.join(", ", tracks));
+
+            if (tracks.isEmpty()) {
+                return "This listening method isn't currently supported! (Only supports tracks, albums & playlists :( )";
+            }
+        }
+
+        if (tracks.isEmpty()) {
+            tracks = Collections.singletonList(identifier);
+        }
+
+        tracks = withYtSearch(tracks);
+
+        int size = tracks.size();
+
+        tracks.forEach(track -> audioPlayerManager.loadItem(track, guildAudioManager.getTrackLoader()));
+
+        return "Successfully added " + size + " track" + (size == 1 ? "" : "s") + " to the queue!";
     }
 
     GuildAudioManager createManager(Guild guild) {
@@ -59,5 +98,19 @@ public class AudioManagerImpl implements AudioManager {
         guild.getAudioManager().setSendingHandler(manager.getSendHandler());
 
         return manager;
+    }
+
+
+    private boolean isUrl(String input) {
+        return input.startsWith("http://") || input.startsWith("https://");
+    }
+
+    private List<String> withYtSearch(List<String> input) {
+        return input.stream().map(track -> {
+            if (isUrl(track))
+                return track;
+
+            return track.startsWith("ytsearch:") ? track : "ytsearch:" + track;
+        }).toList();
     }
 }

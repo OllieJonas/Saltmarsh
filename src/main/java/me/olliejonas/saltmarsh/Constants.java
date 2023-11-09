@@ -35,7 +35,7 @@ public class Constants {
 
 
     public static String UNKNOWN_ERROR_PROMPT(String commandRoot, String message) {
-        return String.format("An internal error has occurred! Please contact an admin! (Command: %s, " +
+        return String.format("An internal error has occurred! Please contact Ollie (@ols)! (Command: %s, " +
                 "Error: %s)", commandRoot, message);
     }
 

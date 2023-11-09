@@ -9,6 +9,7 @@ import lombok.Getter;
 import me.olliejonas.saltmarsh.music.interfaces.GuildAudioManager;
 import me.olliejonas.saltmarsh.music.structures.AudioQueue;
 import me.olliejonas.saltmarsh.music.structures.NowPlayingPrompt;
+import me.olliejonas.saltmarsh.music.structures.TrackRepresentation;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -16,11 +17,16 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.managers.AudioManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GuildAudioManagerImpl implements GuildAudioManager {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(GuildAudioManagerImpl.class);
 
     private final AudioPlayer player;
 
@@ -93,6 +99,10 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
             playNext();
     }
 
+    public int clearQueue() {
+        return tracks.clearQueue();
+    }
+
     public String connect(AudioChannelUnion channel) {
         AudioManager manager = guild.getAudioManager(); // JDA import, not mine
 
@@ -156,17 +166,21 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
 
         @Override
         public void playlistLoaded(AudioPlaylist playlist) {
-            playlist.getTracks().forEach(GuildAudioManagerImpl.this::addTrack);
+            if (playlist.isSearchResult()) {
+                LOGGER.info(playlist.getTracks().stream().map(TrackRepresentation::new).map(TrackRepresentation::toString).collect(Collectors.joining(", ")));
+                addTrack(playlist.getTracks().get(0));
+            } else
+                playlist.getTracks().forEach(GuildAudioManagerImpl.this::addTrack);
         }
 
         @Override
         public void noMatches() {
-
+            LOGGER.warn("No matches found!");
         }
 
         @Override
         public void loadFailed(FriendlyException exception) {
-
+            LOGGER.error("Load failed", exception);
         }
     }
 }

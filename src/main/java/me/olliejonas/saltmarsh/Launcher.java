@@ -2,10 +2,12 @@ package me.olliejonas.saltmarsh;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import me.olliejonas.saltmarsh.music.SpotifyWrapper;
 import me.olliejonas.saltmarsh.poll.PollManager;
 import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.michaelthelin.spotify.SpotifyApi;
 
 import javax.security.auth.login.LoginException;
 import java.sql.Connection;
@@ -19,27 +21,23 @@ public class Launcher {
 
     static final String NO_DB = "Unable to connect to database! This functionality has therefore been disabled!";
 
-    public record Props(String discToken, HikariDataSource dataSource, Spotify spotify, boolean developerMode) {
-        record Spotify(String client, String secret) {}
+    public record Props(String discToken, HikariDataSource dataSource, SpotifyWrapper spotify, boolean developerMode) {
 
     }
 
     public static void main(String[] args) {
         // not null
         String discToken = getDiscordToken(args);
+        Boolean developerMode = getEnvVariable("DEVELOPER_MODE", Boolean.class, false);
 
         // could be null
         String sqlUsername = getEnvVariable("MYSQL_USER", "root");  // these aren't the actual credentials lol
         String sqlPassword = getEnvVariable("MYSQL_PASSWORD", "hello");
         String sqlHost = getEnvVariable("MYSQL_HOST", "localhost");
 
-        String spotifyClient = getEnvVariable("SPOTIFY_CLIENT_ID", "");
-        String spotifySecret = getEnvVariable("SPOTIFY_SECRET", "");
-
-        Boolean developerMode = getEnvVariable("DEVELOPER_MODE", Boolean.class, true);
-
         HikariDataSource dataSource = connectToDB(sqlUsername, sqlPassword, sqlHost);
 
+        // sql
         try {
             if (dataSource != null) {
                 Connection connection = dataSource.getConnection();
@@ -49,7 +47,21 @@ public class Launcher {
             throw new RuntimeException(e);
         }
 
-        Props props = new Props(discToken, dataSource, new Props.Spotify(spotifyClient, spotifySecret), developerMode);
+        String spotifyClient = getEnvVariable("SPOTIFY_CLIENT_ID", "");
+        String spotifySecret = getEnvVariable("SPOTIFY_CLIENT_SECRET", "");
+
+        SpotifyApi api = null;
+        // spotify
+        if (!spotifyClient.isEmpty() && !spotifySecret.isEmpty()) {
+            api = SpotifyApi.builder()
+                    .setClientId(spotifyClient)
+                    .setClientSecret(spotifySecret)
+                    .build();
+        }
+
+        SpotifyWrapper spotify = new SpotifyWrapper(api);
+
+        Props props = new Props(discToken, dataSource, spotify, developerMode);
 
         Saltmarsh saltmarsh = new Saltmarsh(props);
 
@@ -140,7 +152,7 @@ public class Launcher {
 
     private static HikariDataSource connectToDB(String name, String password, String host) {
         LOGGER.info("Attempting to connect to MySQL database " +
-                "(" + host + ") with username " + name + " and password " + password);
+                "(" + host + ") with username \"" + name + "\" and password \"" + password + "\" ...");
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + host + ":3306/saltmarsh?autoReconnect=true&allowMultiQueries=true");

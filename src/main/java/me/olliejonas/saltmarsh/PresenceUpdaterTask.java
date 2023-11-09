@@ -59,4 +59,8 @@ public class PresenceUpdaterTask {
 
         this.currentActivity = activity;
     }
+
+    public void shutdown() {
+        this.executorService.shutdownNow();
+    }
 }
