@@ -154,6 +154,8 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         guild.getAudioManager().closeAudioConnection();
         this.activeVoiceChannel = null;
 
+        clearQueue();
+
         return true;
     }
 
