@@ -16,7 +16,7 @@ public record TrackRepresentation(AudioTrack track) implements Itemizable {
         AudioTrackInfo info = track.getInfo();
         long length = info.length;
 
-        return info.author + " - " + info.title + " (" + minutes(length) + ":" + seconds(length) + ")";
+        return info.author + " - " + info.title.replace(info.author, "").strip() + " (" + minutes(length) + ":" + seconds(length) + ")";
     }
 
     private String seconds(long millis) {
