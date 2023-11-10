@@ -29,7 +29,7 @@ import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedListener;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManagerImpl;
 import me.olliejonas.saltmarsh.music.AudioManagerImpl;
-import me.olliejonas.saltmarsh.music.SpotifyWrapper;
+import me.olliejonas.saltmarsh.music.SpotifyWrapped;
 import me.olliejonas.saltmarsh.music.commands.*;
 import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.poll.PollCommand;
@@ -82,7 +82,7 @@ public class Saltmarsh {
 
     private final HikariDataSource hikariDataSource;
 
-    private final SpotifyWrapper spotify;
+    private final SpotifyWrapped spotify;
 
     @Getter
     private Connection sqlConnection = null;

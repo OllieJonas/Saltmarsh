@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 
 // haha get it because "Spotify Wrapped" but this is also a wrapper for the SpotifyApi object
-public class SpotifyWrapper {
+public class SpotifyWrapped {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(SpotifyWrapper.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(SpotifyWrapped.class);
 
     private static final int DEFAULT_LOAD_AT_ONCE_LIMIT = -1;  // negative number = Spotify API max limit
 
@@ -36,11 +36,11 @@ public class SpotifyWrapper {
     @Getter
     private boolean isEnabled;
 
-    public SpotifyWrapper(SpotifyApi api) {
+    public SpotifyWrapped(SpotifyApi api) {
         this(api, DEFAULT_LOAD_AT_ONCE_LIMIT);
 
     }
-    public SpotifyWrapper(SpotifyApi api, int loadAtOnceLimit) {
+    public SpotifyWrapped(SpotifyApi api, int loadAtOnceLimit) {
         if (api == null)
             LOGGER.warn("No client id / secret was specified for Spotify! Feature has been disabled ...");
 

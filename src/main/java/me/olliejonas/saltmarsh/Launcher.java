@@ -2,7 +2,7 @@ package me.olliejonas.saltmarsh;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.olliejonas.saltmarsh.music.SpotifyWrapper;
+import me.olliejonas.saltmarsh.music.SpotifyWrapped;
 import me.olliejonas.saltmarsh.poll.PollManager;
 import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class Launcher {
 
     static final String NO_DB = "Unable to connect to database! This functionality has therefore been disabled!";
 
-    public record Props(String discToken, HikariDataSource dataSource, SpotifyWrapper spotify, boolean developerMode) {
+    public record Props(String discToken, HikariDataSource dataSource, SpotifyWrapped spotify, boolean developerMode) {
 
     }
 
@@ -59,7 +59,7 @@ public class Launcher {
                     .build();
         }
 
-        SpotifyWrapper spotify = new SpotifyWrapper(api);
+        SpotifyWrapped spotify = new SpotifyWrapped(api);
 
         Props props = new Props(discToken, dataSource, spotify, developerMode);
 

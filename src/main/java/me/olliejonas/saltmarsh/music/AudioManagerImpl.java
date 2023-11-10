@@ -25,14 +25,14 @@ public class AudioManagerImpl implements AudioManager {
 
     private final Map<String, GuildAudioManager> guildManagerMap;
 
-    private final SpotifyWrapper spotify;
+    private final SpotifyWrapped spotify;
 
 
-    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapper spotify) {
+    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapped spotify) {
         this(audioPlayerManager, spotify, new HashMap<>());
     }
 
-    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapper spotify, Map<String, GuildAudioManager> guildManagerMap) {
+    public AudioManagerImpl(AudioPlayerManager audioPlayerManager, SpotifyWrapped spotify, Map<String, GuildAudioManager> guildManagerMap) {
         this.audioPlayerManager = audioPlayerManager;
         this.spotify = spotify;
         this.guildManagerMap = guildManagerMap;
