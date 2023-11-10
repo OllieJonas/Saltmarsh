@@ -18,6 +18,10 @@ public class SpotifyTransformer {
 
     static final Logger LOGGER = LoggerFactory.getLogger(SpotifyTransformer.class);
 
+    static final int MAX_PLAYLIST_LIMIT = 100;
+
+    static final int MAX_ALBUM_LIMIT = 50;
+
     private final SpotifyApi api;
 
     // returns list of yt searches, if unable to parse returns null.
@@ -41,8 +45,8 @@ public class SpotifyTransformer {
 
         return switch(type) {
             case "track" -> Collections.singletonList(single(id));
-            case "playlist" -> playlist(id, limit);
-            case "album" -> album(id, limit);
+            case "playlist" -> playlist(id, limit <= 0 ? MAX_PLAYLIST_LIMIT : limit);
+            case "album" -> album(id, limit <= 0 ? MAX_ALBUM_LIMIT : limit);
             default -> Collections.emptyList();
         };
     }

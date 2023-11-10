@@ -16,12 +16,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-// haha get it because it's Spotify wrapped but this is a wrapper
+// haha get it because "Spotify Wrapped" but this is also a wrapper for the SpotifyApi object
 public class SpotifyWrapper {
 
     static final Logger LOGGER = LoggerFactory.getLogger(SpotifyWrapper.class);
 
-    private static final int DEFAULT_LOAD_AT_ONCE_LIMIT = 50;
+    private static final int DEFAULT_LOAD_AT_ONCE_LIMIT = -1;  // negative number = Spotify API max limit
 
     @Getter
     private SpotifyApi api;
