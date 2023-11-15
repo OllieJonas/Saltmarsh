@@ -10,6 +10,7 @@ import me.olliejonas.saltmarsh.embed.button.derivations.ItemizedEmbed;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +56,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         List<Item> items = registry.getCommandMap().values().stream()
                 .filter(command -> command.hasPermission(executor))
                 .filter(Command::isRoot)

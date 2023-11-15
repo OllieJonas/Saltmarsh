@@ -7,6 +7,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.Map;
@@ -26,11 +27,11 @@ public class TestPlayCommand extends Command {
     static final String BONK = "https://www.youtube.com/watch?v=6TP0abZdRXg";
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         try {
-            manager.addTrack(executor, TOM_SCOTT_ONE);
-            manager.addTrack(executor, BONK);
-            manager.addTrack(executor, TOM_SCOTT_TWO);
+            manager.addTrack(event, executor, TOM_SCOTT_ONE);
+            manager.addTrack(event, executor, BONK);
+            manager.addTrack(event, executor, TOM_SCOTT_TWO);
         } catch (Exception e) {
             return InteractionResponses.error("Error!");
         }

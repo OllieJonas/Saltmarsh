@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.Getter;
+import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.music.interfaces.GuildAudioManager;
 import me.olliejonas.saltmarsh.music.structures.AudioQueue;
 import me.olliejonas.saltmarsh.music.structures.NowPlayingPrompt;
@@ -16,13 +17,13 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class GuildAudioManagerImpl implements GuildAudioManager {
 
@@ -31,9 +32,6 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
     private final AudioPlayer player;
 
     private final Guild guild;
-
-    @Getter
-    private final Loader trackLoader;
 
     @Getter
     private final AudioQueue<AudioTrack> tracks;
@@ -53,7 +51,6 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         this.currentlyPaused = false;
 
         this.nowPlayingPrompts = new HashSet<>();
-        this.trackLoader = new Loader();
         this.tracks = new AudioQueue<>();
     }
 
@@ -81,6 +78,10 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         NowPlayingPrompt prompt = new NowPlayingPrompt();
         nowPlayingPrompts.add(prompt);
         prompt.sendInitial(channel, currentTrack);
+    }
+
+    public AudioLoadResultHandler getTrackLoader(SlashCommandInteractionEvent event) {
+        return new Loader(event);
     }
 
     public String connect(Member member) {
@@ -164,18 +165,29 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
 
     public class Loader implements AudioLoadResultHandler {
 
+        private final SlashCommandInteractionEvent event;
+
+        public Loader(SlashCommandInteractionEvent event) {
+            this.event = event;
+        }
         @Override
         public void trackLoaded(AudioTrack track) {
             addTrack(track);
+            replyToEvent(track);
         }
 
         @Override
         public void playlistLoaded(AudioPlaylist playlist) {
             if (playlist.isSearchResult()) {
-                LOGGER.debug("Search Results: " + playlist.getTracks().stream().map(TrackRepresentation::new).map(TrackRepresentation::toString).collect(Collectors.joining(", ")));
-                addTrack(playlist.getTracks().get(0));
-            } else
+                AudioTrack track = playlist.getTracks().get(0);
+                addTrack(track);
+                replyToEvent(track);
+            } else {
                 playlist.getTracks().forEach(GuildAudioManagerImpl.this::addTrack);
+                int size = playlist.getTracks().size();
+
+                replyToEvent(size + " track" + (size != 1 ? "s" : ""));
+            }
         }
 
         @Override
@@ -186,6 +198,15 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         @Override
         public void loadFailed(FriendlyException exception) {
             LOGGER.error("Load failed", exception);
+        }
+
+        private void replyToEvent(AudioTrack track) {
+            replyToEvent(new TrackRepresentation(track).representation());
+        }
+
+        private void replyToEvent(String added) {
+            if (event != null)
+                event.replyEmbeds(EmbedUtils.from("Added " + added + " to the queue!")).queue();
         }
     }
 }

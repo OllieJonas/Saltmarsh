@@ -8,6 +8,7 @@ import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
@@ -24,7 +25,7 @@ public class TestSelectMenuCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
 
         MessageCreateData string = new MessageCreateBuilder().setEmbeds(EmbedUtils.colour().setTitle("Food")
                 .setImage("https://www.hepper.com/wp-content/uploads/2022/11/maltipoo-dog-walking-at-the-park_Irsan-Ianushis_Shutterstock.jpg")

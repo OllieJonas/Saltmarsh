@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -45,7 +46,7 @@ public class RecurEventCommand extends Command {
 
     @SuppressWarnings("ConstantConditions") // this is here for ctx.component(); not null because it's in a button menu
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         Guild guild = executor.getGuild();
         List<ScheduledEvent> events = executor.getGuild().getScheduledEvents();
 
@@ -70,8 +71,8 @@ public class RecurEventCommand extends Command {
                 .onCompletion(results -> {
                     String eventName = (String) results.get("events");
                     RecurringEvent.Frequency frequency = RecurringEvent.Frequency.from((String) results.get("frequency"));
-                    ScheduledEvent event = guild.getScheduledEventsByName(eventName, false).get(0); // TODO: Add which buttons / select options they pressed into results!
-                    manager.register(RecurringEvent.of(event, executor, frequency), guild);
+                    ScheduledEvent schEvent = guild.getScheduledEventsByName(eventName, false).get(0); // TODO: Add which buttons / select options they pressed into results!
+                    manager.register(RecurringEvent.of(schEvent, executor, frequency), guild);
                     return InteractionResponses.messageAsEmbed("Successfully marked " + eventName + " as repeating!", true);
                 })
                 .build();

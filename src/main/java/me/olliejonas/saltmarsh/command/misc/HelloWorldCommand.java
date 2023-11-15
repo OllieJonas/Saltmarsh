@@ -7,6 +7,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.Map;
@@ -23,7 +24,7 @@ public class HelloWorldCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel,
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel,
                                         Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         return switch (aliasUsed) {
             case "helloworld", "hello" -> helloWorld(executor, channel);

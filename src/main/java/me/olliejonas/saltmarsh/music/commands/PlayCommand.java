@@ -10,6 +10,7 @@ import me.olliejonas.saltmarsh.util.structures.WeakConcurrentHashMap;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -45,7 +46,7 @@ public class PlayCommand extends Command {
     }
 
     @Override
-    public InteractionResponses execute(Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
+    public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         String link = args.get("link").getAsString();
 
         // now playing prompt
@@ -59,9 +60,9 @@ public class PlayCommand extends Command {
             channels.put(channel, System.currentTimeMillis());
             manager.sendNowPlayingPrompt(guild, channel);
         }
-
         try {
-            return InteractionResponses.messageAsEmbed(manager.addTrack(executor, link), false);
+            String error = manager.addTrack(event, executor, link);
+            return error != null ? InteractionResponses.messageAsEmbed(error, false) : null;
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             throw new RuntimeException(e);
         }

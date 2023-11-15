@@ -79,15 +79,10 @@ public class CommandListener extends ListenerAdapter {
             if (permissions != null && executor != null && !permissions.hasPermission(executor))
                 throw CommandFailedException.noPermission(executor, command);
 
-            InteractionResponses action = command.execute(executor, channel, args, root);
+            InteractionResponses action = command.execute(event, executor, channel, args, root);
 
-            // just to clarify, don't rely on this null check. it's bad. but there will be some lazy commands that only
-            // you will use, so treat yourself a little, let yourself commit sin and return null on a command,
-            // * you know you want to * ;)
-            if (action == null)
-                action = InteractionResponses.empty();
-
-            action.queue(event, channel);
+            if (action != null)
+                action.queue(event, channel);
 
         } catch (CommandFailedException ex) {
             exception = ex;

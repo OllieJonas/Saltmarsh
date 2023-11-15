@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 
@@ -12,7 +13,7 @@ import java.io.IOException;
 public interface AudioManager {
 
     // returns response message (either error or successfully played)
-    String addTrack(Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException;
+    String addTrack(SlashCommandInteractionEvent event, Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException;
 
 
     default int clearQueue(Guild guild) {

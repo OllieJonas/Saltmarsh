@@ -6,6 +6,7 @@ import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.music.interfaces.GuildAudioManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,17 +47,17 @@ public class AudioManagerImpl implements AudioManager {
         return guildManagerMap.get(guild.getId());
     }
 
-    public String addTrack(Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException {
+    public String addTrack(SlashCommandInteractionEvent event, Member executor, String identifier) throws IOException, ParseException, SpotifyWebApiException {
         Guild guild = executor.getGuild();
         GuildAudioManager manager = getGuildManager(guild);
 
         String connected = manager.connect(executor);
         if (connected != null) return connected;
 
-        return addTrack(guild, identifier);
+        return addTrack(event, guild, identifier);
     }
 
-    public String addTrack(Guild guild, String identifier) throws IOException, ParseException, SpotifyWebApiException {
+    public String addTrack(SlashCommandInteractionEvent event, Guild guild, String identifier) throws IOException, ParseException, SpotifyWebApiException {
         GuildAudioManager guildAudioManager = getGuildManager(guild);
 
         List<String> tracks = Collections.emptyList();
@@ -84,9 +85,9 @@ public class AudioManagerImpl implements AudioManager {
 
         int size = tracks.size();
 
-        tracks.forEach(track -> audioPlayerManager.loadItem(track, guildAudioManager.getTrackLoader()));
+        tracks.forEach(track -> audioPlayerManager.loadItem(track, guildAudioManager.getTrackLoader(event)));
 
-        return "Successfully added " + size + " track" + (size == 1 ? "" : "s") + " to the queue!";
+        return null;
     }
 
     GuildAudioManager createManager(Guild guild) {

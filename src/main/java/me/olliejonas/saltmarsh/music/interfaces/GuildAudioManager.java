@@ -6,6 +6,7 @@ import me.olliejonas.saltmarsh.music.structures.AudioQueue;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public interface GuildAudioManager {
 
@@ -17,7 +18,7 @@ public interface GuildAudioManager {
 
     AudioSendHandler getSendHandler();
 
-    AudioLoadResultHandler getTrackLoader();
+    AudioLoadResultHandler getTrackLoader(SlashCommandInteractionEvent event);
 
     AudioQueue<AudioTrack> getTracks();
 
