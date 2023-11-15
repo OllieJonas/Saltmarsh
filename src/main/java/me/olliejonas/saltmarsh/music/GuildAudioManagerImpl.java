@@ -72,6 +72,8 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
 
         nowPlayingPrompts.forEach(prompt -> prompt.onNextItem(track));
 
+        LOGGER.info("playNext");
+
         return track;
     }
 
@@ -155,6 +157,7 @@ public class GuildAudioManagerImpl implements GuildAudioManager {
         this.activeVoiceChannel = null;
 
         clearQueue();
+        this.currentTrack = null;
 
         return true;
     }

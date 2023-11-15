@@ -55,7 +55,7 @@ public class PlayCommand extends Command {
 
         Map<TextChannel, Long> channels = nowPlayingPromptChannels.get(guild.getId());
 
-        if (!channels.containsKey(channel) || Math.abs(channels.get(channel) - System.currentTimeMillis()) <= 1_800_000) { // around 30 minutes
+        if (!channels.containsKey(channel) || Math.abs(channels.get(channel) - System.currentTimeMillis()) >= 1_800_000) { // around 30 minutes
             channels.put(channel, System.currentTimeMillis());
             manager.sendNowPlayingPrompt(guild, channel);
         }
