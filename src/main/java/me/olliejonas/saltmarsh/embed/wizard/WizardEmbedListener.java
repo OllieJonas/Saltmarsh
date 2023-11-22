@@ -36,11 +36,13 @@ public class WizardEmbedListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         Member sender = event.getMember();
+
+        if (sender == null || sender.getUser().isBot()) return;
+
         TextChannel channel = event.getChannel().asTextChannel();
         Message message = event.getMessage();
         String text = message.getContentRaw().strip();
 
-        if (sender == null) return;
         if (manager.isNotInteracting(sender, channel) || !manager.requiresText(channel)) return;
 
         onInteraction(sender, channel, message, Collections.singletonList(text),
@@ -99,7 +101,6 @@ public class WizardEmbedListener extends ListenerAdapter {
                 embed.assignValueAndNext(sender, text, method, component);
 
         if (!success.v3()) {
-            System.out.println(success.v4());
             return InteractionResponses.error(success.v4(), false);
         }
 

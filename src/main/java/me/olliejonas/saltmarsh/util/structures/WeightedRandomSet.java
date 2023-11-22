@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.util.structures;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A set that has additional features to get a random item from the set, based on pre-determined weightings.
@@ -40,21 +41,42 @@ public class WeightedRandomSet<E> extends AbstractSet<E> {
     }
 
     public E getRandom() {
-        return getRandom(RANDOM);
+        return getRandom(RANDOM, true);
     }
 
     public E getRandom(Random random) {
+        return getRandom(random, true);
+    }
+
+    public E getRandom(boolean replace) {
+        return getRandom(RANDOM, replace);
+    }
+
+    public E getRandom(Random random, boolean replace) {
         if (set.isEmpty())
             throw new IllegalStateException("Set can't be empty!");
 
         double r = random.nextDouble() * totalWeight;
 
+        E elem = null;
+
+
         for (SetItem<E> weighting : weightings) {
             r -= weighting.weighting;
-            if (r <= 0.0) return weighting.elem;
+            if (r <= 0.0) {
+                elem = weighting.elem;
+                break;
+            }
         }
+
         // should never hit this
-        return new ArrayList<>(set).get(0);
+        if (elem == null)
+            elem = new ArrayList<>(set).get(0);
+
+        if (!replace)
+            remove(elem);
+
+        return elem;
     }
 
     @SuppressWarnings("unchecked")
@@ -64,6 +86,22 @@ public class WeightedRandomSet<E> extends AbstractSet<E> {
         set.remove(elemCast);
         weightings.removeIf(item -> item.elem == elem);
         return true;
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        Objects.requireNonNull(filter);
+        boolean removed = false;
+
+        Set<E> copy = new HashSet<>(set);
+
+        for (E next : copy) {
+            if (filter.test(next)) {
+                remove(next);
+                removed = true;
+            }
+        }
+        return removed;
     }
 
     @Override

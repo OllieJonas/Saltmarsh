@@ -89,7 +89,7 @@ public class PaginatedEmbed implements DecoratedEmbed {
     public static Builder standard() {
         Builder builder = builder();
         builder.author(Constants.APP_TITLE);
-        builder.colour(Constants.APP_COLOURS.get(1));
+        builder.colour(Constants.APP_COLOUR);
         builder.footer(EmbedUtils.footer());
         return builder;
     }

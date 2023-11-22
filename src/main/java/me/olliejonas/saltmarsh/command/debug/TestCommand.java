@@ -8,6 +8,7 @@ import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.button.ButtonEmbedManager;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
+import me.olliejonas.saltmarsh.kingdom.KingdomGameRegistry;
 import me.olliejonas.saltmarsh.music.interfaces.AudioManager;
 import me.olliejonas.saltmarsh.poll.PollManager;
 import net.dv8tion.jda.api.entities.Member;
@@ -32,13 +33,17 @@ public class TestCommand extends Command {
 
     private final PollManager pollManager;
 
+    private final KingdomGameRegistry kingdomGameRegistry;
+
     private final boolean shouldRegister;
+
 
 
     public TestCommand(boolean shouldRegister, AudioManager audioManager, ButtonEmbedManager buttonEmbedManager,
                        PaginatedEmbedManager paginatedEmbedManager,
                        PollManager pollManager,
-                       WizardEmbedManager wizardEmbedManager) {
+                       WizardEmbedManager wizardEmbedManager,
+                       KingdomGameRegistry kingdomGameRegistry) {
 
         super(CommandPermissions.ADMIN, "test");
         this.shouldRegister = shouldRegister;
@@ -47,6 +52,7 @@ public class TestCommand extends Command {
         this.paginatedEmbedManager = paginatedEmbedManager;
         this.wizardEmbedManager = wizardEmbedManager;
         this.pollManager = pollManager;
+        this.kingdomGameRegistry = kingdomGameRegistry;
     }
 
     @Override
@@ -70,6 +76,7 @@ public class TestCommand extends Command {
         addSubCommand(new TestInputEmbedCommand(wizardEmbedManager));
         addSubCommand(new TestSelectMenuCommand());
         addSubCommand(new TestPlayCommand(audioManager));
+        addSubCommand(new TestKingdomGameCommand(kingdomGameRegistry));
     }
 
     @Override

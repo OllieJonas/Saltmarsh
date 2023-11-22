@@ -1,35 +1,25 @@
 package me.olliejonas.saltmarsh.command.meta;
 
-import lombok.Getter;
-
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-public class CommandRegistry {
+public interface CommandRegistry {
 
-    @Getter
-    private final Map<String, Command> commandMap;
+    Map<String, Command> getCommandMap();
 
-    public CommandRegistry() {
-        this.commandMap = new HashMap<>();
+    void register(Command command);
+
+    default void register(Collection<Command> commands) {
+        for (Command command : commands) {
+            register(command);
+        }
     }
 
-    public void register(Command command) {
-        command.addSubCommands();
-        commandMap.put(command.getPrimaryAlias(), command);
-        command.getAliases().forEach(als -> commandMap.put(als, command));
-    }
+    Optional<? extends Command> getByRoot(String name);
 
-    public Optional<Command> getRoot(String command) {
-        Command root = commandMap.get(command);
+    Optional<? extends Command> getByClass(Class<? extends Command> command);
 
-        return Optional.ofNullable(commandMap.get(command));
-    }
+    Command getOrThrow(String name) throws CommandFailedException;
 
-    public Command getOrThrow(String command) throws CommandFailedException {
-        return getRoot(command).orElseThrow(() ->
-                CommandFailedException.unrecognisedCommand(command,
-                        String.format("Unrecognised command %s", command)));
-    }
 }

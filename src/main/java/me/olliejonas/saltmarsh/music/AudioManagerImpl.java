@@ -85,9 +85,9 @@ public class AudioManagerImpl implements AudioManager {
 
         int size = tracks.size();
 
-        tracks.forEach(track -> audioPlayerManager.loadItem(track, guildAudioManager.getTrackLoader(event)));
+        tracks.forEach(track -> audioPlayerManager.loadItem(track, guildAudioManager.getTrackLoader(size == 1 ? event : null)));
 
-        return null;
+        return size != 1 ? "Added " + size + " tracks to the queue!" : null;
     }
 
     GuildAudioManager createManager(Guild guild) {

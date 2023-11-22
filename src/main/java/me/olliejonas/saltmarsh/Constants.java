@@ -27,7 +27,12 @@ public class Constants {
 
     public static final String APP_TITLE = "Saltmarsh";
 
+    public static final String SELF_USER_ID = "796526207759810582";
+
     public static final List<Color> APP_COLOURS = List.of(Color.CYAN, new Color(64, 224, 208));
+
+    public static final Color APP_COLOUR = APP_COLOURS.get(1);
+
     public static final CharSequence WATCHDOG_TITLE = "Watchdog";
 
     public static final Collection<String> COMMAND_PREFIXES = Collections.singleton("-");

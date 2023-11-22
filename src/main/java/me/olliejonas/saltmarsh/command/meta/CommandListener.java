@@ -27,12 +27,8 @@ public class CommandListener extends ListenerAdapter {
 
     private final CommandWatchdog watchdog;
 
-    public CommandListener(CommandRegistry registry, CommandWatchdog watchdog, String prefix) {
-        this(registry, watchdog);
-    }
-
-    public CommandListener(@NotNull CommandRegistry registry, @NotNull CommandWatchdog watchdog) {
-        this.registry = registry;
+    public CommandListener(@NotNull CommandRegistry registries, @NotNull CommandWatchdog watchdog) {
+        this.registry = registries;
         this.watchdog = watchdog;
     }
 
@@ -45,7 +41,7 @@ public class CommandListener extends ListenerAdapter {
                     Command command = e.getValue();
                     SlashCommandData data = Commands.slash(e.getKey(), e.getValue().info().shortDesc());
                     data.addOptions(command.args());
-                    data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(command.getPermissions().permissions()));
+                    data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(command.getMetadata().permissions().permissions()));
                     return data;
                 })
                 .collect(Collectors.toSet());
@@ -74,7 +70,7 @@ public class CommandListener extends ListenerAdapter {
 
             Member executor = event.getMember();
             TextChannel channel = event.getChannel().asTextChannel();
-            CommandPermissions permissions = command.getPermissions();
+            CommandPermissions permissions = command.getMetadata().permissions();
 
             if (permissions != null && executor != null && !permissions.hasPermission(executor))
                 throw CommandFailedException.noPermission(executor, command);

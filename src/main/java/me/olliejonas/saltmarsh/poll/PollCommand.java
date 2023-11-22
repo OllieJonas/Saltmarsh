@@ -105,7 +105,6 @@ public class PollCommand extends Command {
     }
 
     private InteractionResponses inputEmbedPoll(Member executor, TextChannel channel) {
-
         String title = "Poll Wizard";
         String nextText = "Next";
 
@@ -117,7 +116,7 @@ public class PollCommand extends Command {
                 .step(CommonWizardMenus.YES_NO("yesno", title,
                         "Is this poll a Yes/No poll? (The only two options are Yes and No)", 2, 1))
                 .step(StepRepeatingText.of("options", title,
-                        "Now enter the options you would like for this poll", String.class, nextText, this::checkOptionsAreValid))
+                        "Now enter the options you would like for this poll", String.class, this::checkOptionsAreValid))
                 .step(CommonWizardMenus.YES_NO("anonymous", title,
                         "Would you like this poll to be anonymous?"))
                 .step(CommonWizardMenus.YES_NO("singular", title,

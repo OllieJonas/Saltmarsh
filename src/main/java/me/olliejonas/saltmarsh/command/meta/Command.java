@@ -21,15 +21,14 @@ public abstract class Command {
 
     protected static final OptionData FORCED_SUBCOMMAND_ARG = new OptionData(OptionType.STRING, "subcommand", "Subcommands!", true);
 
-    private final CommandPermissions permissions;
-    private final String primaryAlias;
+    public record Metadata(CommandPermissions permissions, String primaryAlias, Set<String> aliases) {}
+
+    private final Metadata metadata;
 
     @Setter
     private Command parent;
 
     private final Map<String, Command> subCommands;
-
-    private final Set<String> aliases;
 
     public Command(String alias) {
         this(CommandPermissions.ALL, alias, Collections.emptySet());
@@ -52,9 +51,7 @@ public abstract class Command {
     }
 
     public Command(CommandPermissions permissions, String primaryAlias, Set<String> aliases, Map<String, Command> subCommands) {
-        this.permissions = permissions;
-        this.primaryAlias = primaryAlias;
-        this.aliases = aliases;
+        this.metadata = new Metadata(permissions, primaryAlias, aliases);
         this.subCommands = subCommands;
     }
 
@@ -78,8 +75,8 @@ public abstract class Command {
 
     protected void addSubCommand(Command command) {
         command.setParent(this);
-        subCommands.put(command.getPrimaryAlias(), command);
-        command.getAliases().forEach(als -> subCommands.put(als, command));
+        subCommands.put(command.getMetadata().primaryAlias(), command);
+        command.getMetadata().aliases().forEach(als -> subCommands.put(als, command));
     }
 
     public Collection<OptionData> args() {
@@ -119,9 +116,7 @@ public abstract class Command {
         do {
             tokens = tokens.subList(1, tokens.size());
 
-            if (curr.getSubCommands().size() == 0
-                    || tokens.size() == 0
-                    || !curr.getSubCommands().containsKey(tokens.get(0)))
+            if (curr.getSubCommands().isEmpty() || tokens.isEmpty() || !curr.getSubCommands().containsKey(tokens.get(0)))
                 break;
 
             root = tokens.get(0);
@@ -133,7 +128,7 @@ public abstract class Command {
     }
 
     public boolean hasPermission(Member executor) {
-        return permissions != null && permissions.hasPermission(executor);
+        return metadata.permissions() != null && metadata.permissions().hasPermission(executor);
     }
 
     public boolean isRoot() {

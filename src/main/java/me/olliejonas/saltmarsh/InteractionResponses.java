@@ -4,10 +4,14 @@ import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface InteractionResponses {
 
@@ -26,6 +30,10 @@ public interface InteractionResponses {
         return new InteractionResponses.CreateData(data, ephemeral, onSuccess);
     }
 
+    static InteractionResponses deferEmbed(Supplier<MessageEmbed> embed) {
+        return new DeferEmbed(() -> Collections.singleton(embed.get()));
+    }
+
     static InteractionResponses embed(MessageEmbed embed, MessageEmbed... embeds) {
         return new InteractionResponses.Embed(embed, false, embeds);
     }
@@ -42,6 +50,14 @@ public interface InteractionResponses {
         return new InteractionResponses.Embed(EmbedUtils.error(message), ephemeral);
     }
 
+    static InteractionResponses embedWithAttachment(MessageEmbed embed, FileUpload file) {
+        return embedWithAttachments(embed, Collections.singleton(file));
+    }
+
+    static InteractionResponses embedWithAttachments(MessageEmbed embed, Collection<FileUpload> files) {
+        return new EmbedWithAttachments(embed, files);
+    }
+
     void queue(@Nullable IReplyCallback event, TextChannel channel);
 
     record Message(String message, boolean ephemeral) implements InteractionResponses {
@@ -51,6 +67,15 @@ public interface InteractionResponses {
                 channel.sendMessage(message).queue();
             else
                 event.reply(message).setEphemeral(ephemeral).queue();
+        }
+    }
+
+    record EmbedWithAttachments(MessageEmbed embed, Collection<FileUpload> files) implements InteractionResponses {
+        @Override
+        public void queue(IReplyCallback event, TextChannel channel) {
+            if (event == null) return;
+
+            event.replyEmbeds(embed).addFiles(files).queue();
         }
     }
 
@@ -85,6 +110,17 @@ public interface InteractionResponses {
                 channel.sendMessageEmbeds(embed).queue(msg -> {
                     if (ephemeral) msg.delete().queue();
                 });
+            }
+        }
+    }
+
+    record DeferEmbed(Supplier<Collection<? extends MessageEmbed>> embeds) implements InteractionResponses {
+
+        @Override
+        public void queue(@Nullable IReplyCallback event, TextChannel channel) {
+            if (event != null) {
+                event.deferReply().queue();
+                event.getHook().sendMessageEmbeds(embeds.get()).queue();
             }
         }
     }

@@ -1,10 +1,7 @@
 package me.olliejonas.saltmarsh.command.meta.commands;
 
 import me.olliejonas.saltmarsh.InteractionResponses;
-import me.olliejonas.saltmarsh.command.meta.Command;
-import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
-import me.olliejonas.saltmarsh.command.meta.CommandInfo;
-import me.olliejonas.saltmarsh.command.meta.CommandRegistry;
+import me.olliejonas.saltmarsh.command.meta.*;
 import me.olliejonas.saltmarsh.embed.button.derivations.Itemizable;
 import me.olliejonas.saltmarsh.embed.button.derivations.ItemizedEmbed;
 import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManager;
@@ -24,7 +21,7 @@ public class HelpCommand extends Command {
     record Item(String command, Set<String> aliases, CommandInfo info) implements Itemizable, Comparable<Item> {
 
         public static Item from(Command command) {
-            return new Item(command.getPrimaryAlias(), command.getAliases(), command.info());
+            return new Item(command.getMetadata().primaryAlias(), command.getMetadata().aliases(), command.info());
         }
 
         @Override

@@ -5,14 +5,8 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
-import me.olliejonas.saltmarsh.command.debug.AmIConnectedToADatabaseCommand;
-import me.olliejonas.saltmarsh.command.debug.GetConfigurationCommand;
-import me.olliejonas.saltmarsh.command.debug.TestCommand;
-import me.olliejonas.saltmarsh.command.debug.WhatTypeIsCommand;
-import me.olliejonas.saltmarsh.command.meta.Command;
-import me.olliejonas.saltmarsh.command.meta.CommandListener;
-import me.olliejonas.saltmarsh.command.meta.CommandRegistry;
-import me.olliejonas.saltmarsh.command.meta.CommandWatchdog;
+import me.olliejonas.saltmarsh.command.debug.*;
+import me.olliejonas.saltmarsh.command.meta.*;
 import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
 import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
 import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
@@ -28,6 +22,8 @@ import me.olliejonas.saltmarsh.embed.button.derivations.PaginatedEmbedManagerImp
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedListener;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManagerImpl;
+import me.olliejonas.saltmarsh.kingdom.KingdomGameRegistry;
+import me.olliejonas.saltmarsh.kingdom.commands.*;
 import me.olliejonas.saltmarsh.music.AudioManagerImpl;
 import me.olliejonas.saltmarsh.music.SpotifyWrapped;
 import me.olliejonas.saltmarsh.music.commands.*;
@@ -78,6 +74,7 @@ public class Saltmarsh {
     @Getter
     private final String jdaToken;
 
+
     private JDA jda;
 
     private final HikariDataSource hikariDataSource;
@@ -119,6 +116,8 @@ public class Saltmarsh {
     private final ScheduledEventListener scheduledEventListener;
 
     private final CommandRegistry commandRegistry;
+
+    private final KingdomGameRegistry kingdomGameRegistry;
 
     private final CommandWatchdog commandWatchdog;
 
@@ -164,8 +163,11 @@ public class Saltmarsh {
         ((RecurringEventManagerImpl) this.recurringEventManager).setScheduledEventListener(scheduledEventListener);
 
         // commands
-        this.commandRegistry = new CommandRegistry();
+        this.commandRegistry = new CommandRegistryImpl();
         this.commandWatchdog = new CommandWatchdog(buttonEmbedManager);
+
+        this.kingdomGameRegistry = new KingdomGameRegistry(commandRegistry);
+
     }
 
     public void init() throws LoginException {
@@ -182,7 +184,7 @@ public class Saltmarsh {
 
         // register HelloWorld as a global command (doesn't work) to get the "Supports Slash Commands" badge
         Command command = new HelloWorldCommand();
-        SlashCommandData helloWorldData = Commands.slash(command.getPrimaryAlias(), command.info().shortDesc());
+        SlashCommandData helloWorldData = Commands.slash(command.getMetadata().primaryAlias(), command.info().shortDesc());
         this.jda.updateCommands().addCommands(helloWorldData).queue();
 
         this.presenceUpdaterTask = new PresenceUpdaterTask(jda);
@@ -223,6 +225,14 @@ public class Saltmarsh {
     }
 
     public void registerCommands() {
+        // kingdom
+        registerCommand(new MTGKingdomCommand(this.kingdomGameRegistry, this.wizardEmbedManager, this.developerMode));
+        registerCommand(new NextRoundCommand(this.kingdomGameRegistry));
+        registerCommand(new KillCommand(this.kingdomGameRegistry));
+        registerCommand(new ConcedeCommand(this.kingdomGameRegistry));
+        registerCommand(new RevealRolesCommand(this.kingdomGameRegistry));
+        registerCommand(new CancelKingdomGameCommand(this.kingdomGameRegistry));
+
         // music
         registerCommand(new ClearQueueCommand(this.audioManager));
         registerCommand(new DisconnectCommand(this.audioManager));
@@ -255,12 +265,13 @@ public class Saltmarsh {
         registerCommand(new PollCommand(pollManager, wizardEmbedManager));
 
         // admin stuff
-        registerCommand(new TestCommand(!this.developerMode,
+        registerCommand(new TestCommand(this.developerMode,
                 this.audioManager,
                 this.buttonEmbedManager,
                 this.paginatedEmbedManager,
                 this.pollManager,
-                this.wizardEmbedManager
+                this.wizardEmbedManager,
+                this.kingdomGameRegistry
         ));
 
         registerCommand(new GetConfigurationCommand(this.developerMode,
@@ -373,7 +384,7 @@ public class Saltmarsh {
                         EnumSet.allOf(GatewayIntent.class) // ignoring the whole registerIntents thing because cba
                 )
                 .addEventListeners(listeners.toArray(new Object[0]))
-                .setMemberCachePolicy(MemberCachePolicy.VOICE)
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setEventPassthrough(true)
                 .enableCache(CacheFlag.VOICE_STATE, CacheFlag.SCHEDULED_EVENTS)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)

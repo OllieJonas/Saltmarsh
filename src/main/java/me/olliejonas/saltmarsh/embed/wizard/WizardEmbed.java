@@ -95,30 +95,35 @@ public class WizardEmbed {
         StepCandidate<T> curr = (StepCandidate<T>) inputSteps.get(currentPageNo.get());
 
         for (String value : values) {
+            boolean isRepeatingButton = (curr instanceof StepRepeatingText<?> repeating &&
+                    repeating.extraButtons().stream().anyMatch(button -> button.getLabel().equals(value)));
+
             Optional<T> convertedOpt = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
-            if (convertedOpt.isEmpty())
+            if (convertedOpt.isEmpty() && !isRepeatingButton)
                 return new Tuple4<>(Optional.of(curr), false,
                         false, "I wasn't able to correctly turn your input into the correct type! Please try again!");  // couldn't cast successfully
 
-            if (!curr.valid().test(convertedOpt.get(), curr).v1()) {
+            if (!isRepeatingButton && !curr.valid().test(convertedOpt.get(), curr).v1()) {
                 Tuple2<Boolean, String> invalid = curr.valid().test(convertedOpt.get(), curr); // types get weird here hence no concat
                 return new Tuple4<>(Optional.of(curr), false, invalid.v1(), invalid.v2());
             }
 
+            T converted = null;
 
-            String id = curr.identifier();
-            T converted = convertedOpt.get();
+            if (!isRepeatingButton) {
+                String id = curr.identifier();
+                converted = convertedOpt.get();
 
-            curr.onOption().accept(EntryContext.of(curr, converted, method, component));
+                if (curr instanceof StepRepeatingText<?> || values.size() != 1) {
+                    if (!idToInputtedStepValueMap.containsKey(id))
+                        idToInputtedStepValueMap.put(id, new ArrayList<>());
 
-            if (curr instanceof StepRepeatingText<?> || values.size() != 1) {
-                if (!idToInputtedStepValueMap.containsKey(id))
-                    idToInputtedStepValueMap.put(id, new ArrayList<>());
-
-                ((ArrayList<Object>) idToInputtedStepValueMap.get(id)).add(converted);
-            } else {
-                idToInputtedStepValueMap.put(id, converted);
+                    ((ArrayList<Object>) idToInputtedStepValueMap.get(id)).add(converted);
+                } else {
+                    idToInputtedStepValueMap.put(id, converted);
+                }
             }
+            curr.onOption().accept(EntryContext.of(curr, converted, method, component));
         }
 
         return next(curr.skip()).concat(new Tuple2<>(true, ""));
@@ -143,7 +148,7 @@ public class WizardEmbed {
 
     public static class Builder {
 
-        private List<StepCandidate<?>> candidates;
+        private final List<StepCandidate<?>> steps;
 
         private Function<Map<String, ?>, InteractionResponses> onCompletion;
 
@@ -152,23 +157,19 @@ public class WizardEmbed {
         private boolean showExitButton;
 
         public Builder() {
-            this.candidates = new ArrayList<>();
+            this.steps = new ArrayList<>();
             this.onCompletion = (map) -> InteractionResponses.empty();
             this.completionPage = DEFAULT_COMPLETION_PAGE;
             this.showExitButton = true;
         }
 
         public Builder step(StepCandidate<?> step) {
-            candidates.add(step);
+            steps.add(step);
             return this;
         }
 
-        public Builder candidate(StepCandidate<?> candidate) {
-            return step(candidate);
-        }
-
-        public Builder candidates(List<StepCandidate<?>> candidates) {
-            this.candidates = candidates;
+        public Builder steps(Collection<StepCandidate<?>> steps) {
+            this.steps.addAll(steps);
             return this;
         }
 
@@ -192,7 +193,7 @@ public class WizardEmbed {
         }
 
         public WizardEmbed build() {
-            return new WizardEmbed(candidates, onCompletion, completionPage);
+            return new WizardEmbed(steps, onCompletion, completionPage);
         }
     }
 }

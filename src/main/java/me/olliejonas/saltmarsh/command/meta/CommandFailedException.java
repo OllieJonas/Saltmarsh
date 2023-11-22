@@ -27,7 +27,7 @@ public class CommandFailedException extends RuntimeException {
 
     private final boolean responseEphemeral;
 
-    public static CommandFailedException error(Member executor, String errorMessage) {
+    public static CommandFailedException error(String errorMessage) {
         return new CommandFailedException(Reason.OTHER, errorMessage, errorMessage);
     }
 
@@ -43,14 +43,14 @@ public class CommandFailedException extends RuntimeException {
         return new CommandFailedException(Reason.NO_PERMISSION,
                 "You don't have permission for this!",
                 String.format("%s tried executing %s without permissions (No Permissions)",
-                        executor.getNickname(), command.getPrimaryAlias()), true);
+                        executor.getNickname(), command.getMetadata().primaryAlias()), true);
     }
 
     public static CommandFailedException badArgs(Member executor, Command command, String desc) {
         return new CommandFailedException(Reason.BAD_ARGUMENTS,
                 String.format("Invalid arguments! Format: %s", desc),
                 String.format("%s tried executing %s with bad arguments (Bad Arguments)",
-                        executor.getNickname(), command.getPrimaryAlias()));
+                        executor.getNickname(), command.getMetadata().primaryAlias()));
     }
 
     public static CommandFailedException unrecognisedCommand(String input, String context) {

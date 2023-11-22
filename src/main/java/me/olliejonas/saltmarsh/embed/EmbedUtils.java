@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 public class EmbedUtils {
 
     public EmbedBuilder colour(EmbedBuilder builder) {
-        builder.setColor(Constants.APP_COLOURS.get(1));
+        builder.setColor(Constants.APP_COLOUR);
         return builder;
     }
 

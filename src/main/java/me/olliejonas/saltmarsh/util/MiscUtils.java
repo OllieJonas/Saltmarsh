@@ -1,16 +1,20 @@
 package me.olliejonas.saltmarsh.util;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.utils.ImageProxy;
 import org.jooq.lambda.tuple.Tuple2;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -46,6 +50,44 @@ public class MiscUtils {
             case 11, 12, 13 -> i + "th";
             default -> i + suffixes[i % 10];
         };
+    }
+
+    public static Member getMemberById(Guild guild, String id) {
+        Member member = guild.getMemberById(id);
+
+        return member != null ? member : guild.retrieveMemberById(id).complete();
+    }
+
+    public static Collector<CharSequence, ?, String> joinWithAnd() {
+        return Collectors.collectingAndThen(
+                Collectors.toList(),
+                list -> {
+                    int size = list.size();
+                    StringBuilder builder = new StringBuilder();
+
+                    for (int i = 0; i < size; i++) {
+                            builder.append(list.get(i));
+
+                            if (i != size - 1)
+                                builder.append(i == size - 2 ? " and " : ", ");
+                    }
+
+                    return builder.toString();
+                });
+    }
+
+    public static String shortenedStackTrace(Exception e, int maxLines) {
+        StringWriter writer = new StringWriter();
+        e.printStackTrace(new PrintWriter(writer));
+
+        String[] lines = writer.toString().split("\n");
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < Math.min(lines.length, maxLines); i++) {
+            sb.append(lines[i]).append("\n");
+        }
+
+        return sb.toString();
     }
 
     public static void printMap(String pfx, Map<String, String> map) {

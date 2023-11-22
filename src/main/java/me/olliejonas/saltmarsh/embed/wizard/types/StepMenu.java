@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
@@ -54,6 +55,9 @@ public sealed interface StepMenu<T, R extends ItemComponent> extends StepCandida
         public static <T> BiPredicateWithContext<GuildChannel, StepCandidate<T>> TEXT_ONLY()
         { return (channel, __) -> new Tuple2<>(channel instanceof TextChannel, "You can only choose text channels!"); }
 
+        public static <T> BiPredicateWithContext<GuildChannel, StepCandidate<T>> VOICE_ONLY() {
+            return (channel, __) -> new Tuple2<>(channel instanceof VoiceChannel, "You can only select voice channels!");
+        }
         public Entity {
             if (!VALID_CLASSES.contains(clazz))
                 throw new IllegalArgumentException("clazz must be in one of the valid classes!");
