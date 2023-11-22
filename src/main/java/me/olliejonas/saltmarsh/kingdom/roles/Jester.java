@@ -22,6 +22,6 @@ public class Jester extends Role {
 
     @Override
     public boolean winConditions() {
-        return (game.getAlivePlayers().size() == game.getRoleIdMap().size() - 1) && !game.isAlive(this);  // first person to die
+        return (game.getAlivePlayers().size() == game.getRoleMap().size() - 1) && !game.isAlive(this);  // first person to die
     }
 }

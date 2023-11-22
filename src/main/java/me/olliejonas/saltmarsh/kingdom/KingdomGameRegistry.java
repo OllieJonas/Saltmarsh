@@ -166,6 +166,12 @@ public class KingdomGameRegistry {
         return gamesMap.keySet().stream().anyMatch(guildMembers::contains);
     }
 
+    public void checks(KingdomGame game) {
+        checkForConcedes(game);
+        checkForEnd(game);
+        updateRevealedMessages(game);
+    }
+
     public boolean checkForEnd(KingdomGame game) {
         boolean ended = game.isEnded();
 
@@ -173,6 +179,19 @@ public class KingdomGameRegistry {
             endGame(game);
 
         return ended;
+    }
+
+    public boolean checkForConcedes(KingdomGame game) {
+        Collection<Member> members = game.checkForConcedes();
+        boolean conceded = false;
+
+        while (!members.isEmpty()) {
+            conceded = true;
+            members.forEach(game::concede);
+            members = game.checkForConcedes();
+        }
+
+        return conceded;
     }
 
     public void updateRevealedMessages(KingdomGame game) {

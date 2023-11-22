@@ -11,7 +11,7 @@ public class Bandit extends Role {
         super(game);
 
         setColor(Color.BLACK);
-        setRevealStrategy(game.getRoleIdMap().size() >= 6 ?
+        setRevealStrategy(game.getRoleMap().size() >= 6 ?
                 RevealStrategy.builder().role(Bandit.class).amount(1).build() : RevealStrategy.NONE);
     }
 

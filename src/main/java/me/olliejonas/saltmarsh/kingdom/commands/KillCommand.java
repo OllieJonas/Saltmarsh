@@ -61,8 +61,7 @@ public class KillCommand extends Command {
 
         game.kill(killer, target);
 
-        registry.checkForEnd(game);
-        registry.updateRevealedMessages(game);
+        registry.checks(game);
 
         return InteractionResponses.messageAsEmbed(killer.getEffectiveName() + " has killed " + target.getEffectiveName() + "!");
     }

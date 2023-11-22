@@ -111,7 +111,7 @@ public interface RoleAllocation {
             boolean hasStartingCards = !king.getCardMap().isEmpty();
 
             EmbedBuilder builder = EmbedUtils.colour().setTitle(game.getName())
-                    .setDescription("Successfully started Kingdom game with " + game.getRoleIdMap().size() + "! " +
+                    .setDescription("Successfully started Kingdom game with " + game.getRoleMap().size() + "! " +
                             "Everyone, please check your DMs for your role!")
                     .addField("King", "The King is " + kingMember.getAsMention(), true);
 
@@ -171,7 +171,7 @@ public interface RoleAllocation {
             return new Tuple2<>(EmbedUtils.colour()
                     .setTitle("Kingdom")
                     .setDescription("You are currently running a custom Kingdom game containing the following roles:\n" +
-                            game.getRoleIdMap().values().stream()
+                            game.getRoleMap().values().stream()
                                     .map(role -> "- " + role.name()).sorted()
                                     .collect(Collectors.joining("\n")))
                     .addField("!! WARNING !!", "Interactions between Roles are only tested & supported for the " +

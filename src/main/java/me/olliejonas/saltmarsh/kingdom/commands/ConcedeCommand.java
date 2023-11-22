@@ -30,8 +30,7 @@ public class ConcedeCommand extends Command {
             return InteractionResponses.error("You aren't currently in a game of Kingdom!", true);
 
         game.concede(executor);
-        registry.checkForEnd(game);
-        registry.updateRevealedMessages(game);
+        registry.checks(game);
 
         return InteractionResponses.messageAsEmbed(executor.getEffectiveName() + " has conceded their game of Kingdom!");
     }

@@ -69,7 +69,7 @@ public class Usurper extends Role {
 
     @Override
     public void onDeath(Member killer, Member target) {
-        if (game.getRoleIdMap().get(target.getId()) instanceof King)
+        if (game.getRoleMap().get(target) instanceof King)
             isKingDead = true;
     }
 
@@ -80,7 +80,7 @@ public class Usurper extends Role {
 
     @Override
     public void onKill(Member target) {
-        if (game.getRoleIdMap().get(target.getId()) instanceof King) {
+        if (game.getRoleMap().get(target) instanceof King) {
             transformed = true;
         }
     }

@@ -24,14 +24,14 @@ public class Wizard extends Role {
 
     @Override
     public MessageEmbed description() {
-        this.winRoundCount = (int) Math.ceil(game.getRoleIdMap().size() * multiplier);
+        this.winRoundCount = (int) Math.ceil(game.getRoleMap().size() * multiplier);
         return startingEmbed(String.format("""
                 Survive %d rounds (starting with the King) to win!
                 """, this.winRoundCount),
                 String.format("""
                 - This particular win round was calculated by taking the number of players (%d) multiplied by some multiplier (%02f) (rounded up).
                 - For registering your win, you can either keep track of each round using Saltmarsh, by typing /next-round when it's the King's turn (you can choose whether people see that you typed it), or type in /win-condition after agreeing with everyone at the table.
-                """, game.getRoleIdMap().size(), multiplier))
+                """, game.getRoleMap().size(), multiplier))
                 .build();
     }
 
