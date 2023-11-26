@@ -52,11 +52,10 @@ public class SecretSantaCommand extends Command {
     @Override
     public InteractionResponses execute(SlashCommandInteractionEvent event, Member executor, TextChannel channel, Map<String, OptionMapping> args, String aliasUsed) throws CommandFailedException {
         return manager.register(channel, WizardEmbed.builder()
-                        .step(StepText.of("text", "What message would you like to send each user?",
-                                "Use `" + substituteText + "` to substitute the name of the person that user " +
-                                        "received as a Secret Santa.\n\n" +
-                                        "For example: \"Your Secret Santa is " + substituteText + "!\"", String.class))
-
+                .step(StepText.of("text", "What message would you like to send each user?",
+                "Use `" + substituteText + "` to substitute the name of the person that user " +
+                        "received as a Secret Santa.\n\n" +
+                        "For example: \"Your Secret Santa is " + substituteText + "!\"", String.class))
                 .step(StepRepeatingText.of("members",
                         "Secret Santa",
                         "Please tag the members you'd like to include for secret santa!",
