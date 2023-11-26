@@ -15,7 +15,9 @@
 
 ## Motivation
 
-Starting off aimed as a replacement for larger music bots, this bot is now primarily designed to provide extra functionality to the Discord events system for usage amongst friends online (who have varying degrees of experience with Discord).
+This bot's original purpose was a replacement for larger music bots following their shutdown. More recently, this project has been revived to provide extra functionality to the Discord events system for usage amongst friends online (who have varying degrees of experience with Discord). 
+
+It is now essentially a dumping ground for anything that I would find useful in a Discord bot.
 
 ## Installation
 This bot makes a significant number of calls to the Discord API (mainly due to the more complicated features it offers,
