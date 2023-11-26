@@ -35,7 +35,7 @@ public class KingdomDescriptionCommand extends TimeoutCommand {
     static final String TABLE_OF_CONTENTS_TITLE = "Index";
 
     public KingdomDescriptionCommand() {
-        super(CommandPermissions.EVENTS, "kingdom-description");
+        super(CommandPermissions.ADMIN, "kingdom-description");
     }
 
     @Override

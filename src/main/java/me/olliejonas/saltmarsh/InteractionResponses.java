@@ -42,6 +42,10 @@ public interface InteractionResponses {
         return new InteractionResponses.Embed(embed, false, embeds);
     }
 
+    static InteractionResponses embed(String title, String description) {
+        return embed(EmbedUtils.from(title, description));
+    }
+
     static InteractionResponses message(String message) {
         return new InteractionResponses.Message(message, false);
     }

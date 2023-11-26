@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.kingdom.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.EmbedUtils;
 import me.olliejonas.saltmarsh.kingdom.KingdomGame;
@@ -26,6 +27,11 @@ public class RevealRolesCommand extends Command {
         super(CommandPermissions.ADMIN, "reveal-roles");
 
         this.registry = registry;
+    }
+
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(KINGDOM) Show you everyone's roles (WILL ANNOUNCE TO EVERYONE THAT YOU'VE DONE THIS)");
     }
 
     @Override

@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.kingdom.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.kingdom.KingdomGame;
 import me.olliejonas.saltmarsh.kingdom.KingdomGameRegistry;
@@ -33,6 +34,11 @@ public class KillCommand extends Command {
                 new OptionData(OptionType.USER, "target", "the target which you (/ someone) killed!", true),
                 new OptionData(OptionType.USER, "killer", "the person who did the killing! (defaults to you)", false)
         );
+    }
+
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(KINGDOM) Kills the target user in a Kingdom game! (Only use this to reflect XMage)");
     }
 
     @Override

@@ -11,6 +11,7 @@ import me.olliejonas.saltmarsh.command.meta.commands.HelpCommand;
 import me.olliejonas.saltmarsh.command.misc.ClearBotMessagesCommand;
 import me.olliejonas.saltmarsh.command.misc.HelloWorldCommand;
 import me.olliejonas.saltmarsh.command.misc.SayInAnEchoingVoiceCommand;
+import me.olliejonas.saltmarsh.command.misc.SecretSantaCommand;
 import me.olliejonas.saltmarsh.command.roll.RollCommand;
 import me.olliejonas.saltmarsh.command.roll.ValidateIntegrityCommand;
 import me.olliejonas.saltmarsh.command.watchdog.WatchdogCommand;
@@ -254,15 +255,16 @@ public class Saltmarsh {
         registerCommand(new EditRecurringEventCommand(this.wizardEmbedManager, this.recurringEventManager));
 
         // misc
-        registerCommand(new AmIConnectedToADatabaseCommand(databaseEnabled));
+        registerCommand(new SecretSantaCommand(this.wizardEmbedManager, this.developerMode));
+        registerCommand(new AmIConnectedToADatabaseCommand(this.databaseEnabled));
         registerCommand(new SayInAnEchoingVoiceCommand());
         registerCommand(new ClearBotMessagesCommand());
         registerCommand(new RollCommand());
         registerCommand(new ValidateIntegrityCommand(new Random()));
-        registerCommand(new WatchdogCommand(commandWatchdog));
+        registerCommand(new WatchdogCommand(this.commandWatchdog));
 
         // poll
-        registerCommand(new PollCommand(pollManager, wizardEmbedManager));
+        registerCommand(new PollCommand(this.pollManager, this.wizardEmbedManager));
 
         // admin stuff
         registerCommand(new TestCommand(this.developerMode,
@@ -280,7 +282,7 @@ public class Saltmarsh {
         registerCommand(new WhatTypeIsCommand());
 
         // help - register this last
-        registerCommand(new HelpCommand(paginatedEmbedManager, commandRegistry));
+        registerCommand(new HelpCommand(this.paginatedEmbedManager, this.commandRegistry));
     }
 
     public void registerIntents() {

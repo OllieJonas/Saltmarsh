@@ -55,10 +55,9 @@ public class Usurper extends Role {
                 """, """
                 - You lose if you're not the one to kill (deal the final blow) the King (you don't concede).
                 - Upon killing the King, you will be announced globally as the new King.
-                
                 - Once killing the current King is achieved, you will be globally announced as the new King.
                 - Once this has occurred, you will then have to fulfill the King's win condition to win: __be the last one standing__.
-                - You will NOT get Blind Obedience for yourself.
+                - You will NOT get the King's starting card for yourself.
                 """).build();
     }
 

@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.kingdom.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.kingdom.KingdomGame;
 import me.olliejonas.saltmarsh.kingdom.KingdomGameRegistry;
@@ -32,6 +33,11 @@ public class NextRoundCommand extends Command {
         return List.of(
                 new OptionData(OptionType.BOOLEAN, "broadcast-round", "whether to announce the next round to everyone (defaults to true)")
         );
+    }
+
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(KINGDOM) Signal to Saltmarsh that the next round has started! (Used for Wizard)");
     }
 
     @Override

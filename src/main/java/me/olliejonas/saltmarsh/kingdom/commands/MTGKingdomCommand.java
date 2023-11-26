@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.kingdom.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbed;
 import me.olliejonas.saltmarsh.embed.wizard.WizardEmbedManager;
@@ -43,7 +44,11 @@ public class MTGKingdomCommand extends Command {
         this.registry = registry;
         this.wizardEmbedManager = wizardEmbedManager;
         this.developerMode = developerMode;
+    }
 
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(KINGDOM) Create a game of Kingdom!");
     }
 
     @Override

@@ -3,6 +3,7 @@ package me.olliejonas.saltmarsh.kingdom.commands;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.command.meta.Command;
 import me.olliejonas.saltmarsh.command.meta.CommandFailedException;
+import me.olliejonas.saltmarsh.command.meta.CommandInfo;
 import me.olliejonas.saltmarsh.command.meta.CommandPermissions;
 import me.olliejonas.saltmarsh.kingdom.KingdomGame;
 import me.olliejonas.saltmarsh.kingdom.KingdomGameRegistry;
@@ -20,6 +21,11 @@ public class ConcedeCommand extends Command {
     public ConcedeCommand(KingdomGameRegistry registry) {
         super(CommandPermissions.ALL, "concede");
         this.registry = registry;
+    }
+
+    @Override
+    public CommandInfo info() {
+        return CommandInfo.of("(KINGDOM) Concede the current game you're in! (This is automatically done if the game asks you to)");
     }
 
     @Override
