@@ -80,29 +80,7 @@ public class SecretSantaCommand extends Command {
     }
 
     private InteractionResponses doSecretSanta(String text, Collection<Member> members, TextChannel channel) {
-        List<Member> copy = new ArrayList<>(members);
-        Collections.shuffle(copy);
-
-        Map<Member, Member> reversed = new HashMap<>();
-
-        Set<Tuple2<Member, Member>> santaAlloc = members.stream()
-                .map(member -> {
-                    Member target = copy.stream()
-                            .filter(val -> !val.equals(member))  // not a -> a
-                            .filter(val -> !reversed.containsKey(val))  // not b -> a, c -> a
-
-                            // not a -> b, b -> a.
-                            // additional condition that isn't necessary for secret santa but makes odd numbers possible
-                            // in one attempt. (if this were "real" secret santa, you would just re-roll).
-                            .filter(val -> !(reversed.containsKey(member) && reversed.get(member) == val))
-                            .findFirst()
-                            .orElseThrow();
-
-                    reversed.put(target, member);
-
-                    return new Tuple2<>(member, target);
-                })
-                .collect(Collectors.toSet());
+        Set<Tuple2<Member, Member>> santaAlloc = generatePairings(members);
 
         if (developerMode && channel != null)
             channel.sendMessageEmbeds(EmbedUtils.from("Secret Santa (DEBUG)", santaAlloc.stream()
@@ -122,5 +100,35 @@ public class SecretSantaCommand extends Command {
 
     private String userText(String text, Member target) {
         return text.replace(substituteText, target.getAsMention());
+    }
+
+    private Set<Tuple2<Member, Member>> generatePairings(Collection<Member> members) {
+        List<Member> copy = new ArrayList<>(members);
+        Collections.shuffle(copy);
+
+        Map<Member, Member> reversed = new HashMap<>();
+
+        try {
+            return members.stream()
+                    .map(member -> {
+                        Member target = copy.stream()
+                                .filter(val -> !val.equals(member))  // no identity maps (not a -> a)
+                                .filter(val -> !reversed.containsKey(val))  // surjective (not b -> a && c -> a)
+
+                                // no 2 pairings are "reflexive" (not a -> b && b -> a).
+                                // additional condition that isn't necessary for secret santa but guarantees a valid
+                                // configuration in one attempt (if this were irl secret santa, you would re-roll).
+                                .filter(val -> !(reversed.containsKey(member) && reversed.get(member) == val))
+                                .findFirst()
+                                .orElseThrow();
+
+                        reversed.put(target, member);
+
+                        return new Tuple2<>(member, target);
+                    })
+                    .collect(Collectors.toSet());
+        } catch (Exception ignored) {
+            return generatePairings(members);
+        }
     }
 }
