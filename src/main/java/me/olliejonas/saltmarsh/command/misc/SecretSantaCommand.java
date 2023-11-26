@@ -83,7 +83,6 @@ public class SecretSantaCommand extends Command {
         List<Member> copy = new ArrayList<>(members);
         Collections.shuffle(copy);
 
-
         Map<Member, Member> reversed = new HashMap<>();
 
         Set<Tuple2<Member, Member>> santaAlloc = members.stream()
@@ -91,7 +90,11 @@ public class SecretSantaCommand extends Command {
                     Member target = copy.stream()
                             .filter(val -> !val.equals(member))  // not a -> a
                             .filter(val -> !reversed.containsKey(val))  // not b -> a, c -> a
-                            .filter(val -> !(reversed.containsKey(member) && reversed.get(member) == val))  // not a -> b, b -> a
+
+                            // not a -> b, b -> a.
+                            // additional condition that isn't necessary for secret santa but makes odd numbers possible
+                            // in one attempt. (if this were "real" secret santa, you would just re-roll).
+                            .filter(val -> !(reversed.containsKey(member) && reversed.get(member) == val))
                             .findFirst()
                             .orElseThrow();
 
