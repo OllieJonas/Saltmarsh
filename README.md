@@ -1,6 +1,6 @@
 # Saltmarsh
 
-*A Discord bot which adds additional support for Discord Events*
+*A Discord bot which adds additional support for Discord Events, written using [JDA](https://github.com/discord-jda/JDA)*
 
 ![Ghosts of Saltmarsh](https://images.ctfassets.net/swt2dsco9mfe/4exp7HNbV2V929Nqj2Yjlz/3f632de545dda2031ef76c1ecaaa66fe/1023x550-saltmarsh.jpg)
 (Artwork and name are taken from the [Ghosts of Saltmarsh](https://dnd.wizards.com/products/ghosts-saltmarsh) Dungeons & Dragons campaign)
