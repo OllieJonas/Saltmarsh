@@ -128,7 +128,7 @@ public class SecretSantaCommand extends Command {
                     })
                     .collect(Collectors.toSet());
         } catch (Exception ignored) {
-            return generatePairings(members);
+            return generatePairings(members);  // in case it does mess up (it shouldn't), then just re-roll.
         }
     }
 }
