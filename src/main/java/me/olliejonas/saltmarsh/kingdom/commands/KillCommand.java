@@ -63,6 +63,7 @@ public class KillCommand extends Command {
 
         registry.checks(game);
 
-        return InteractionResponses.messageAsEmbed(killer.getEffectiveName() + " has killed " + target.getEffectiveName() + "!");
+        return InteractionResponses.titleDescription(KingdomGame.NAME,
+                killer.getEffectiveName() + " has killed " + target.getEffectiveName() + "!");
     }
 }

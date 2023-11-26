@@ -95,6 +95,10 @@ public abstract class Role {
         return getClass().getSimpleName();
     }
 
+    public String displayName() {
+        return name();
+    }
+
     public abstract MessageEmbed description();
 
     public void setRevealStrategy(RevealStrategy strategy) {
@@ -164,6 +168,14 @@ public abstract class Role {
         return 5;
     }
 
+    protected EmbedBuilder startingEmbed() {
+        return new EmbedBuilder()
+                .setColor(color)
+                .setAuthor(name())
+                .setDescription("You are a " + name() +"!")
+                .setFooter("please don't try to slide into my dms - you won't get anywhere ;)");
+    }
+
     protected EmbedBuilder startingEmbed(String roleDescription) {
         return startingEmbed(roleDescription, null, null);
     }
@@ -173,12 +185,10 @@ public abstract class Role {
     }
 
     protected EmbedBuilder startingEmbed(String roleDescription, String notesDescription, String tipsDescription) {
-        EmbedBuilder builder = new EmbedBuilder()
-                .setColor(color)
-                .setAuthor("Saltmarsh")
-                .setDescription("You are a " + name() +"!")
-                .addField("Description", roleDescription, false)
-                .setFooter("please don't try to slide into my dms - you won't get anywhere ;)");
+        EmbedBuilder builder = startingEmbed();
+
+        if (roleDescription != null && !roleDescription.isEmpty())
+            builder.addField("Description", roleDescription, false);
 
         if (notesDescription != null && !notesDescription.isEmpty())
             builder.addField("Notes", notesDescription, false);

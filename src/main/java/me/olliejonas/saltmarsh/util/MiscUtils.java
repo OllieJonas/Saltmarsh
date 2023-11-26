@@ -2,6 +2,7 @@ package me.olliejonas.saltmarsh.util;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
 import net.dv8tion.jda.api.utils.ImageProxy;
 import org.jooq.lambda.tuple.Tuple2;
@@ -14,6 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -74,6 +77,21 @@ public class MiscUtils {
 
                     return builder.toString();
                 });
+    }
+
+    public static <T> Function<T, T> peek(Consumer<T> fn) {
+        return (t) -> {
+            fn.accept(t);
+            return t;
+        };
+    }
+
+    public static String getMessageLink(Message message) {
+        String id = message.getId();
+        String channelId = message.getChannelId();
+        String guildId = message.getGuildId();
+
+        return "https://discord.com/channels/" + guildId + "/" + channelId + "/" + id;
     }
 
     public static String shortenedStackTrace(Exception e, int maxLines) {

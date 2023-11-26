@@ -56,6 +56,11 @@ public class TestKingdomGameCommand extends Command {
 
             Map<Member, Class<? extends Role>> members = memberIds.entrySet().stream()
                     .collect(Collectors.toMap(entry -> MiscUtils.getMemberById(executor.getGuild(), entry.getKey()), Map.Entry::getValue));
+
+            Member ollie = members.keySet().stream()
+                    .filter(member -> member.getId().equals("140187632314351617"))
+                    .findFirst().orElseThrow();
+
             try {
                 KingdomGame game = registry.startGame(members.keySet(), channel, new RoleAllocation.Determined(members));
                 Tuple2<MessageEmbed, FileUpload> announcement = game.getRoleAllocationStrategy().announcement(game);

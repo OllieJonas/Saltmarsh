@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Wizard extends Role {
 
-    private int winRoundCount;
+    private String winRoundCount;
 
     @Setter
     private float multiplier = 2.0F;
@@ -24,20 +24,23 @@ public class Wizard extends Role {
 
     @Override
     public MessageEmbed description() {
-        this.winRoundCount = (int) Math.ceil(game.getRoleMap().size() * multiplier);
+        // game is null in KingdomDescriptionCommand. SHOULD NOT BE NULL FOR ANY OTHER REASON !!
+        this.winRoundCount = game == null ? "X" : String.valueOf((int) Math.ceil(game.getRoleMap().size() * multiplier));
+        String noPlayers = game == null ? "" : "(" + game.getRoleMap().size() + ")";
+
         return startingEmbed(String.format("""
-                Survive %d rounds (starting with the King) to win!
+                Survive %s rounds (starting with the King) to win!
                 """, this.winRoundCount),
                 String.format("""
-                - This particular win round was calculated by taking the number of players (%d) multiplied by some multiplier (%02f) (rounded up).
+                - This particular win round was calculated by taking the number of players %s multiplied by some multiplier (%.2f) (rounded up).
                 - For registering your win, you can either keep track of each round using Saltmarsh, by typing /next-round when it's the King's turn (you can choose whether people see that you typed it), or type in /win-condition after agreeing with everyone at the table.
-                """, game.getRoleMap().size(), multiplier))
+                """, noPlayers, multiplier))
                 .build();
     }
 
     @Override
     public boolean winConditions() {
-        return game.isAlive(this) && game.getRound() <= winRoundCount;
+        return game.isAlive(this) && game.getRound() <= Integer.parseInt(winRoundCount);
     }
 
     @Override

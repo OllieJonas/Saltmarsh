@@ -1,6 +1,7 @@
 package me.olliejonas.saltmarsh.kingdom.roles;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.olliejonas.saltmarsh.kingdom.KingdomGame;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
@@ -20,9 +21,11 @@ public class King extends Role {
 
     private final Map<String, String> cardMap;
 
-    private final String selectedCard;
+    @Setter
+    protected String selectedCard;
 
-    private final String selectedCardScryfall;
+    @Setter
+    protected String selectedCardScryfall;
 
     public King(KingdomGame game) {
         this(game, DEFAULT_CARD_MAP);
@@ -50,16 +53,13 @@ public class King extends Role {
                 """, """
                 - This "last one standing" can also include either the Knight or the Challenger (but not both - one of them has to die!).
                 - You will always start first (ask whoever won the dice roll to choose who gets to go first on XMage to select you).
-                """).addField("Selected Card - " + this.selectedCard, String.format("""
-                - You will also receive the card "%s" automatically in play from the first turn onwards (%s).
-                - "Automatically in play from the first turn onwards" means that it starts in the command zone, similar to an Eminence effect".
-        """, this.selectedCard, this.selectedCardScryfall), false).addField("Tips & Tricks", """
+                """)
+                .addField(selectedCardField())
+                .addField("Tips & Tricks", """
                 - Both the Knight and the Challenger's win conditions are the same in reverse for you, but they are unable to win on their own!
                 - This means they HAVE to protect you to win, but you don't have to protect them! Use this to your advantage ;).
                 """, false)
                 .build();
-
-
     }
 
     @Override
@@ -71,5 +71,19 @@ public class King extends Role {
         return (size == 1 && roles.containsKey(King.class)) ||  // only King alive
                 (size == 2 && roles.containsKey(King.class) &&  // King and Knight / Challenger alive
                         (roles.containsKey(Knight.class) || roles.containsKey(Challenger.class)));
+    }
+
+    protected MessageEmbed.Field selectedCardField() {
+        return selectedCardField(this.selectedCard, this.selectedCardScryfall);
+    }
+
+    public MessageEmbed.Field selectedCardField(String card, String scryfall) {
+        card = card == null ? "X" : card;
+        scryfall = scryfall == null ? "X" : scryfall;
+
+        return new MessageEmbed.Field("Selected Card - " + card, String.format("""
+                - You will also receive the card "%s" automatically in play from the first turn onwards (%s).
+                - "Automatically in play from the first turn onwards" means that it starts in the command zone, similar to an Eminence effect".
+        """, card, scryfall), false);
     }
 }

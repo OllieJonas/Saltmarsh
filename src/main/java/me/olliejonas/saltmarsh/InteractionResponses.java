@@ -31,7 +31,11 @@ public interface InteractionResponses {
     }
 
     static InteractionResponses deferEmbed(Supplier<MessageEmbed> embed) {
-        return new DeferEmbed(() -> Collections.singleton(embed.get()));
+        return deferEmbed(false, embed);
+    }
+
+    static InteractionResponses deferEmbed(boolean ephemeral, Supplier<MessageEmbed> embed) {
+        return new DeferEmbed(() -> Collections.singleton(embed.get()), ephemeral);
     }
 
     static InteractionResponses embed(MessageEmbed embed, MessageEmbed... embeds) {
@@ -46,6 +50,10 @@ public interface InteractionResponses {
         return error(message, true);
     }
 
+    static InteractionResponses error(Throwable t) {
+        return error(t.getMessage(), true);
+    }
+
     static InteractionResponses error(String message, boolean ephemeral) {
         return new InteractionResponses.Embed(EmbedUtils.error(message), ephemeral);
     }
@@ -56,6 +64,10 @@ public interface InteractionResponses {
 
     static InteractionResponses embedWithAttachments(MessageEmbed embed, Collection<FileUpload> files) {
         return new EmbedWithAttachments(embed, files);
+    }
+
+    static InteractionResponses titleDescription(String title, String description) {
+        return embed(EmbedUtils.from(title, description));
     }
 
     void queue(@Nullable IReplyCallback event, TextChannel channel);
@@ -114,13 +126,13 @@ public interface InteractionResponses {
         }
     }
 
-    record DeferEmbed(Supplier<Collection<? extends MessageEmbed>> embeds) implements InteractionResponses {
+    record DeferEmbed(Supplier<Collection<? extends MessageEmbed>> embeds, boolean ephemeral) implements InteractionResponses {
 
         @Override
         public void queue(@Nullable IReplyCallback event, TextChannel channel) {
             if (event != null) {
-                event.deferReply().queue();
-                event.getHook().sendMessageEmbeds(embeds.get()).queue();
+                event.deferReply().setEphemeral(ephemeral).queue();
+                event.getHook().sendMessageEmbeds(embeds.get()).setEphemeral(ephemeral).queue();
             }
         }
     }

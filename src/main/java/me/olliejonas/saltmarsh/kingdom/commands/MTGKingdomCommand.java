@@ -27,6 +27,7 @@ import org.jooq.lambda.tuple.Tuple2;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MTGKingdomCommand extends Command {
 
@@ -87,7 +88,7 @@ public class MTGKingdomCommand extends Command {
                         throw new IllegalStateException("members is null when it really shouldn't be!");
 
                     try {
-                        KingdomGame game = registry.startGame(members, channel, new RoleAllocation.Default());
+                        KingdomGame game = registry.startGame(members, channel, createRoleAllocation());
                         Tuple2<MessageEmbed, FileUpload> announcement = game.getRoleAllocationStrategy().announcement(game);
 
                         return InteractionResponses.embed(announcement.v1());
@@ -98,5 +99,18 @@ public class MTGKingdomCommand extends Command {
                         return InteractionResponses.error("Error " + e.getMessage() + "!\n" + MiscUtils.shortenedStackTrace(e, 10));
                     }
                 }).build();
+    }
+
+    private RoleAllocation.Strategy createRoleAllocation() {
+        return createRoleAllocation(new Random());
+    }
+
+    private RoleAllocation.Strategy createRoleAllocation(Random random) {
+        float rand = random.nextFloat();
+
+        if (rand <= 0.1)
+            return new RoleAllocation.FakeJesterGame();
+        else
+            return new RoleAllocation.Default();
     }
 }

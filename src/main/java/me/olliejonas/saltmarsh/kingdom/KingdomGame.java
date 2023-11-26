@@ -162,30 +162,30 @@ public class KingdomGame {
 
         EmbedBuilder builder = EmbedUtils.colour().setTitle(name);
 
-        Map<Role, Long> anonymousRoles = roleMap.values().stream()
-                .filter(role -> role.revealStrategy(this, onRoleChange.apply(null, role)).revealGlobally() && role.revealStrategy().anonymous())
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-
-        String description = anonymousRoles.isEmpty() ? "" : "The following roles are in your lobby (either dead or alive): " +
-                anonymousRoles.entrySet().stream()
-                        .map(entry -> entry.getValue() + " " + entry.getKey().name() + (entry.getValue() != 1 ? "s" : ""))
-                        .collect(Collectors.joining(", "));
-
-        if (ended) description = "The game is over! Here are all the roles for each player";
-
-        builder.setDescription(description);
-
         BiFunction<String, Boolean, String> crossText = (original, cross) -> (cross ? "~~" : "") + original + (cross ? "~~" : "");
-
 
         roleMap.entrySet().stream().map(entry -> {
             boolean dead = !alivePlayers.contains(entry.getKey());
 
             return new MessageEmbed.Field(crossText.apply(entry.getKey().getEffectiveName(), dead),
-                    crossText.apply("Role: " + (ended || entry.getValue().revealStrategy(this,
-                            onRoleChange.apply(entry.getKey(), entry.getValue())).revealGloballyPublicly()
-                            ? entry.getValue().name() : "Not known!"), dead),
+                    crossText.apply("Role: " + (ended || entry.getValue()
+                            .revealStrategy(this, onRoleChange.apply(entry.getKey(), entry.getValue())).revealGloballyPublicly()
+                            ? entry.getValue().displayName() : "Not known!"), dead),
                 true);}).forEach(builder::addField);
+
+
+        Map<Role, Long> anonymousRoles = roleMap.values().stream()
+                .filter(role -> role.revealStrategy().revealGlobally() && role.revealStrategy().anonymous())
+                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+
+        String description = anonymousRoles.isEmpty() ? "" : "The following roles are in your lobby (either dead or alive): " +
+                anonymousRoles.entrySet().stream()
+                        .map(entry -> entry.getValue() + " " + entry.getKey().displayName() + (entry.getValue() != 1 ? "s" : ""))
+                        .collect(Collectors.joining(", "));
+
+        if (ended) description = "The game is over! Here are all the roles for each player";
+
+        builder.setDescription(description);
 
         return builder.build();
     }

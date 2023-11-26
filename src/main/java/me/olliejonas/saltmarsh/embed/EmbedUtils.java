@@ -34,6 +34,10 @@ public class EmbedUtils {
         return essentials().setColor(Color.RED).setDescription(message).build();
     }
 
+    public static MessageEmbed error(Throwable t) {
+        return error(t.getMessage());
+    }
+
     public EmbedBuilder standard() {
         return colour(footer(new EmbedBuilder()));
     }

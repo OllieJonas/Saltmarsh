@@ -74,7 +74,6 @@ public class Saltmarsh {
     @Getter
     private final String jdaToken;
 
-
     private JDA jda;
 
     private final HikariDataSource hikariDataSource;
@@ -232,6 +231,7 @@ public class Saltmarsh {
         registerCommand(new ConcedeCommand(this.kingdomGameRegistry));
         registerCommand(new RevealRolesCommand(this.kingdomGameRegistry));
         registerCommand(new CancelKingdomGameCommand(this.kingdomGameRegistry));
+        registerCommand(new KingdomDescriptionCommand());
 
         // music
         registerCommand(new ClearQueueCommand(this.audioManager));

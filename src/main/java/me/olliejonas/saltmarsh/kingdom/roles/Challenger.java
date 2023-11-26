@@ -33,7 +33,7 @@ public class Challenger extends Role {
     public boolean winConditions() {
         Map<Class<? extends Role>, Long> roles = game.getAliveRoleClasses();
 
-        return roles.size() == 2 && game.isAlive(this) && roles.containsKey(King.class);
+        return roles.size() == 2 && game.isAlive(this) && (roles.containsKey(King.class) || roles.containsKey(Usurper.class));
     }
 
     @Override

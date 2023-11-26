@@ -38,7 +38,12 @@ public class Usurper extends Role {
 
     @Override
     public String name() {
-        return transformed ? "~~_" + getClass().getSimpleName() + "_~~" + " King" : getClass().getSimpleName();
+        return "Usurper";
+    }
+
+    @Override
+    public String displayName() {
+        return transformed ? "~~_" + name() + "_~~" + " King" : getClass().getSimpleName();
     }
 
     @Override

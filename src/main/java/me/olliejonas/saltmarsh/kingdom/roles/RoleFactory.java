@@ -11,17 +11,18 @@ import java.util.stream.Collectors;
 
 public class RoleFactory {
 
-    public static final Set<Class<? extends Role>> ALL_CLASSES = Set.of(
+    public static final Set<Class<? extends Role>> ALL_ROLE_CLASSES = Set.of(
             Bandit.class,
             Challenger.class,
             Jester.class,
             King.class,
             Knight.class,
             Usurper.class,
-            Wizard.class
+            Wizard.class,
+            FakeJester.class
     );
 
-    public static final Map<String, Class<? extends Role>> NAME_TO_CLASS_MAP = ALL_CLASSES.stream()
+    public static final Map<String, Class<? extends Role>> NAME_TO_CLASS_MAP = ALL_ROLE_CLASSES.stream()
             .collect(Collectors.toMap(e -> e.getSimpleName().toLowerCase(), e -> e));
 
     public static Role factory(String name, KingdomGame game) throws IllegalArgumentException {
@@ -44,6 +45,10 @@ public class RoleFactory {
 
     public static boolean exists(String name) {
         return NAME_TO_CLASS_MAP.containsKey(name);
+    }
+
+    public static boolean exists(Class<? extends Role> role) {
+        return ALL_ROLE_CLASSES.contains(role);
     }
 
 }

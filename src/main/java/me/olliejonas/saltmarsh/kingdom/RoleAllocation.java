@@ -20,6 +20,9 @@ public interface RoleAllocation {
 
     int MAX_XMAGE_SIZE = 10;
 
+    MessageEmbed.Field WARNING_FIELD = new MessageEmbed.Field("!! WARNING !!", "Interactions between Roles are only tested & supported for the " +
+            "default role allocation (2 Bandits, 1 Knight, 1 King)! Choosing roles that deviate from this may result in unintended behaviour!", false);
+
     static String checkMaxPlayers(Collection<Member> members) {
         return members.size() > MAX_XMAGE_SIZE ? "You can't have more than 10 people!" : null;
     }
@@ -67,6 +70,16 @@ public interface RoleAllocation {
             return set;
         };
 
+        protected final Collection<Role> defaultRoles;
+
+        protected final Collection<Role> otherRoles;
+
+
+        public Default() {
+            this.defaultRoles = new HashSet<>();
+            this.otherRoles = new HashSet<>();
+        }
+
         @Override
         public Tuple2<Map<? extends Member, ? extends Role>, String> allocate(KingdomGame game, Collection<Member> members) {
             String error = checkMaxPlayers(members);
@@ -81,6 +94,9 @@ public interface RoleAllocation {
 
             List<Role> defaultRoles = DEFAULT_ROLES.apply(game);
             WeightedRandomSet<Role> otherRoles = OTHER_ROLES.apply(game, membersSize);
+
+            this.defaultRoles.addAll(defaultRoles);
+            this.otherRoles.addAll(otherRoles);
 
             // guaranteed 4 defaults + 1 extra (5 total)
             if (membersSize < defaultRoles.size() + 1)
@@ -107,6 +123,10 @@ public interface RoleAllocation {
         public Tuple2<MessageEmbed, FileUpload> announcement(KingdomGame game) {
             King king = game.getRoleByClass(King.class);
             Member kingMember = game.getMembersWithRole(King.class).stream().findFirst().orElseThrow();
+            return makeAnnouncement(game, king, kingMember);
+        }
+
+        protected Tuple2<MessageEmbed, FileUpload> makeAnnouncement(KingdomGame game, King king, Member kingMember) {
 
             boolean hasStartingCards = !king.getCardMap().isEmpty();
 
@@ -119,7 +139,8 @@ public interface RoleAllocation {
                 builder.addField("Starting Card", king.getSelectedCard() + " (" + king.getSelectedCardScryfall() + ")", true);
 
             builder.addField("Rules & How to Play", """
-                            
+                - Each of you has been assigned roles on top of a Commander game.
+                - Instead of winning by being the last person standing, you have to fulfill the role's win condition.
                 """, false);
 
             builder.addField("Setup Game", String.format("""                            
@@ -128,6 +149,9 @@ public interface RoleAllocation {
                 3) Make sure that when everyone's rolled to see who goes first, the winner selects the King (that's %s) to start the game.
                 
                 """, kingMember.getAsMention()), false);
+
+            builder.addField(roleList("Guaranteed Roles", defaultRoles));
+            builder.addField(roleList("Other Roles", otherRoles));
 
             if (hasStartingCards)
                 builder.setFooter("The possible starting cards for the King could have been: " +
@@ -138,11 +162,68 @@ public interface RoleAllocation {
 
             FileUpload attachment = generateStartingFile(king.getSelectedCard(), king.getSelectedCard());
             return new Tuple2<>(builder.build(), null);
-
         }
 
-        private FileUpload generateStartingFile(String nameSimplified, String nameFull) {
+        protected FileUpload generateStartingFile(String nameSimplified, String nameFull) {
             return FileUpload.fromStreamSupplier(nameSimplified + ".dck", () -> new ByteArrayInputStream(("1 " + nameFull).getBytes()));
+        }
+
+        private MessageEmbed.Field roleList(String title, Collection<Role> roles) {
+            return new MessageEmbed.Field(title, roles.stream()
+                    .map(Role::name)
+                    .collect(Collectors.groupingBy(s -> s, Collectors.counting())).entrySet().stream()
+                    .map(r -> "- " + r.getKey() + (r.getValue() != 1 ? " x" + r.getValue() : ""))
+                    .sorted()
+                    .distinct()
+                    .collect(Collectors.joining("\n")), false);
+        }
+    }
+
+    class FakeJesterGame extends Default {
+
+        private final Random random;
+
+        private Member fakeJester;
+
+        public FakeJesterGame() {
+            this(new Random(), null);
+        }
+
+        public FakeJesterGame(Member fakeJester) {
+            this(new Random(), fakeJester);
+        }
+
+        public FakeJesterGame(Random random, Member fakeJester) {
+            this.random = random;
+            this.fakeJester = fakeJester;
+        }
+
+        @Override
+        public Tuple2<Map<? extends Member, ? extends Role>, String> allocate(KingdomGame game, Collection<Member> members) {
+            List<Member> membersList = new ArrayList<>(members);
+
+            defaultRoles.addAll(DEFAULT_ROLES.apply(game));
+            otherRoles.addAll(OTHER_ROLES.apply(game, members.size()));
+
+            if (!members.contains(fakeJester))
+                return new Tuple2<>(null, "The specified fake jester must be in the collection of members!");
+
+            if (fakeJester == null)
+                fakeJester = membersList.get(random.nextInt(membersList.size()));
+
+            membersList.remove(fakeJester);
+
+            Map<Member, Role> roles = membersList.stream().collect(Collectors.toMap(member -> member, __ -> new Jester(game)));
+            roles.put(fakeJester, new FakeJester(game));
+            return new Tuple2<>(roles, "");
+        }
+
+        @Override
+        public Tuple2<MessageEmbed, FileUpload> announcement(KingdomGame game) {
+            FakeJester fakeJester = game.getRoleByClass(FakeJester.class);
+            Member fakeJesterMember = game.getMembersWithRole(FakeJester.class).stream().findFirst().orElseThrow();
+
+            return super.makeAnnouncement(game, fakeJester, fakeJesterMember);
         }
     }
 
@@ -174,10 +255,27 @@ public interface RoleAllocation {
                             game.getRoleMap().values().stream()
                                     .map(role -> "- " + role.name()).sorted()
                                     .collect(Collectors.joining("\n")))
-                    .addField("!! WARNING !!", "Interactions between Roles are only tested & supported for the " +
-                            "default role allocation (2 Bandits, 1 Knight, 1 King)! Choosing roles that deviate from this may result in unintended behaviour!", false)
+                    .addField(WARNING_FIELD)
                     .build(),
                     null);
+        }
+    }
+
+    record All(Class<? extends Role> role) implements Strategy {
+
+        @Override
+        public Tuple2<Map<? extends Member, ? extends Role>, String> allocate(KingdomGame game, Collection<Member> members) {
+            if (!RoleFactory.exists(role))
+                return new Tuple2<>(null, "This role doesn't exist!");
+
+            return new Tuple2<>(members.stream().collect(Collectors.toMap(member -> member, member -> RoleFactory.factory(role, game))), "");
+        }
+
+        @Override
+        public Tuple2<MessageEmbed, FileUpload> announcement(KingdomGame game) {
+            return new Tuple2<>(EmbedUtils.colour().setTitle("Kingdom")
+                    .setDescription("c h a o s  -- everyone is a " + role.getSimpleName() + "!")
+                    .addField(WARNING_FIELD).build(), null);
         }
     }
 }
