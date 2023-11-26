@@ -10,6 +10,7 @@
 - Repeating Discord Events
 - Music playback from YouTube and Spotify ([Lavaplayer](https://github.com/sedmelluq/lavaplayer) for YouTube, a [Java wrapper](https://github.com/spotify-web-api-java/spotify-web-api-java) for [Spotify's API](https://developer.spotify.com/documentation/web-api) for Spotify)
 - Polls (including support for Anonymous and Singular / Multiple Votes)
+- Adds support for a home-brewed version of [Kingdom](http://www.scottymakesgames.com/scotty-talks-games/2016/10/12/mtg-kingdoms) for the card game [Magic: the Gathering](https://magic.wizards.com/en).
 - "Wizards" (Step-based surveys that execute some action using input collected over the steps upon completion, allows for the specification of types upfront and performs casting / type checking of user input automatically).
 
 ## Motivation
