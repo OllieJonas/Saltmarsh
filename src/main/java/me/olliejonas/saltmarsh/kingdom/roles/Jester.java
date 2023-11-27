@@ -24,7 +24,7 @@ public class Jester extends Role {
                 
                 Be the first person to die, or the last one standing! Simple as that!
                 """, """
-                - You will not win immediately if you're the first to die whilst there is a Knight and Challenger left alive, but don't worry - once one of them is dead, you will be guaranteed a win!
+                - This win condition will override anything that suppresses win conditions (for example, the Knight vs Challenger).
                 """).build();
     }
 

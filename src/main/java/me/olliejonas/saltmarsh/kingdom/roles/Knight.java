@@ -22,14 +22,12 @@ public class Knight extends Role {
                 Survive with the King to win!
                 """, """
                 - You win by being the last one to survive with the King.
-                - *You must immediately concede the game if the King dies for any reason.*
+                - Once the King is dead, you can no longer win.
                 """).addField("Challenger", """
                 - There is a chance for someone in your game to be a Challenger. Their goal is to kill you and win with the King.
                 - The game *cannot end* if both of you are still alive (regardless of other people's Win Conditions).
-                
                 """, false).addField("Tips & Tricks", """
                 - You literally lose if you let the King die, so do everything in your power to protect them!
-                
                 """, false)
                 .build();
     }

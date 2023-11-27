@@ -26,7 +26,7 @@ public class Wizard extends Role {
     public MessageEmbed description() {
         // game is null in KingdomDescriptionCommand. SHOULD NOT BE NULL FOR ANY OTHER REASON !!
         this.winRoundCount = game == null ? "X" : String.valueOf((int) Math.ceil(game.getRoleMap().size() * multiplier));
-        String noPlayers = game == null ? "" : "(" + game.getRoleMap().size() + ")";
+        String noPlayers = game == null ? "-" : "(" + game.getRoleMap().size() + ")";
 
         return startingEmbed(String.format("""
                 _"We love casting spells" - Joeyy_
@@ -35,7 +35,7 @@ public class Wizard extends Role {
                 """, this.winRoundCount),
                 String.format("""
                 - This particular win round was calculated by taking the number of players %s multiplied by some multiplier (%.2f) (rounded up).
-                - For registering your win, you can either keep track of each round using Saltmarsh, by typing /next-round when it's the King's turn (you can choose whether people see that you typed it), or reveal your role with /reveal-role in chat and agreeing with the table that you've won!
+                - For registering your win, you can either keep track of each round using Saltmarsh, by typing `/next-round` when it's the King's turn (you can choose whether people see that you typed it), or reveal your role with `/reveal-role` in chat and agreeing with the table that you've won!
                 """, noPlayers, multiplier))
                 .build();
     }

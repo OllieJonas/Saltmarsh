@@ -128,7 +128,7 @@ public interface RoleAllocation {
 
         protected Tuple2<MessageEmbed, FileUpload> makeAnnouncement(KingdomGame game, King king, Member kingMember) {
 
-            boolean hasStartingCards = !king.getCardMap().isEmpty();
+            boolean hasStartingCards = !king.getPossibleStartingCards().isEmpty();
 
             EmbedBuilder builder = EmbedUtils.colour().setTitle(game.getName())
                     .setDescription("Successfully started Kingdom game with " + game.getRoleMap().size() + "! " +
@@ -136,11 +136,12 @@ public interface RoleAllocation {
                     .addField("King", "The King is " + kingMember.getAsMention(), true);
 
             if (hasStartingCards)
-                builder.addField("Starting Card", king.getSelectedCard() + " (" + king.getSelectedCardScryfall() + ")", true);
+                builder.addField("Starting Card", king.getStartingCard().representation(), true);
 
             builder.addField("Rules & How to Play", """
                 - Each of you has been assigned roles on top of a Commander game.
                 - Instead of winning by being the last person standing, you have to fulfill the role's win condition.
+                - The King will become the monarch upon playing a legendary creature.
                 """, false);
 
             builder.addField("Setup Game", String.format("""                            
@@ -154,18 +155,19 @@ public interface RoleAllocation {
             builder.addField(roleList("Other Roles", otherRoles));
 
             if (hasStartingCards)
-                builder.setFooter("The possible starting cards for the King could have been: " +
-                        king.getCardMap().entrySet().stream()
-                                .map(e -> e.getKey() + " (" + e.getValue() + ")")
-                                .collect(Collectors.joining(", ")));
+                builder.setFooter("The possible starting cards for the King could have been:\n" +
+                        king.getPossibleStartingCards().stream()
+                                .map(King.StartingCard::representation)
+                                .map(repr -> "- " + repr)
+                                .collect(Collectors.joining("\n")));
 
 
-            FileUpload attachment = generateStartingFile(king.getSelectedCard(), king.getSelectedCard());
-            return new Tuple2<>(builder.build(), null);
+            FileUpload attachment = generateStartingFile(king.getStartingCard());
+            return new Tuple2<>(builder.build(), attachment);
         }
 
-        protected FileUpload generateStartingFile(String nameSimplified, String nameFull) {
-            return FileUpload.fromStreamSupplier(nameSimplified + ".dck", () -> new ByteArrayInputStream(("1 " + nameFull).getBytes()));
+        protected FileUpload generateStartingFile(King.StartingCard card) {
+            return FileUpload.fromStreamSupplier(card.card().name() + ".dck", () -> new ByteArrayInputStream(card.toDeckList().getBytes()));
         }
 
         private MessageEmbed.Field roleList(String title, Collection<Role> roles) {

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
@@ -92,6 +93,14 @@ public interface InteractionResponses {
             if (event == null) return;
 
             event.replyEmbeds(embed).addFiles(files).queue();
+
+            files.forEach(file -> {
+                try {
+                    file.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 

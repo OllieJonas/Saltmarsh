@@ -96,7 +96,7 @@ public class MTGKingdomCommand extends Command {
                         KingdomGame game = registry.startGame(members, channel, createRoleAllocation());
                         Tuple2<MessageEmbed, FileUpload> announcement = game.getRoleAllocationStrategy().announcement(game);
 
-                        return InteractionResponses.embed(announcement.v1());
+                        return InteractionResponses.embedWithAttachment(announcement.v1(), announcement.v2());
                     } catch (IllegalStateException e) {
                         return InteractionResponses.error(e.getMessage());
 

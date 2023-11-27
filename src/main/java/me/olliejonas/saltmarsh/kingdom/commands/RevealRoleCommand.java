@@ -24,7 +24,7 @@ public class RevealRoleCommand extends Command {
     private final KingdomGameRegistry registry;
 
     public RevealRoleCommand(KingdomGameRegistry registry) {
-        super(CommandPermissions.ALL, "reveal-role");
+        super(CommandPermissions.ADMIN, "reveal-role");
 
         this.registry = registry;
     }
