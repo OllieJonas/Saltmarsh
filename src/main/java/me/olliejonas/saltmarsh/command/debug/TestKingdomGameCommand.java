@@ -51,7 +51,7 @@ public class TestKingdomGameCommand extends Command {
                     "703645553271111740",       Bandit.class,           // Barry B Benson
                     "806869865393815554",       Challenger.class,           // stt
                     "889253280117555232",       King.class,             // Tristmunk
-                    "1171748430520012820",      Usurper.class           // Ukulele
+                    "1171748430520012820",      Jester.class           // Ukulele
             );
 
             Map<Member, Class<? extends Role>> members = memberIds.entrySet().stream()

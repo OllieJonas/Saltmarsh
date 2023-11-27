@@ -36,12 +36,8 @@ public class Knight extends Role {
 
     @Override
     public boolean loseConditions() {
-        return !game.isClassAlive(King.class) && game.getRoleMap().values().stream()
-                .filter(role -> role instanceof Usurper).map(role -> (Usurper) role).noneMatch(game::isAlive);
-    }
-
-    @Override
-    public boolean concedeConditions() {
+//        return !game.isClassAlive(King.class) && game.getRoleMap().values().stream()
+//                .filter(role -> role instanceof Usurper).map(role -> (Usurper) role).noneMatch(game::isAlive);
         Map<Class<? extends Role>, Long> roles = game.getAliveRoleClasses();
 
         if (roles.containsKey(King.class)) return false;

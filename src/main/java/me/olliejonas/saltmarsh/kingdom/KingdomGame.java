@@ -42,6 +42,8 @@ public class KingdomGame {
 
     private final AtomicReference<Message> globallyRevealedMessage;
 
+    private final Set<Member> alreadySentLossOrConcede;
+
     private int round;
 
     private boolean ended;
@@ -66,6 +68,8 @@ public class KingdomGame {
 
         this.roleMap = new BiMap<>();
         this.classRoleMap = new HashMap<>();
+
+        this.alreadySentLossOrConcede = new HashSet<>();
 
         this.alivePlayers = new HashSet<>();
         this.round = 1;
@@ -140,7 +144,6 @@ public class KingdomGame {
     }
 
     public Map<Member, Class<? extends Role>> getRoleClasses() {
-
         return roleMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getClass()));
     }
 
@@ -236,7 +239,10 @@ public class KingdomGame {
 
         Set<Member> members = getRoleMap().entrySet().stream()
                 .filter(entry -> condition.test(entry.getValue()))
+                .filter(entry -> !alreadySentLossOrConcede.contains(entry.getKey()))
                 .map(Map.Entry::getKey).collect(Collectors.toSet());
+
+        alreadySentLossOrConcede.addAll(members);
 
         members.forEach(member -> member.getUser().openPrivateChannel()
                 .flatMap(channel -> channel.sendMessageEmbeds(EmbedUtils.from(name, privateMessage)))
@@ -249,13 +255,14 @@ public class KingdomGame {
     }
 
     private boolean checkForWins() {
-        Map<Member, Role> winners = roleMap.entrySet().stream()
-                .filter(entry -> entry.getValue().winConditions())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
         boolean suppressOthersWinConditions = roleMap.values().stream().anyMatch(Role::suppressOthersWinConditions);
 
-        MessageEmbed winnerEmbed = buildWinnerEmbeds(winners, suppressOthersWinConditions);
+        Map<Member, Role> winners = roleMap.entrySet().stream()
+                .filter(entry -> entry.getValue().winConditions())
+                .filter(entry -> !suppressOthersWinConditions || entry.getValue().overrideSuppressionOfWinConditions())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        MessageEmbed winnerEmbed = buildWinnerEmbeds(winners);
 
         if (winnerEmbed != null) {
             textChannel.sendMessageEmbeds(winnerEmbed).queue();
@@ -265,8 +272,8 @@ public class KingdomGame {
         return winnerEmbed != null;
     }
 
-    private MessageEmbed buildWinnerEmbeds(Map<Member, Role> winners, boolean suppressOthersWinConditions) {
-        if (winners.isEmpty() || suppressOthersWinConditions) return null;
+    private MessageEmbed buildWinnerEmbeds(Map<Member, Role> winners) {
+        if (winners.isEmpty()) return null;
 
         String winnersText = winners.entrySet().stream().map(e -> e.getKey().getAsMention() + " (" + e.getValue().name() + ")").collect(MiscUtils.joinWithAnd());
 

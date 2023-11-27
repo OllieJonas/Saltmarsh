@@ -138,6 +138,10 @@ public abstract class Role {
         return false;
     }
 
+    public boolean overrideSuppressionOfWinConditions() {
+        return false;
+    }
+
     public abstract boolean winConditions();
 
     public boolean loseConditions() {

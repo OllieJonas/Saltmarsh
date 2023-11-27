@@ -29,11 +29,13 @@ public class Wizard extends Role {
         String noPlayers = game == null ? "" : "(" + game.getRoleMap().size() + ")";
 
         return startingEmbed(String.format("""
+                _"We love casting spells" - Joeyy_
+                
                 Survive %s rounds (starting with the King) to win!
                 """, this.winRoundCount),
                 String.format("""
                 - This particular win round was calculated by taking the number of players %s multiplied by some multiplier (%.2f) (rounded up).
-                - For registering your win, you can either keep track of each round using Saltmarsh, by typing /next-round when it's the King's turn (you can choose whether people see that you typed it), or type in /win-condition after agreeing with everyone at the table.
+                - For registering your win, you can either keep track of each round using Saltmarsh, by typing /next-round when it's the King's turn (you can choose whether people see that you typed it), or reveal your role with /reveal-role in chat and agreeing with the table that you've won!
                 """, noPlayers, multiplier))
                 .build();
     }
