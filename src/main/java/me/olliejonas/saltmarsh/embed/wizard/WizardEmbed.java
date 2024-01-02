@@ -4,12 +4,12 @@ import lombok.Getter;
 import me.olliejonas.saltmarsh.InteractionResponses;
 import me.olliejonas.saltmarsh.embed.wizard.types.StepCandidate;
 import me.olliejonas.saltmarsh.embed.wizard.types.StepRepeatingText;
-import me.olliejonas.saltmarsh.embed.wizard.types.StepText;
 import me.olliejonas.saltmarsh.util.StringToTypeConverter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 import org.jooq.lambda.tuple.Tuple2;
@@ -95,34 +95,45 @@ public class WizardEmbed {
         StepCandidate<T> curr = (StepCandidate<T>) inputSteps.get(currentPageNo.get());
 
         for (String value : values) {
-            boolean isRepeatingButton = (curr instanceof StepRepeatingText<?> repeating &&
+            // this is needed in-case the user decides to have a non-String based repeating text step.
+            boolean isRepeatingTextButton = (curr instanceof StepRepeatingText<?> repeating &&
                     repeating.extraButtons().stream().anyMatch(button -> button.getLabel().equals(value)));
 
             Optional<T> convertedOpt = StringToTypeConverter.expandedCast(sender.getGuild(), value, curr.clazz());
-            if (convertedOpt.isEmpty() && !isRepeatingButton)
+
+            if (convertedOpt.isEmpty() && !isRepeatingTextButton)
                 return new Tuple4<>(Optional.of(curr), false,
                         false, "I wasn't able to correctly turn your input into the correct type! Please try again!");  // couldn't cast successfully
 
-            if (!isRepeatingButton && !curr.valid().test(convertedOpt.get(), curr).v1()) {
+            if (!isRepeatingTextButton && !curr.valid().test(convertedOpt.get(), curr).v1()) {
                 Tuple2<Boolean, String> invalid = curr.valid().test(convertedOpt.get(), curr); // types get weird here hence no concat
                 return new Tuple4<>(Optional.of(curr), false, invalid.v1(), invalid.v2());
             }
 
-            T converted = null;
+            boolean signaledRemoveLastInRepeatingText = (curr instanceof StepRepeatingText<?> repeating &&
+                    component instanceof Button button &&
+                    button.getLabel().equals(repeating.removePreviousItemText()));
 
-            if (!isRepeatingButton) {
-                String id = curr.identifier();
-                converted = convertedOpt.get();
+            String id = curr.identifier();
 
-                if (curr instanceof StepRepeatingText<?> || values.size() != 1) {
-                    if (!idToInputtedStepValueMap.containsKey(id))
-                        idToInputtedStepValueMap.put(id, new ArrayList<>());
+            T converted = convertedOpt.orElse(null);
 
-                    ((ArrayList<Object>) idToInputtedStepValueMap.get(id)).add(converted);
-                } else {
-                    idToInputtedStepValueMap.put(id, converted);
-                }
+            if (curr instanceof StepRepeatingText<?> || values.size() != 1) {
+                if (!idToInputtedStepValueMap.containsKey(id))
+                    idToInputtedStepValueMap.put(id, new ArrayList<>());
+
+                ArrayList<Object> storedValues = (ArrayList<Object>) idToInputtedStepValueMap.get(id);
+
+                if (signaledRemoveLastInRepeatingText && !storedValues.isEmpty())
+                    storedValues.remove(storedValues.size() - 1);
+
+                if (!isRepeatingTextButton)
+                    storedValues.add(converted);
+
+            } else {
+                idToInputtedStepValueMap.put(id, converted);
             }
+
             curr.onOption().accept(EntryContext.of(curr, converted, method, component));
         }
 
@@ -132,10 +143,6 @@ public class WizardEmbed {
     public MessageCreateData toCreateData() {
         StepCandidate<?> curr = inputSteps.get(currentPageNo.get());
         return curr.compile(showExitButton);
-    }
-
-    public boolean expectingInteraction() {
-        return curr() instanceof StepRepeatingText<?> || curr() instanceof StepText<?>;
     }
 
     public StepCandidate<?> curr() {

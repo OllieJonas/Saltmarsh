@@ -5,18 +5,46 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jooq.lambda.function.Function2;
 import org.jooq.lambda.function.Function3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public record PollEmbed(String question, String author, boolean singularVote,
                         boolean anonymous, boolean textRepresentation, List<PollOption> options,
                         Map<String, Integer> alreadyVoted) {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PollEmbed.class);
+
     static int BUTTON_MAX_LENGTH = 80;
+
+    public PollEmbed(String question, String author, boolean singularVote, boolean anonymous, boolean textRepresentation, List<PollOption> options, Map<String, Integer> alreadyVoted) {
+        this.question = question;
+        this.author = author;
+        this.singularVote = singularVote;
+        this.anonymous = anonymous;
+        this.textRepresentation = textRepresentation;
+        this.alreadyVoted = alreadyVoted;
+
+        LOGGER.atInfo().setMessage("options: {}").addArgument(() -> options.stream().map(PollOption::prompt).collect(Collectors.joining(", "))).log();
+
+        // remove any duplicates
+        List<PollOption> duplicateFilteredOptions = new ArrayList<>();
+        Set<String> tmp = new HashSet<>();
+
+
+        for (PollOption option : options) {
+            if (!tmp.contains(option.prompt())) {
+                duplicateFilteredOptions.add(option);
+                tmp.add(option.prompt());
+            }
+        }
+
+
+        this.options = duplicateFilteredOptions;
+    }
 
     public static final List<Button> OPTION_BUTTONS = Stream.of(
             "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "\uD83D\uDD1F"
