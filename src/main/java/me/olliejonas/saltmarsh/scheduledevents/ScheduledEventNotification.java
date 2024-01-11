@@ -102,7 +102,7 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
     }
 
     public MessageEmbed toEmbed() {
-        return toEmbed(false);
+        return toEmbed(true);
     }
 
     public MessageEmbed toEmbed(boolean showInterested) {
