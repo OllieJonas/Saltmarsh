@@ -49,7 +49,7 @@ public class RecurringEventListener extends ListenerAdapter {
                 (reason == ScheduledEvent.Status.COMPLETED ? "finished!" : "been cancelled!")).submit()
                 .thenCompose(__ -> guild.retrieveMemberById(Objects.requireNonNull(recurringEvent.creator().getId())).submit())
                 .thenCompose(member -> channel.sendMessageEmbeds(
-                        ScheduledEventNotification.fromEvent(event, reason, manager, member).toEmbed()).submit())
+                        ScheduledEventNotification.fromEvent(event, reason, manager, member).toEmbed(false)).submit())
                 .whenComplete((msg, error) -> {
                     if (error != null) error.printStackTrace();
 

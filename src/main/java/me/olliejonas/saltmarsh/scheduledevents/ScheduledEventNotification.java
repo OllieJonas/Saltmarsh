@@ -102,6 +102,10 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
     }
 
     public MessageEmbed toEmbed() {
+        return toEmbed(false);
+    }
+
+    public MessageEmbed toEmbed(boolean showInterested) {
         EmbedBuilder builder = EmbedUtils.colour();
         builder.setAuthor(getFormattedDate());
         builder.setTitle(isNoLongerAvailable() ? "~~" + name + "~~" : name);
@@ -110,12 +114,16 @@ public record ScheduledEventNotification(Member creator, String eventId, String 
                 "This is a recurring event that repeats " + frequency.getRepresentation().toLowerCase(Locale.ROOT) + "!");
 
         String locationStr = type != ScheduledEvent.Type.EXTERNAL ? "<#" + location + ">" : location + " (in Person)";
-        String interestedText = String.join(", ", interested);
-        boolean shouldInterestedInline = interestedText.length() < INTERESTED_LENGTH_THRESHOLD;
 
         builder.addField("Organiser", creator.getAsMention(), true);
         builder.addField("Location", locationStr, true);
-        builder.addField("Interested", String.join(", ", interested), shouldInterestedInline);
+
+        if (showInterested) {
+            String interestedText = String.join(", ", interested);
+            boolean shouldInterestedInline = interestedText.length() < INTERESTED_LENGTH_THRESHOLD;
+            builder.addField("Interested", String.join(", ", interested), shouldInterestedInline);
+        }
+
         builder.addField("Description", description, false);
         builder.addField("Status", statusStr(), false);
 
